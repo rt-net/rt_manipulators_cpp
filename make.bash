@@ -1,8 +1,18 @@
-#!/usr/bin/bash -e
+#!/usr/bin/env bash
+
+set -e
+
+BUILD_DIR=build
 
 echo "ビルドします"
 cd $(dirname $0)
-cmake -B build
-cmake --build build
+
+if [ ! -d $BUILD_DIR ]; then
+    mkdir $BUILD_DIR
+fi
+
+cd $BUILD_DIR
+cmake ..
+make
 
 echo "ビルドしました"

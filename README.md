@@ -2,11 +2,6 @@
 
 ## Installation
 
-### Install yaml-cpp
-
-```sh
-$ sudo apt install libyaml-cpp-dev 
-```
 
 ### Install Dynamixel SDK
 
@@ -21,11 +16,18 @@ $ make
 $ sudo make install
 ```
 
+### Install other dependencies
+
+```sh
+$ sudo apt install libyaml-cpp-dev 
+```
+
 ### Build RT Manipulators CPP
 
 ```sh
-$ git clone this repository
+$ git clone https://github.com/rt-net/rt_manipulators_cpp
 $ cd rt_manipuators_cpp
+
 $ ./make.bash
 ```
 
