@@ -38,7 +38,6 @@ private:
   std::shared_ptr<dynamixel::PacketHandler> packet_handler_;
   std::map<JointGroupName, std::vector<JointName>> joint_groups_;
   std::map<JointName, joint::Joint> all_joints_;
-  int baudrate_;
 };
 
 }  // namespace rt_manipulators_cpp

@@ -1,19 +1,22 @@
 #ifndef JOINT_HPP_
 #define JOINT_HPP_
 
+#include <cstdint>
+
 namespace joint
 {
 
 class Joint
 {
 public:
-  Joint(int id, int operating_mode);
-  int id() const;
-  int operating_mode() const;
+
+  Joint(const uint8_t id, const uint8_t operating_mode);
+  uint8_t id() const;
+  uint8_t operating_mode() const;
 
 private:
-  int id_;
-  int operating_mode_;
+  uint8_t id_;
+  uint8_t operating_mode_;
 };
 
 }  // namespace rt_manipulators_cpp
