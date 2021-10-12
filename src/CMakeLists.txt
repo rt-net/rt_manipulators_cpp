@@ -3,6 +3,7 @@ find_package(yaml-cpp REQUIRED)
 add_library(hardware
     SHARED
     hardware.cpp
+    joint.cpp
 )
 
 target_include_directories(hardware

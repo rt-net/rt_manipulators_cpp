@@ -24,9 +24,12 @@ bool Hardware::load_config_file(const std::string & config_yaml)
 
   std::cout<<"Config file '"<<config_yaml<<"' loaded."<<std::endl;
   for(auto group : joint_groups_){
-    std::cout<<group.name()<<std::endl;
-    for(auto joint : group.joints()){
-      std::cout<<"\t"<<joint.name()<<", id:"<<std::to_string(joint.id())<<", mode:"<<std::to_string(joint.operating_mode())<<std::endl;
+    std::cout<<group.first <<std::endl;
+    for(auto joint_name : group.second){
+      std::cout<<"\t"<<joint_name;
+      std::cout<<", id:"<<std::to_string(all_joints_.at(joint_name).id());
+      std::cout<<", mode:"<<std::to_string(all_joints_.at(joint_name).operating_mode());
+      std::cout<<std::endl;
     }
   }
 
@@ -52,13 +55,13 @@ void Hardware::disconnect()
   port_handler_->closePort();
 }
 
-bool Hardware::torque_on()
+bool Hardware::torque_on(const std::string & group_name)
 {
-  for(auto group : joint_groups_){
-    for(auto joint : group.joints()){
-      auto dxl_id = joint.id();
-    }
-  }
+  // for(auto group : joint_groups_){
+  //   for(auto joint : group.joints()){
+  //     auto dxl_id = joint.id();
+  //   }
+  // }
 }
 
 bool Hardware::parse_config_file(const std::string & config_yaml)
@@ -66,19 +69,15 @@ bool Hardware::parse_config_file(const std::string & config_yaml)
   YAML::Node config = YAML::LoadFile(config_yaml);
   for(auto config_joint_group : config["joint_groups"]){
     auto group_name = config_joint_group.first.as<std::string>();
-    joint::JointGroup group(group_name);
 
     for(auto config_joint : config["joint_groups"][group_name]){
       auto joint_name = config_joint.as<std::string>();
-      joint::Joint joint(
-        joint_name,
-        config[joint_name]["id"].as<int>(),
-        config[joint_name]["operating_mode"].as<int>());
-
-      group.push_back(joint);
+      joint_groups_[group_name].push_back(joint_name);
+      all_joints_.emplace(joint_name,
+        joint::Joint(config[joint_name]["id"].as<int>(),
+                     config[joint_name]["operating_mode"].as<int>())
+      );
     }
-
-    joint_groups_.push_back(group);
   }
 
   return true;
