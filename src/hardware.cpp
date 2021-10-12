@@ -8,6 +8,35 @@ namespace rt_manipulators_cpp
 
 const double PROTOCOL_VERSION = 2.0;
 
+// Dynamixel XM Series address table
+// Ref: https://emanual.robotis.com/docs/en/dxl/x/xm430-w350/
+const uint16_t ADDR_TORQUE_ENABLE = 64;
+const uint16_t ADDR_POSITION_D_GAIN = 80;
+const uint16_t ADDR_POSITION_I_GAIN = 82;
+const uint16_t ADDR_POSITION_P_GAIN = 84;
+const uint16_t ADDR_GOAL_CURRENT = 102;
+const uint16_t ADDR_GOAL_VELOCITY = 104;
+const uint16_t ADDR_GOAL_POSITION = 116;
+const uint16_t ADDR_PRESENT_CURRENT = 126;
+const uint16_t ADDR_PRESENT_VELOCITY = 128;
+const uint16_t ADDR_PRESENT_POSITION = 132;
+const uint16_t ADDR_PRESENT_VOLTAGE = 144;
+const uint16_t ADDR_PRESENT_TEMPERATURE = 146;
+const uint16_t ADDR_INDIRECT_ADDRESS_1 = 168;
+const uint16_t ADDR_INDIRECT_DATA_1 = 224;
+const uint16_t ADDR_INDIRECT_ADDRESS_29 = 578;
+const uint16_t ADDR_INDIRECT_DATA_29 = 634;
+
+const uint16_t LEN_GOAL_CURRENT = 2;
+const uint16_t LEN_GOAL_VELOCITY = 4;
+const uint16_t LEN_GOAL_POSITION = 4;
+const uint16_t LEN_PRESENT_CURRENT = 2;
+const uint16_t LEN_PRESENT_VELOCITY = 4;
+const uint16_t LEN_PRESENT_POSITION = 4;
+const uint16_t LEN_PRESENT_VOLTAGE = 2;
+const uint16_t LEN_PRESENT_TEMPERATURE = 1;
+const uint16_t LEN_INDIRECT_ADDRESS = 2;
+
 Hardware::Hardware(const std::string device_name)
 {
   port_handler_ = std::shared_ptr<dynamixel::PortHandler>(
@@ -57,11 +86,12 @@ void Hardware::disconnect()
 
 bool Hardware::torque_on(const std::string & group_name)
 {
-  // for(auto group : joint_groups_){
-  //   for(auto joint : group.joints()){
-  //     auto dxl_id = joint.id();
-  //   }
-  // }
+  return write_1byte_to_group(group_name, ADDR_TORQUE_ENABLE, 1);
+}
+
+bool Hardware::torque_off(const std::string & group_name)
+{
+  return write_1byte_to_group(group_name, ADDR_TORQUE_ENABLE, 0);
 }
 
 bool Hardware::parse_config_file(const std::string & config_yaml)
@@ -81,6 +111,65 @@ bool Hardware::parse_config_file(const std::string & config_yaml)
   }
 
   return true;
+}
+
+bool Hardware::joint_groups_contain(const std::string & group_name)
+{
+  return joint_groups_.find(group_name) != joint_groups_.end();
+}
+
+bool Hardware::write_1byte_to_group(const std::string & group_name, const uint16_t address, const uint8_t write_data)
+{
+  if(!joint_groups_contain(group_name)){
+    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+    return false;
+  }
+
+  bool retval = true;
+  for(auto joint_name : joint_groups_[group_name]){
+    auto id = all_joints_.at(joint_name).id();
+    if(!write_1byte(id, address, write_data)){
+      retval = false;
+    }
+  }
+  return retval;
+}
+
+bool Hardware::write_1byte(const uint8_t id, const uint16_t address, const uint8_t write_data)
+{
+  uint8_t dxl_error = 0;
+  int dxl_result = packet_handler_->write1ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
+
+  if(!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)){
+      return false;
+  }
+  return true;
+}
+
+bool Hardware::parse_dxl_error(const std::string & func_name, const uint8_t id,
+  const uint16_t address, const int dxl_comm_result, const uint8_t dxl_packet_error)
+{
+  bool retval = true;
+
+  if (dxl_comm_result != COMM_SUCCESS)
+  {
+      std::cerr << "Function:" << func_name;
+      std::cerr << ", ID:" << std::to_string(id);
+      std::cerr << ", Address:" << std::to_string(address);
+      std::cerr << ", CommError" << std::string(packet_handler_->getTxRxResult(dxl_comm_result)) << std::endl;
+      retval = false;
+  }
+
+  if (dxl_packet_error != 0)
+  {
+      std::cerr << "Function:" << func_name;
+      std::cerr << ", ID:" << std::to_string(id);
+      std::cerr << ", Address:" << std::to_string(address);
+      std::cerr << ", PacketError:" << std::string(packet_handler_->getRxPacketError(dxl_packet_error)) << std::endl;
+      retval = false;
+  }
+
+  return retval;
 }
 
 
