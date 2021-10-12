@@ -1,4 +1,5 @@
 
+#include <fstream>
 #include <iostream>
 #include <yaml-cpp/yaml.h>
 #include "hardware.hpp"
@@ -96,17 +97,42 @@ bool Hardware::torque_off(const std::string & group_name)
 
 bool Hardware::parse_config_file(const std::string & config_yaml)
 {
+  // yamlファイルを読み取り、joint_groups_とall_joints_メンバ変数に格納する
+  std::ifstream fs(config_yaml);
+  if(!fs.is_open()){
+    std::cerr<<"コンフィグファイル:"<<config_yaml<<"が存在しません."<<std::endl;
+    return false;
+  }
+
   YAML::Node config = YAML::LoadFile(config_yaml);
   for(auto config_joint_group : config["joint_groups"]){
     auto group_name = config_joint_group.first.as<std::string>();
+    if(joint_groups_contain(group_name)){
+      std::cerr<<group_name<<"グループが2つ以上存在します."<<std::endl;
+      return false;
+    }
 
     for(auto config_joint : config["joint_groups"][group_name]){
       auto joint_name = config_joint.as<std::string>();
-      joint_groups_[group_name].push_back(joint_name);
-      all_joints_.emplace(joint_name,
-        joint::Joint(config[joint_name]["id"].as<int>(),
-                     config[joint_name]["operating_mode"].as<int>())
-      );
+      if(all_joints_contain(joint_name)){
+        std::cerr<<joint_name<<"ジョイントが2つ以上存在します."<<std::endl;
+        return false;
+      }
+      if(config[joint_name]){
+        if(config[joint_name]["id"] && config[joint_name]["operating_mode"]){
+          joint_groups_[group_name].push_back(joint_name);
+          all_joints_.emplace(joint_name,
+            joint::Joint(config[joint_name]["id"].as<int>(),
+                        config[joint_name]["operating_mode"].as<int>())
+          );
+        }else{
+          std::cerr<<joint_name<<"にidまたはoperating_modeが設定されていません."<<std::endl;
+          return false;
+        }
+      }else{
+        std::cerr<<joint_name<<"ジョイントの設定が存在しません."<<std::endl;
+        return false;
+      }
     }
   }
 
@@ -116,6 +142,11 @@ bool Hardware::parse_config_file(const std::string & config_yaml)
 bool Hardware::joint_groups_contain(const std::string & group_name)
 {
   return joint_groups_.find(group_name) != joint_groups_.end();
+}
+
+bool Hardware::all_joints_contain(const std::string & joint_name)
+{
+  return all_joints_.find(joint_name) != all_joints_.end();
 }
 
 bool Hardware::write_1byte_to_group(const std::string & group_name, const uint16_t address, const uint8_t write_data)

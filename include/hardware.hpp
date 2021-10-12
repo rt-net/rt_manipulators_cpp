@@ -29,6 +29,7 @@ public:
 private:
   bool parse_config_file(const std::string & config_yaml);
   bool joint_groups_contain(const std::string & group_name);
+  bool all_joints_contain(const std::string & joint_name);
   bool write_1byte_to_group(const std::string & group_name, const uint16_t address, const uint8_t write_data);
   bool write_1byte(const uint8_t id, const uint16_t address, const uint8_t write_data);
   bool parse_dxl_error(const std::string & func_name, const uint8_t id,

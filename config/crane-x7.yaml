@@ -7,7 +7,9 @@ joint_groups:
     - joint5
     - joint6
     - joint7
+  hand:
     - joint_hand
+
 
 joint1: { id : 2, operating_mode: 3 }
 joint2: { id : 3, operating_mode: 3 }

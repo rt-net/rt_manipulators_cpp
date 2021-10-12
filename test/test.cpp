@@ -10,24 +10,28 @@ using std::this_thread::sleep_for;
 int main()
 {
   rt_manipulators_cpp::Hardware hardware("/dev/ttyUSB0");
-  hardware.load_config_file("../config/crane-x7.yaml");
 
+  if(!hardware.load_config_file("../config/crane-x7.yaml")){
+    std::cerr<<"コンフィグファイルの読み込みに失敗しました."<<std::endl;
+    return -1;
+  }
 
   if(!hardware.connect(3000000)){
-    std::cerr<<"Failed to connect."<<std::endl;
+    std::cerr<<"ロボットとの接続に失敗しました."<<std::endl;
     return -1;
   }
 
   if(!hardware.torque_on("arm")){
-    std::cerr<<"Failed to set torque on."<<std::endl;
+    std::cerr<<"グループのトルクをONできませんでした."<<std::endl;
     return -1;
   }
 
   sleep_for(std::chrono::milliseconds(3000));
 
-  hardware.torque_off("arm");
+  if(!hardware.torque_off("arm")){
+    std::cerr<<"グループのトルクをOFFできませんでした."<<std::endl;
+  }
   
   hardware.disconnect();
-  std::cout << "End."<< std::endl;
   return 0;
 }
