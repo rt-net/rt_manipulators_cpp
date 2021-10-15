@@ -20,4 +20,14 @@ uint8_t Joint::operating_mode() const
   return operating_mode_;
 }
 
+void Joint::set_position(const double position_radian)
+{
+  position_ = position_radian;
+}
+
+double Joint::get_position() const
+{
+  return position_;
+}
+
 }  // namespace rt_manipulators_cpp

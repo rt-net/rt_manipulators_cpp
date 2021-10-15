@@ -24,6 +24,7 @@ public:
   bool torque_on(const std::string & group_name);
   bool torque_off(const std::string & group_name);
   bool sync_read(const std::string & group_name);
+  bool get_positions(const std::string & group_name, std::vector<double> & positions);
   // bool torque_off();
   // bool torque_on_all();
 
@@ -40,6 +41,7 @@ private:
   bool parse_dxl_error(const std::string & func_name, const uint8_t id,
     const uint16_t address, const int dxl_comm_result, const uint8_t dxl_packet_error);
   bool parse_dxl_error(const std::string & func_name, const int dxl_comm_result);
+  double dxl_pos_to_radian(const int32_t position);
 
   std::shared_ptr<dynamixel::PortHandler> port_handler_;
   std::shared_ptr<dynamixel::PacketHandler> packet_handler_;

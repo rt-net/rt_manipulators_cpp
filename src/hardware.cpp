@@ -1,5 +1,6 @@
 
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <yaml-cpp/yaml.h>
@@ -9,6 +10,8 @@ namespace rt_manipulators_cpp
 {
 
 const double PROTOCOL_VERSION = 2.0;
+constexpr int DXL_HOME_POSITION = 2048;
+constexpr double TO_RADIANS = (180.0 / 2048.0) * M_PI / 180.0;
 
 // Dynamixel XM Series address table
 // Ref: https://emanual.robotis.com/docs/en/dxl/x/xm430-w350/
@@ -119,11 +122,24 @@ bool Hardware::sync_read(const std::string & group_name)
       retval = false;
     }else{
       int32_t data = sync_read_groups_[group_name]->getData(id, address_indirect_position_, LEN_PRESENT_POSITION);
-      std::cout<<std::to_string(id) << " -> pos:" << std::to_string(data) << std::endl;
+      all_joints_.at(joint_name).set_position(dxl_pos_to_radian(data));
     }
   }
 
   return retval;
+}
+
+bool Hardware::get_positions(const std::string & group_name, std::vector<double> & positions)
+{
+  if(!joint_groups_contain(group_name)){
+    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+    return false;
+  }
+
+  for(auto joint_name : joint_groups_[group_name]){
+    positions.push_back(all_joints_.at(joint_name).get_position());
+  }
+  return true;
 }
 
 bool Hardware::parse_config_file(const std::string & config_yaml)
@@ -335,6 +351,11 @@ bool Hardware::parse_dxl_error(const std::string & func_name, const int dxl_comm
   }
 
   return true;
+}
+
+double Hardware::dxl_pos_to_radian(const int32_t position)
+{
+  return (position - DXL_HOME_POSITION) * TO_RADIANS;
 }
 
 }  // namespace rt_manipulators_cpp

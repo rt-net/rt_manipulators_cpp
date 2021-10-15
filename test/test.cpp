@@ -42,6 +42,16 @@ int main()
       break;
     }
 
+    std::vector<double> positions;
+    if(hardware.get_positions("arm", positions)){
+      int index=0;
+      for(auto position : positions){
+        std::cout<<std::to_string(index)<<"->pos:"<<std::to_string(position)<<std::endl;
+        index++;
+      }
+
+    }
+
     loop_count++;
     std::this_thread::sleep_until(next_start_time);
   }
