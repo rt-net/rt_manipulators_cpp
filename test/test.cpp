@@ -42,14 +42,20 @@ int main()
       break;
     }
 
-    std::vector<double> positions;
-    if(hardware.get_positions("arm", positions)){
-      int index=0;
-      for(auto position : positions){
-        std::cout<<std::to_string(index)<<"->pos:"<<std::to_string(position)<<std::endl;
-        index++;
+    // std::vector<double> positions;
+    // if(hardware.get_positions("arm", positions)){
+    //   int index=0;
+    //   for(auto position : positions){
+    //     std::cout<<std::to_string(index)<<"->pos:"<<std::to_string(position)<<std::endl;
+    //     index++;
+    //   }
+    // }
+    std::vector<uint8_t> id_list = {2,3,4,5,6,7,8,9,10};
+    for(auto id : id_list){
+      double position;
+      if(hardware.get_position(id, position)){
+        std::cout<<std::to_string(id)<<"->pos:"<<std::to_string(position)<<std::endl;
       }
-
     }
 
     loop_count++;

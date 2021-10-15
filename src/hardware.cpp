@@ -61,8 +61,8 @@ bool Hardware::load_config_file(const std::string & config_yaml)
     std::cout<<group.first <<std::endl;
     for(auto joint_name : group.second){
       std::cout<<"\t"<<joint_name;
-      std::cout<<", id:"<<std::to_string(all_joints_.at(joint_name).id());
-      std::cout<<", mode:"<<std::to_string(all_joints_.at(joint_name).operating_mode());
+      std::cout<<", id:"<<std::to_string(all_joints_.at(joint_name)->id());
+      std::cout<<", mode:"<<std::to_string(all_joints_.at(joint_name)->operating_mode());
       std::cout<<std::endl;
     }
   }
@@ -116,13 +116,13 @@ bool Hardware::sync_read(const std::string & group_name)
 
   bool retval = true;
   for(auto joint_name : joint_groups_[group_name]){
-    auto id = all_joints_.at(joint_name).id();
+    auto id = all_joints_.at(joint_name)->id();
     if(!sync_read_groups_[group_name]->isAvailable(id, address_indirect_position_, LEN_PRESENT_POSITION)){
       std::cerr << std::to_string(id) << "のpresent_positionを取得できません." << std::endl;
       retval = false;
     }else{
       int32_t data = sync_read_groups_[group_name]->getData(id, address_indirect_position_, LEN_PRESENT_POSITION);
-      all_joints_.at(joint_name).set_position(dxl_pos_to_radian(data));
+      all_joints_.at(joint_name)->set_position(dxl_pos_to_radian(data));
     }
   }
 
@@ -137,8 +137,18 @@ bool Hardware::get_positions(const std::string & group_name, std::vector<double>
   }
 
   for(auto joint_name : joint_groups_[group_name]){
-    positions.push_back(all_joints_.at(joint_name).get_position());
+    positions.push_back(all_joints_.at(joint_name)->get_position());
   }
+  return true;
+}
+
+bool Hardware::get_position(const uint8_t id, double & position)
+{
+  if(!all_joints_contain_id(id)){
+    std::cerr<<"ID:"<<std::to_string(id)<<"のジョイントは存在しません."<<std::endl;
+    return false;
+  }
+  position = all_joints_ref_from_id_[id]->get_position();
   return true;
 }
 
@@ -182,10 +192,11 @@ bool Hardware::parse_config_file(const std::string & config_yaml)
       }
 
       joint_groups_[group_name].push_back(joint_name);
-      all_joints_.emplace(joint_name,
-        joint::Joint(config[joint_name]["id"].as<int>(),
-                    config[joint_name]["operating_mode"].as<int>())
-      );
+      auto joint_id = config[joint_name]["id"].as<int>();
+      auto ope_mode = config[joint_name]["operating_mode"].as<int>();
+      auto joint_ptr = std::make_shared<joint::Joint>(joint_id, ope_mode);
+      all_joints_.emplace(joint_name, joint_ptr);
+      all_joints_ref_from_id_.emplace(joint_id, joint_ptr);  // IDからもJointにアクセスできる
     }
 
     if(config["joint_groups"][group_name]["sync_read"]){
@@ -210,6 +221,11 @@ bool Hardware::all_joints_contain(const std::string & joint_name)
   return all_joints_.find(joint_name) != all_joints_.end();
 }
 
+bool Hardware::all_joints_contain_id(const uint8_t id)
+{
+  return all_joints_ref_from_id_.find(id) != all_joints_ref_from_id_.end();
+}
+
 bool Hardware::create_sync_read_group(const std::string & group_name, const std::vector<std::string> & targets)
 {
   // sync_read_groups_に、指定されたデータを読むSyncReadGroupを追加する
@@ -230,7 +246,7 @@ bool Hardware::create_sync_read_group(const std::string & group_name, const std:
     port_handler_.get(), packet_handler_.get(), ADDR_INDIRECT_DATA_1, total_length);
 
   for(auto joint_name : joint_groups_[group_name]){
-    auto id = all_joints_.at(joint_name).id();
+    auto id = all_joints_.at(joint_name)->id();
     if(!sync_read_groups_[group_name]->addParam(id)){
       std::cerr<<group_name<<":"<<joint_name<<"のgroupSyncRead.addParam に失敗しました."<<std::endl;
       return false;
@@ -279,7 +295,7 @@ bool Hardware::write_byte_data_to_group(const std::string & group_name, const ui
 
   bool retval = true;
   for(auto joint_name : joint_groups_[group_name]){
-    auto id = all_joints_.at(joint_name).id();
+    auto id = all_joints_.at(joint_name)->id();
     if(!write_byte_data(id, address, write_data)){
       retval = false;
     }
@@ -307,7 +323,7 @@ bool Hardware::write_word_data_to_group(const std::string & group_name, const ui
 
   bool retval = true;
   for(auto joint_name : joint_groups_[group_name]){
-    auto id = all_joints_.at(joint_name).id();
+    auto id = all_joints_.at(joint_name)->id();
     if(!write_word_data(id, address, write_data)){
       retval = false;
     }

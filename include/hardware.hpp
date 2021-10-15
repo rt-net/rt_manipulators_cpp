@@ -25,6 +25,7 @@ public:
   bool torque_off(const std::string & group_name);
   bool sync_read(const std::string & group_name);
   bool get_positions(const std::string & group_name, std::vector<double> & positions);
+  bool get_position(const uint8_t id, double & position);
   // bool torque_off();
   // bool torque_on_all();
 
@@ -32,6 +33,7 @@ private:
   bool parse_config_file(const std::string & config_yaml);
   bool joint_groups_contain(const std::string & group_name);
   bool all_joints_contain(const std::string & joint_name);
+  bool all_joints_contain_id(const uint8_t id);
   bool create_sync_read_group(const std::string & group_name, const std::vector<std::string> & targets);
   bool set_indirect_address(const std::string & group_name, const uint16_t addr_indirect_start, const uint16_t addr_target, const uint16_t len_target);
   bool write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data);
@@ -46,7 +48,8 @@ private:
   std::shared_ptr<dynamixel::PortHandler> port_handler_;
   std::shared_ptr<dynamixel::PacketHandler> packet_handler_;
   std::map<JointGroupName, std::vector<JointName>> joint_groups_;
-  std::map<JointName, joint::Joint> all_joints_;
+  std::map<JointName, std::shared_ptr<joint::Joint>> all_joints_;
+  std::map<uint8_t, std::shared_ptr<joint::Joint>> all_joints_ref_from_id_;
   std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncRead>> sync_read_groups_;
   uint16_t address_indirect_position_;
   uint16_t address_indirect_velocity_;
