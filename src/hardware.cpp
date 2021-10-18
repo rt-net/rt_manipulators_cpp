@@ -108,6 +108,11 @@ bool Hardware::sync_read(const std::string & group_name)
     return false;
   }
 
+  if(!sync_read_groups_[group_name]){
+    std::cerr<<group_name<<"にはsync_readが設定されていません."<<std::endl;
+    return false;
+  }
+
   int dxl_result = sync_read_groups_[group_name]->txRxPacket();
   if(!parse_dxl_error(std::string(__func__), dxl_result)){
     std::cerr<<group_name<<"のsync readに失敗しました."<<std::endl;
