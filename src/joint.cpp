@@ -31,15 +31,45 @@ double Joint::get_position() const
 }
 
 
-JointGroup::JointGroup(const std::vector<std::string> & joint_names) :
-  joint_names_(joint_names)
+JointGroup::JointGroup(const std::vector<std::string> & joint_names,
+  const std::vector<std::string> & sync_read_targets) :
+  joint_names_(joint_names),
+  sync_read_position_enabled_(false),
+  sync_read_velocity_enabled_(false),
+  sync_read_current_enabled_(false),
+  sync_read_temperature_enabled_(false)
 {
-
+  for(auto target : sync_read_targets){
+    if(target == "position") sync_read_position_enabled_ = true;
+    if(target == "velocity") sync_read_velocity_enabled_ = true;
+    if(target == "current") sync_read_current_enabled_ = true;
+    if(target == "temperature") sync_read_temperature_enabled_ = true;
+  }
 }
 
 std::vector<std::string> JointGroup::joint_names() const
 {
   return joint_names_;
+}
+
+bool JointGroup::sync_read_position_enabled() const
+{
+  return sync_read_position_enabled_;
+}
+
+bool JointGroup::sync_read_velocity_enabled() const
+{
+  return sync_read_velocity_enabled_;
+}
+
+bool JointGroup::sync_read_current_enabled() const
+{
+  return sync_read_current_enabled_;
+}
+
+bool JointGroup::sync_read_temperature_enabled() const
+{
+  return sync_read_temperature_enabled_;
 }
 
 }  // namespace rt_manipulators_cpp

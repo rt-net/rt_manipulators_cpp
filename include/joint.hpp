@@ -27,11 +27,20 @@ private:
 class JointGroup
 {
 public:
-  JointGroup(const std::vector<std::string> & joint_names);
+  JointGroup(const std::vector<std::string> & joint_names,
+    const std::vector<std::string> & sync_read_targets);
   std::vector<std::string> joint_names() const;
+  bool sync_read_position_enabled() const;
+  bool sync_read_velocity_enabled() const;
+  bool sync_read_current_enabled() const;
+  bool sync_read_temperature_enabled() const;
 
 private:
   std::vector<std::string> joint_names_;
+  bool sync_read_position_enabled_;
+  bool sync_read_velocity_enabled_;
+  bool sync_read_current_enabled_;
+  bool sync_read_temperature_enabled_;
 };
 
 }  // namespace rt_manipulators_cpp

@@ -120,15 +120,16 @@ bool Hardware::sync_read(const std::string & group_name)
   }
 
   bool retval = true;
-  for(auto joint_name : joint_groups_[group_name]->joint_names()){
-    auto id = all_joints_.at(joint_name)->id();
-    if(!sync_read_groups_[group_name]->isAvailable(id, address_indirect_present_position_[group_name], LEN_PRESENT_POSITION)){
-      // 意図的にpositionをsync_readしない場合があるため、エラーメッセージを表示しない
-      // std::cerr << std::to_string(id) << "のpresent_positionを取得できません." << std::endl;
-      retval = false;
-    }else{
-      int32_t data = sync_read_groups_[group_name]->getData(id, address_indirect_present_position_[group_name], LEN_PRESENT_POSITION);
-      all_joints_.at(joint_name)->set_position(dxl_pos_to_radian(data));
+  if(joint_groups_[group_name]->sync_read_position_enabled()){
+    for(auto joint_name : joint_groups_[group_name]->joint_names()){
+      auto id = all_joints_.at(joint_name)->id();
+      if(!sync_read_groups_[group_name]->isAvailable(id, address_indirect_present_position_[group_name], LEN_PRESENT_POSITION)){
+        std::cerr << std::to_string(id) << "のpresent_positionを取得できません." << std::endl;
+        retval = false;
+      }else{
+        int32_t data = sync_read_groups_[group_name]->getData(id, address_indirect_present_position_[group_name], LEN_PRESENT_POSITION);
+        all_joints_.at(joint_name)->set_position(dxl_pos_to_radian(data));
+      }
     }
   }
 
@@ -234,15 +235,16 @@ bool Hardware::parse_config_file(const std::string & config_yaml)
       all_joints_.emplace(joint_name, joint_ptr);
       all_joints_ref_from_id_.emplace(joint_id, joint_ptr);  // IDからもJointにアクセスできる
     }
-    auto joint_group_ptr = std::make_shared<joint::JointGroup>(joint_names);
+    std::vector<std::string> sync_read_targets;
+    if(config["joint_groups"][group_name]["sync_read"]){
+      sync_read_targets = config["joint_groups"][group_name]["sync_read"].as<std::vector<std::string>>();
+    }
+    auto joint_group_ptr = std::make_shared<joint::JointGroup>(joint_names, sync_read_targets);
     joint_groups_.emplace(group_name, joint_group_ptr);
 
-    if(config["joint_groups"][group_name]["sync_read"]){
-      auto targets = config["joint_groups"][group_name]["sync_read"].as<std::vector<std::string>>();
-      if(!create_sync_read_group(group_name, targets)){
-        std::cerr<<group_name<<"のsync readグループを作成できません."<<std::endl;
-        return false;
-      }
+    if(!create_sync_read_group(group_name)){
+      std::cerr<<group_name<<"のsync readグループを作成できません."<<std::endl;
+      return false;
     }
   }
 
@@ -264,13 +266,13 @@ bool Hardware::all_joints_contain_id(const uint8_t id)
   return all_joints_ref_from_id_.find(id) != all_joints_ref_from_id_.end();
 }
 
-bool Hardware::create_sync_read_group(const std::string & group_name, const std::vector<std::string> & targets)
+bool Hardware::create_sync_read_group(const std::string & group_name)
 {
   // sync_read_groups_に、指定されたデータを読むSyncReadGroupを追加する
   // できるだけ多くのデータをSyncReadで読み取るため、インダイレクトアドレスを活用する
   uint16_t indirect_address = ADDR_INDIRECT_ADDRESS_1;
   uint16_t total_length = 0;
-  if(std::find(targets.begin(), targets.end(), "position") != targets.end()){
+  if(joint_groups_[group_name]->sync_read_position_enabled()){
     if(!set_indirect_address(group_name, indirect_address, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION)){
       std::cerr<<group_name<<"グループのpresent_positionをインダイレクトアドレスにセットできません."<<std::endl;
       return false;

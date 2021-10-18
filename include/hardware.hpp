@@ -36,7 +36,7 @@ private:
   bool joint_groups_contain(const std::string & group_name);
   bool all_joints_contain(const std::string & joint_name);
   bool all_joints_contain_id(const uint8_t id);
-  bool create_sync_read_group(const std::string & group_name, const std::vector<std::string> & targets);
+  bool create_sync_read_group(const std::string & group_name);
   bool create_sync_write_group(const std::string & group_name, const std::vector<std::string> & targets);
   bool set_indirect_address(const std::string & group_name, const uint16_t addr_indirect_start, const uint16_t addr_target, const uint16_t len_target);
   void read_write_thread(const std::vector<std::string> & group_names, const std::chrono::milliseconds & update_cycle_ms);
