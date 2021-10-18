@@ -1,9 +1,11 @@
 #ifndef HARDWARE_HPP_
 #define HARDWARE_HPP_
 
+#include <chrono>
 #include <dynamixel_sdk/dynamixel_sdk.h>
 #include <map>
 #include <memory>
+#include <thread>
 #include <vector>
 
 #include "joint.hpp"
@@ -26,8 +28,8 @@ public:
   bool sync_read(const std::string & group_name);
   bool get_positions(const std::string & group_name, std::vector<double> & positions);
   bool get_position(const uint8_t id, double & position);
-  // bool torque_off();
-  // bool torque_on_all();
+  bool start_thread(const std::string & group_name, const std::chrono::milliseconds & update_cycle_ms);
+  bool stop_thread(const std::string & group_name);
 
 private:
   bool parse_config_file(const std::string & config_yaml);
@@ -36,6 +38,7 @@ private:
   bool all_joints_contain_id(const uint8_t id);
   bool create_sync_read_group(const std::string & group_name, const std::vector<std::string> & targets);
   bool set_indirect_address(const std::string & group_name, const uint16_t addr_indirect_start, const uint16_t addr_target, const uint16_t len_target);
+  void read_write_thread(const std::string & group_name, const std::chrono::milliseconds & update_cycle_ms);
   bool write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data);
   bool write_byte_data_to_group(const std::string & group_name, const uint16_t address, const uint8_t write_data);
   bool write_word_data(const uint8_t id, const uint16_t address, const uint16_t write_data);
@@ -51,6 +54,8 @@ private:
   std::map<JointName, std::shared_ptr<joint::Joint>> all_joints_;
   std::map<uint8_t, std::shared_ptr<joint::Joint>> all_joints_ref_from_id_;
   std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncRead>> sync_read_groups_;
+  std::map<JointGroupName, bool> thread_enable_;
+  std::map<JointGroupName, std::shared_ptr<std::thread>> read_write_thread_;
   uint16_t address_indirect_position_;
   uint16_t address_indirect_velocity_;
   uint16_t address_indirect_current_;

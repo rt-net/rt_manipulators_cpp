@@ -152,6 +152,39 @@ bool Hardware::get_position(const uint8_t id, double & position)
   return true;
 }
 
+bool Hardware::start_thread(const std::string & group_name, const std::chrono::milliseconds & update_cycle_ms)
+{
+  // read, writeを繰り返すスレッドを開始する
+  if(!joint_groups_contain(group_name)){
+    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+    return false;
+  }
+
+  thread_enable_[group_name] = true;
+  read_write_thread_[group_name] = std::make_shared<std::thread>(&Hardware::read_write_thread, this, group_name, update_cycle_ms);
+
+  return true;
+}
+
+bool Hardware::stop_thread(const std::string & group_name)
+{
+  // read/writeスレッドを停止する
+  if(!joint_groups_contain(group_name)){
+    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+    return false;
+  }
+
+  // スレッド内部の無限ループを停止する
+  thread_enable_[group_name] = false;
+
+  // スレッドが停止するまで待機
+  if(read_write_thread_[group_name]->joinable()){
+    read_write_thread_[group_name]->join();
+  }
+
+  return true;
+}
+
 bool Hardware::parse_config_file(const std::string & config_yaml)
 {
   // yamlファイルを読み取り、joint_groups_とall_joints_メンバ変数に格納する
@@ -273,6 +306,22 @@ bool Hardware::set_indirect_address(const std::string & group_name, const uint16
     }
   }
   return true;
+}
+
+void Hardware::read_write_thread(const std::string & group_name, const std::chrono::milliseconds & update_cycle_ms)
+{
+  // sync_read、bulk_writeを繰り返すスレッド
+
+  auto current_time = std::chrono::steady_clock::now();
+  auto next_start_time = current_time;
+  while(thread_enable_[group_name]){
+    current_time = std::chrono::steady_clock::now();
+    next_start_time = current_time + update_cycle_ms;
+
+    sync_read(group_name);
+
+    std::this_thread::sleep_until(next_start_time);
+  }
 }
 
 bool Hardware::write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data)

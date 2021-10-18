@@ -27,40 +27,49 @@ int main()
   //   return -1;
   // }
 
-  int NUM_LOOPS = 1000;
-  int loop_count = 0;
-
   auto current_time = std::chrono::steady_clock::now();
   auto next_start_time = current_time;
 
-  while(loop_count < NUM_LOOPS){
+  hardware.start_thread("arm", std::chrono::milliseconds(10));
+  for(int i=0; i<10; i++){
     current_time = std::chrono::steady_clock::now();
-    next_start_time = current_time + std::chrono::milliseconds(10);
+    next_start_time = current_time + std::chrono::milliseconds(100);
 
-    if(!hardware.sync_read("arm")){
-      std::cout<<"SyncReadに失敗しました."<<std::endl;
-      break;
-    }
-
-    // std::vector<double> positions;
-    // if(hardware.get_positions("arm", positions)){
-    //   int index=0;
-    //   for(auto position : positions){
-    //     std::cout<<std::to_string(index)<<"->pos:"<<std::to_string(position)<<std::endl;
-    //     index++;
-    //   }
-    // }
-    std::vector<uint8_t> id_list = {2,3,4,5,6,7,8,9,10};
-    for(auto id : id_list){
-      double position;
-      if(hardware.get_position(id, position)){
-        std::cout<<std::to_string(id)<<"->pos:"<<std::to_string(position)<<std::endl;
+    std::vector<double> positions;
+    if(hardware.get_positions("arm", positions)){
+      int index=0;
+      for(auto position : positions){
+        std::cout<<std::to_string(index)<<"->pos:"<<std::to_string(position)<<std::endl;
+        index++;
       }
     }
 
-    loop_count++;
     std::this_thread::sleep_until(next_start_time);
   }
+  hardware.stop_thread("arm");
+
+  // スレッドを2回起動できるかテスト
+  std::cout<<"TEST"<<std::endl;
+  std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
+  hardware.start_thread("arm", std::chrono::milliseconds(10));
+  for(int i=0; i<10; i++){
+    current_time = std::chrono::steady_clock::now();
+    next_start_time = current_time + std::chrono::milliseconds(100);
+
+    std::vector<double> positions;
+    if(hardware.get_positions("arm", positions)){
+      int index=0;
+      for(auto position : positions){
+        std::cout<<std::to_string(index)<<"->pos:"<<std::to_string(position)<<std::endl;
+        index++;
+      }
+    }
+
+    std::this_thread::sleep_until(next_start_time);
+  }
+  hardware.stop_thread("arm");
+
 
   if(!hardware.torque_off("arm")){
     std::cerr<<"グループのトルクをOFFできませんでした."<<std::endl;

@@ -36,6 +36,11 @@ $ ./make.bash
 ### Run test
 
 ```sh
+$ sudo chmod a+rw /sys/bus/usb-serial/devices/ttyUSB0/latency_timer
+$ sudo echo 1 > /sys/bus/usb-serial/devices/ttyUSB0/latency_timer
+```
+
+```sh
 $ cd rt_manipuators_cpp
 $ ./run_test.bash
 ```
