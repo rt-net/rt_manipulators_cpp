@@ -191,6 +191,35 @@ bool Hardware::sync_write(const std::string & group_name)
   return false;
 }
 
+bool Hardware::start_thread(const std::vector<std::string> & group_names, const std::chrono::milliseconds & update_cycle_ms)
+{
+  // read, writeを繰り返すスレッドを開始する
+  for(auto group_name : group_names){
+    if(!joint_groups_contain(group_name)){
+      std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+      return false;
+    }
+  }
+
+  thread_enable_ = true;
+  read_write_thread_ = std::make_shared<std::thread>(&Hardware::read_write_thread, this, group_names, update_cycle_ms);
+
+  return true;
+}
+
+bool Hardware::stop_thread()
+{
+  // スレッド内部の無限ループを停止する
+  thread_enable_ = false;
+
+  // スレッドが停止するまで待機
+  if(read_write_thread_->joinable()){
+    read_write_thread_->join();
+  }
+
+  return true;
+}
+
 bool Hardware::get_position(const uint8_t id, double & position)
 {
   if(!all_joints_contain_id(id)){
@@ -245,33 +274,24 @@ bool Hardware::set_positions(const std::string & group_name, std::vector<double>
   return true;
 }
 
-bool Hardware::start_thread(const std::vector<std::string> & group_names, const std::chrono::milliseconds & update_cycle_ms)
+bool Hardware::set_max_acceleration_to_group(const std::string & group_name, const double acceleration_rpss)
 {
-  // read, writeを繰り返すスレッドを開始する
-  for(auto group_name : group_names){
-    if(!joint_groups_contain(group_name)){
-      std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
-      return false;
-    }
+  // 指定されたグループ内のサーボモータの最大動作加速度（radian / s^2）を設定する
+  if(!joint_groups_contain(group_name)){
+    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+    return false;
   }
 
-  thread_enable_ = true;
-  read_write_thread_ = std::make_shared<std::thread>(&Hardware::read_write_thread, this, group_names, update_cycle_ms);
-
-  return true;
 }
 
-bool Hardware::stop_thread()
+bool Hardware::set_max_velocity_to_group(const std::string & group_name, const double velocity_rps)
 {
-  // スレッド内部の無限ループを停止する
-  thread_enable_ = false;
-
-  // スレッドが停止するまで待機
-  if(read_write_thread_->joinable()){
-    read_write_thread_->join();
+  // 指定されたグループ内のサーボモータの最大動作加速度（radian / s^2）を設定する
+  if(!joint_groups_contain(group_name)){
+    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+    return false;
   }
 
-  return true;
 }
 
 bool Hardware::parse_config_file(const std::string & config_yaml)
@@ -516,6 +536,34 @@ bool Hardware::write_word_data_to_group(const std::string & group_name, const ui
   return retval;
 }
 
+bool Hardware::write_double_word_data(const uint8_t id, const uint16_t address, const uint32_t write_data)
+{
+  uint8_t dxl_error = 0;
+  int dxl_result = packet_handler_->write4ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
+
+  if(!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)){
+      return false;
+  }
+  return true;
+}
+
+bool Hardware::write_double_word_data_to_group(const std::string & group_name, const uint16_t address, const uint32_t write_data)
+{
+  if(!joint_groups_contain(group_name)){
+    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+    return false;
+  }
+
+  bool retval = true;
+  for(auto joint_name : joint_groups_[group_name]->joint_names()){
+    auto id = all_joints_.at(joint_name)->id();
+    if(!write_double_word_data(id, address, write_data)){
+      retval = false;
+    }
+  }
+  return retval;
+}
+
 bool Hardware::parse_dxl_error(const std::string & func_name, const uint8_t id,
   const uint16_t address, const int dxl_comm_result, const uint8_t dxl_packet_error)
 {
@@ -562,6 +610,16 @@ double Hardware::dxl_pos_to_radian(const int32_t position)
 uint32_t Hardware::radian_to_dxl_pos(const double position)
 {
   return position * TO_DXL_POS + DXL_HOME_POSITION;
+}
+
+uint32_t Hardware::to_dxl_acceleration(const double acceleration_rpss)
+{
+
+}
+
+uint32_t Hardware::to_dxl_velocity(const double velocity_rps)
+{
+
 }
 
 }  // namespace rt_manipulators_cpp

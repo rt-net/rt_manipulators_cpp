@@ -27,12 +27,14 @@ public:
   bool torque_off(const std::string & group_name);
   bool sync_read(const std::string & group_name);
   bool sync_write(const std::string & group_name);
+  bool start_thread(const std::vector<std::string> & group_names, const std::chrono::milliseconds & update_cycle_ms);
+  bool stop_thread();
   bool get_position(const uint8_t id, double & position);
   bool get_positions(const std::string & group_name, std::vector<double> & positions);
   bool set_position(const uint8_t id, const double position);
   bool set_positions(const std::string & group_name, std::vector<double> & positions);
-  bool start_thread(const std::vector<std::string> & group_names, const std::chrono::milliseconds & update_cycle_ms);
-  bool stop_thread();
+  bool set_max_acceleration_to_group(const std::string & group_name, const double acceleration_rpss);
+  bool set_max_velocity_to_group(const std::string & group_name, const double velocity_rps);
 
 private:
   bool parse_config_file(const std::string & config_yaml);
@@ -47,11 +49,15 @@ private:
   bool write_byte_data_to_group(const std::string & group_name, const uint16_t address, const uint8_t write_data);
   bool write_word_data(const uint8_t id, const uint16_t address, const uint16_t write_data);
   bool write_word_data_to_group(const std::string & group_name, const uint16_t address, const uint16_t write_data);
+  bool write_double_word_data(const uint8_t id, const uint16_t address, const uint32_t write_data);
+  bool write_double_word_data_to_group(const std::string & group_name, const uint16_t address, const uint32_t write_data);
   bool parse_dxl_error(const std::string & func_name, const uint8_t id,
     const uint16_t address, const int dxl_comm_result, const uint8_t dxl_packet_error);
   bool parse_dxl_error(const std::string & func_name, const int dxl_comm_result);
   double dxl_pos_to_radian(const int32_t position);
   uint32_t radian_to_dxl_pos(const double position);
+  uint32_t to_dxl_acceleration(const double acceleration_rpss);
+  uint32_t to_dxl_velocity(const double velocity_rps);
 
   std::shared_ptr<dynamixel::PortHandler> port_handler_;
   std::shared_ptr<dynamixel::PacketHandler> packet_handler_;

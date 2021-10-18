@@ -36,24 +36,23 @@ int main()
   // 角度の目標値をセット
 
   std::cout<<"角度を書き込みます"<<std::endl;
+  std::vector<double> positions = {0, to_radians(30), to_radians(90)};
   std::this_thread::sleep_for(std::chrono::seconds(3));
-  hardware.set_position(6, to_radians(0));
-  hardware.set_position(7, to_radians(0));
-  hardware.set_position(8, to_radians(0));
+  hardware.set_positions("arm", positions);
   hardware.sync_write("arm");
   std::this_thread::sleep_for(std::chrono::seconds(2));
 
-  hardware.set_position(6, to_radians(30));
-  hardware.set_position(7, to_radians(30));
-  hardware.set_position(8, to_radians(30));
-  hardware.sync_write("arm");
-  std::this_thread::sleep_for(std::chrono::seconds(2));
+  // hardware.set_position(6, to_radians(30));
+  // hardware.set_position(7, to_radians(30));
+  // hardware.set_position(8, to_radians(30));
+  // hardware.sync_write("arm");
+  // std::this_thread::sleep_for(std::chrono::seconds(2));
 
-  hardware.set_position(6, to_radians(-30));
-  hardware.set_position(7, to_radians(-30));
-  hardware.set_position(8, to_radians(-30));
-  hardware.sync_write("arm");
-  std::this_thread::sleep_for(std::chrono::seconds(2));
+  // hardware.set_position(6, to_radians(-30));
+  // hardware.set_position(7, to_radians(-30));
+  // hardware.set_position(8, to_radians(-30));
+  // hardware.sync_write("arm");
+  // std::this_thread::sleep_for(std::chrono::seconds(2));
 
   // auto current_time = std::chrono::steady_clock::now();
   // auto next_start_time = current_time;
