@@ -37,6 +37,7 @@ private:
   bool all_joints_contain(const std::string & joint_name);
   bool all_joints_contain_id(const uint8_t id);
   bool create_sync_read_group(const std::string & group_name, const std::vector<std::string> & targets);
+  bool create_sync_write_group(const std::string & group_name, const std::vector<std::string> & targets);
   bool set_indirect_address(const std::string & group_name, const uint16_t addr_indirect_start, const uint16_t addr_target, const uint16_t len_target);
   void read_write_thread(const std::string & group_name, const std::chrono::milliseconds & update_cycle_ms);
   bool write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data);
@@ -54,9 +55,11 @@ private:
   std::map<JointName, std::shared_ptr<joint::Joint>> all_joints_;
   std::map<uint8_t, std::shared_ptr<joint::Joint>> all_joints_ref_from_id_;
   std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncRead>> sync_read_groups_;
+  std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncWrite>> sync_write_groups_;
   std::map<JointGroupName, bool> thread_enable_;
   std::map<JointGroupName, std::shared_ptr<std::thread>> read_write_thread_;
-  std::map<JointGroupName, uint16_t> address_indirect_position_;
+  std::map<JointGroupName, uint16_t> address_indirect_present_position_;
+  std::map<JointGroupName, uint16_t> address_indirect_goal_position_;
 
 };
 

@@ -122,12 +122,12 @@ bool Hardware::sync_read(const std::string & group_name)
   bool retval = true;
   for(auto joint_name : joint_groups_[group_name]){
     auto id = all_joints_.at(joint_name)->id();
-    if(!sync_read_groups_[group_name]->isAvailable(id, address_indirect_position_[group_name], LEN_PRESENT_POSITION)){
+    if(!sync_read_groups_[group_name]->isAvailable(id, address_indirect_present_position_[group_name], LEN_PRESENT_POSITION)){
       // 意図的にpositionをsync_readしない場合があるため、エラーメッセージを表示しない
       // std::cerr << std::to_string(id) << "のpresent_positionを取得できません." << std::endl;
       retval = false;
     }else{
-      int32_t data = sync_read_groups_[group_name]->getData(id, address_indirect_position_[group_name], LEN_PRESENT_POSITION);
+      int32_t data = sync_read_groups_[group_name]->getData(id, address_indirect_present_position_[group_name], LEN_PRESENT_POSITION);
       all_joints_.at(joint_name)->set_position(dxl_pos_to_radian(data));
     }
   }
@@ -276,7 +276,7 @@ bool Hardware::create_sync_read_group(const std::string & group_name, const std:
       std::cerr<<group_name<<"グループのpresent_positionをインダイレクトアドレスにセットできません."<<std::endl;
       return false;
     }
-    address_indirect_position_[group_name] = ADDR_INDIRECT_DATA_1;
+    address_indirect_present_position_[group_name] = ADDR_INDIRECT_DATA_1 + total_length;
     total_length += LEN_PRESENT_POSITION;
     indirect_address += LEN_INDIRECT_ADDRESS * LEN_PRESENT_POSITION;
   }
@@ -287,6 +287,38 @@ bool Hardware::create_sync_read_group(const std::string & group_name, const std:
   for(auto joint_name : joint_groups_[group_name]){
     auto id = all_joints_.at(joint_name)->id();
     if(!sync_read_groups_[group_name]->addParam(id)){
+      std::cerr<<group_name<<":"<<joint_name<<"のgroupSyncRead.addParam に失敗しました."<<std::endl;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool Hardware::create_sync_write_group(const std::string & group_name, const std::vector<std::string> & targets)
+{
+  // sync_write_groups_に、指定されたデータを書き込むSyncWriteGroupを追加する
+  // できるだけ多くのデータをSyncWriteで書き込むため、インダイレクトアドレスを活用する
+  uint16_t indirect_address = ADDR_INDIRECT_ADDRESS_29;
+  uint16_t total_length = 0;
+  if(std::find(targets.begin(), targets.end(), "position") != targets.end()){
+    if(!set_indirect_address(group_name, indirect_address, ADDR_GOAL_POSITION, LEN_GOAL_POSITION)){
+      std::cerr<<group_name<<"グループのgoal_positionをインダイレクトアドレスにセットできません."<<std::endl;
+      return false;
+    }
+    address_indirect_goal_position_[group_name] = ADDR_INDIRECT_DATA_29 + total_length;
+    total_length += LEN_GOAL_POSITION;
+    indirect_address += LEN_INDIRECT_ADDRESS * LEN_GOAL_POSITION;
+  }
+
+  sync_write_groups_[group_name] = std::make_shared<dynamixel::GroupSyncWrite>(
+    port_handler_.get(), packet_handler_.get(), ADDR_INDIRECT_DATA_29, total_length);
+
+  uint8_t init_data[total_length] = {0};
+
+  for(auto joint_name : joint_groups_[group_name]){
+    auto id = all_joints_.at(joint_name)->id();
+    if(!sync_write_groups_[group_name]->addParam(id, init_data)){
       std::cerr<<group_name<<":"<<joint_name<<"のgroupSyncRead.addParam に失敗しました."<<std::endl;
       return false;
     }
