@@ -56,11 +56,7 @@ private:
   std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncRead>> sync_read_groups_;
   std::map<JointGroupName, bool> thread_enable_;
   std::map<JointGroupName, std::shared_ptr<std::thread>> read_write_thread_;
-  uint16_t address_indirect_position_;
-  uint16_t address_indirect_velocity_;
-  uint16_t address_indirect_current_;
-  uint16_t address_indirect_voltage_;
-  uint16_t address_indirect_temperature_;
+  std::map<JointGroupName, uint16_t> address_indirect_position_;
 
 };
 

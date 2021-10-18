@@ -122,11 +122,12 @@ bool Hardware::sync_read(const std::string & group_name)
   bool retval = true;
   for(auto joint_name : joint_groups_[group_name]){
     auto id = all_joints_.at(joint_name)->id();
-    if(!sync_read_groups_[group_name]->isAvailable(id, address_indirect_position_, LEN_PRESENT_POSITION)){
-      std::cerr << std::to_string(id) << "のpresent_positionを取得できません." << std::endl;
+    if(!sync_read_groups_[group_name]->isAvailable(id, address_indirect_position_[group_name], LEN_PRESENT_POSITION)){
+      // 意図的にpositionをsync_readしない場合があるため、エラーメッセージを表示しない
+      // std::cerr << std::to_string(id) << "のpresent_positionを取得できません." << std::endl;
       retval = false;
     }else{
-      int32_t data = sync_read_groups_[group_name]->getData(id, address_indirect_position_, LEN_PRESENT_POSITION);
+      int32_t data = sync_read_groups_[group_name]->getData(id, address_indirect_position_[group_name], LEN_PRESENT_POSITION);
       all_joints_.at(joint_name)->set_position(dxl_pos_to_radian(data));
     }
   }
@@ -275,7 +276,7 @@ bool Hardware::create_sync_read_group(const std::string & group_name, const std:
       std::cerr<<group_name<<"グループのpresent_positionをインダイレクトアドレスにセットできません."<<std::endl;
       return false;
     }
-    address_indirect_position_ = ADDR_INDIRECT_DATA_1;
+    address_indirect_position_[group_name] = ADDR_INDIRECT_DATA_1;
     total_length += LEN_PRESENT_POSITION;
     indirect_address += LEN_INDIRECT_ADDRESS * LEN_PRESENT_POSITION;
   }
