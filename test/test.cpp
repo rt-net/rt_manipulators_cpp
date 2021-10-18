@@ -3,6 +3,7 @@
 #include <iostream>
 #include <numeric>
 #include <thread>
+#include <vector>
 
 #include "hardware.hpp"
 
@@ -29,51 +30,31 @@ int main()
 
   auto current_time = std::chrono::steady_clock::now();
   auto next_start_time = current_time;
+  std::vector<std::string> group_names = {"arm", "hand"};
 
-  hardware.start_thread("arm", std::chrono::milliseconds(10));
-  for(int i=0; i<10; i++){
+  hardware.start_thread(group_names, std::chrono::milliseconds(10));
+  for(int i=0; i<50; i++){
     current_time = std::chrono::steady_clock::now();
     next_start_time = current_time + std::chrono::milliseconds(100);
 
-    std::vector<double> positions;
-    if(hardware.get_positions("arm", positions)){
-      int index=0;
-      for(auto position : positions){
-        std::cout<<std::to_string(index)<<"->pos:"<<std::to_string(position)<<std::endl;
-        index++;
+    for(auto group_name : group_names){
+      std::vector<double> positions;
+      if(hardware.get_positions(group_name, positions)){
+        int index=0;
+        for(auto position : positions){
+          std::cout<<group_name<<" :"<<std::to_string(index)<<"->pos:"<<std::to_string(position)<<std::endl;
+          index++;
+        }
       }
     }
 
     std::this_thread::sleep_until(next_start_time);
   }
-  hardware.stop_thread("arm");
+  hardware.stop_thread();
 
-  // スレッドを2回起動できるかテスト
-  std::cout<<"TEST"<<std::endl;
-  std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-
-  hardware.start_thread("arm", std::chrono::milliseconds(10));
-  for(int i=0; i<10; i++){
-    current_time = std::chrono::steady_clock::now();
-    next_start_time = current_time + std::chrono::milliseconds(100);
-
-    std::vector<double> positions;
-    if(hardware.get_positions("arm", positions)){
-      int index=0;
-      for(auto position : positions){
-        std::cout<<std::to_string(index)<<"->pos:"<<std::to_string(position)<<std::endl;
-        index++;
-      }
-    }
-
-    std::this_thread::sleep_until(next_start_time);
-  }
-  hardware.stop_thread("arm");
-
-
-  if(!hardware.torque_off("arm")){
-    std::cerr<<"グループのトルクをOFFできませんでした."<<std::endl;
-  }
+  // if(!hardware.torque_off("arm")){
+  //   std::cerr<<"グループのトルクをOFFできませんでした."<<std::endl;
+  // }
   
   hardware.disconnect();
   return 0;

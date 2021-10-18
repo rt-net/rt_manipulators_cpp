@@ -158,34 +158,30 @@ bool Hardware::get_position(const uint8_t id, double & position)
   return true;
 }
 
-bool Hardware::start_thread(const std::string & group_name, const std::chrono::milliseconds & update_cycle_ms)
+bool Hardware::start_thread(const std::vector<std::string> & group_names, const std::chrono::milliseconds & update_cycle_ms)
 {
   // read, writeを繰り返すスレッドを開始する
-  if(!joint_groups_contain(group_name)){
-    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
-    return false;
+  for(auto group_name : group_names){
+    if(!joint_groups_contain(group_name)){
+      std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+      return false;
+    }
   }
 
-  thread_enable_[group_name] = true;
-  read_write_thread_[group_name] = std::make_shared<std::thread>(&Hardware::read_write_thread, this, group_name, update_cycle_ms);
+  thread_enable_ = true;
+  read_write_thread_ = std::make_shared<std::thread>(&Hardware::read_write_thread, this, group_names, update_cycle_ms);
 
   return true;
 }
 
-bool Hardware::stop_thread(const std::string & group_name)
+bool Hardware::stop_thread()
 {
-  // read/writeスレッドを停止する
-  if(!joint_groups_contain(group_name)){
-    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
-    return false;
-  }
-
   // スレッド内部の無限ループを停止する
-  thread_enable_[group_name] = false;
+  thread_enable_ = false;
 
   // スレッドが停止するまで待機
-  if(read_write_thread_[group_name]->joinable()){
-    read_write_thread_[group_name]->join();
+  if(read_write_thread_->joinable()){
+    read_write_thread_->join();
   }
 
   return true;
@@ -346,17 +342,19 @@ bool Hardware::set_indirect_address(const std::string & group_name, const uint16
   return true;
 }
 
-void Hardware::read_write_thread(const std::string & group_name, const std::chrono::milliseconds & update_cycle_ms)
+void Hardware::read_write_thread(const std::vector<std::string> & group_names, const std::chrono::milliseconds & update_cycle_ms)
 {
-  // sync_read、bulk_writeを繰り返すスレッド
+  // sync_read、sync_writeを繰り返すスレッド
 
   auto current_time = std::chrono::steady_clock::now();
   auto next_start_time = current_time;
-  while(thread_enable_[group_name]){
+  while(thread_enable_){
     current_time = std::chrono::steady_clock::now();
     next_start_time = current_time + update_cycle_ms;
 
-    sync_read(group_name);
+    for(auto group_name : group_names){
+      sync_read(group_name);
+    }
 
     std::this_thread::sleep_until(next_start_time);
   }
