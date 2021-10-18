@@ -191,6 +191,16 @@ bool Hardware::sync_write(const std::string & group_name)
   return false;
 }
 
+bool Hardware::get_position(const uint8_t id, double & position)
+{
+  if(!all_joints_contain_id(id)){
+    std::cerr<<"ID:"<<std::to_string(id)<<"のジョイントは存在しません."<<std::endl;
+    return false;
+  }
+  position = all_joints_ref_from_id_[id]->get_present_position();
+  return true;
+}
+
 bool Hardware::get_positions(const std::string & group_name, std::vector<double> & positions)
 {
   if(!joint_groups_contain(group_name)){
@@ -204,16 +214,6 @@ bool Hardware::get_positions(const std::string & group_name, std::vector<double>
   return true;
 }
 
-bool Hardware::get_position(const uint8_t id, double & position)
-{
-  if(!all_joints_contain_id(id)){
-    std::cerr<<"ID:"<<std::to_string(id)<<"のジョイントは存在しません."<<std::endl;
-    return false;
-  }
-  position = all_joints_ref_from_id_[id]->get_present_position();
-  return true;
-}
-
 bool Hardware::set_position(const uint8_t id, const double position)
 {
   if(!all_joints_contain_id(id)){
@@ -221,6 +221,27 @@ bool Hardware::set_position(const uint8_t id, const double position)
     return false;
   }
   all_joints_ref_from_id_[id]->set_goal_position(position);
+  return true;
+}
+
+bool Hardware::set_positions(const std::string & group_name, std::vector<double> & positions)
+{
+  if(!joint_groups_contain(group_name)){
+    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+    return false;
+  }
+
+  if(joint_groups_[group_name]->joint_names().size() != positions.size()){
+    std::cerr<<"目標値のサイズ:"<<positions.size();
+    std::cerr<<"がジョイント数:"<<joint_groups_[group_name]->joint_names().size();
+    std::cerr<<"と一致しません."<<std::endl;
+    return false;
+  }
+
+  for(size_t i=0; i < positions.size(); i++){
+    auto joint_name = joint_groups_[group_name]->joint_names()[i];
+    all_joints_[joint_name]->set_goal_position(positions[i]);
+  }
   return true;
 }
 
