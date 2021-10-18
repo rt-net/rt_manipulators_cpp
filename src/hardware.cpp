@@ -10,8 +10,9 @@ namespace rt_manipulators_cpp
 {
 
 const double PROTOCOL_VERSION = 2.0;
-constexpr int DXL_HOME_POSITION = 2048;
-constexpr double TO_RADIANS = (180.0 / 2048.0) * M_PI / 180.0;
+const int DXL_HOME_POSITION = 2048;
+const double TO_RADIANS = (180.0 / 2048.0) * M_PI / 180.0;
+const double TO_DXL_POS = 1.0 / TO_RADIANS;
 
 // Dynamixel XM Series address table
 // Ref: https://emanual.robotis.com/docs/en/dxl/x/xm430-w350/
@@ -91,7 +92,21 @@ void Hardware::disconnect()
 
 bool Hardware::torque_on(const std::string & group_name)
 {
-  return write_byte_data_to_group(group_name, ADDR_TORQUE_ENABLE, 1);
+  if(!write_byte_data_to_group(group_name, ADDR_TORQUE_ENABLE, 1)){
+    std::cerr<<group_name<<"グループのトルクONに失敗しました."<<std::endl;
+    return false;
+  }
+
+  // 安全のため、サーボの現在角度を目標角度に設定する
+  if(!sync_read(group_name)){
+    std::cerr<<group_name<<"グループのトルクON後のsync_readに失敗しました."<<std::endl;
+    return false;
+  }
+  for(auto joint_name : joint_groups_[group_name]->joint_names()){
+    all_joints_.at(joint_name)->set_goal_position(
+      all_joints_.at(joint_name)->get_present_position());
+  }
+  return true;
 }
 
 bool Hardware::torque_off(const std::string & group_name)
@@ -128,12 +143,52 @@ bool Hardware::sync_read(const std::string & group_name)
         retval = false;
       }else{
         int32_t data = sync_read_groups_[group_name]->getData(id, address_indirect_present_position_[group_name], LEN_PRESENT_POSITION);
-        all_joints_.at(joint_name)->set_position(dxl_pos_to_radian(data));
+        all_joints_.at(joint_name)->set_present_position(dxl_pos_to_radian(data));
       }
     }
   }
 
   return retval;
+}
+
+bool Hardware::sync_write(const std::string & group_name)
+{
+  // 指定されたグループのsyncWriteを実行して、サーボモータにデータを書き込む
+  // 書き込むデータはメンバ変数から取り出す
+  if(!joint_groups_contain(group_name)){
+    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+    return false;
+  }
+
+  if(!sync_write_groups_[group_name]){
+    std::cerr<<group_name<<"にはsync_writeが設定されていません."<<std::endl;
+    return false;
+  }
+
+  for(auto joint_name : joint_groups_[group_name]->joint_names()){
+    std::vector<uint8_t> write_data;
+    if(joint_groups_[group_name]->sync_write_position_enabled()){
+      uint32_t goal_position = radian_to_dxl_pos(all_joints_.at(joint_name)->get_goal_position());
+      write_data.push_back(DXL_LOBYTE(DXL_LOWORD(goal_position)));
+      write_data.push_back(DXL_HIBYTE(DXL_LOWORD(goal_position)));
+      write_data.push_back(DXL_LOBYTE(DXL_HIWORD(goal_position)));
+      write_data.push_back(DXL_HIBYTE(DXL_HIWORD(goal_position)));
+    }
+
+    auto id = all_joints_.at(joint_name)->id();
+    if(!sync_write_groups_[group_name]->changeParam(id, write_data.data())){
+      std::cerr<<group_name<<":"<<std::to_string(id)<<" のsyncWrite->changeParamに失敗しました."<<std::endl;
+      return false;
+    }
+  }
+
+  int dxl_result = sync_write_groups_[group_name]->txPacket();
+  if(!parse_dxl_error(std::string(__func__), dxl_result)){
+    std::cerr<<group_name<<"のsync writeに失敗しました."<<std::endl;
+    return false;
+  }
+
+  return false;
 }
 
 bool Hardware::get_positions(const std::string & group_name, std::vector<double> & positions)
@@ -144,7 +199,7 @@ bool Hardware::get_positions(const std::string & group_name, std::vector<double>
   }
 
   for(auto joint_name : joint_groups_[group_name]->joint_names()){
-    positions.push_back(all_joints_.at(joint_name)->get_position());
+    positions.push_back(all_joints_.at(joint_name)->get_present_position());
   }
   return true;
 }
@@ -155,7 +210,17 @@ bool Hardware::get_position(const uint8_t id, double & position)
     std::cerr<<"ID:"<<std::to_string(id)<<"のジョイントは存在しません."<<std::endl;
     return false;
   }
-  position = all_joints_ref_from_id_[id]->get_position();
+  position = all_joints_ref_from_id_[id]->get_present_position();
+  return true;
+}
+
+bool Hardware::set_position(const uint8_t id, const double position)
+{
+  if(!all_joints_contain_id(id)){
+    std::cerr<<"ID:"<<std::to_string(id)<<"のジョイントは存在しません."<<std::endl;
+    return false;
+  }
+  all_joints_ref_from_id_[id]->set_goal_position(position);
   return true;
 }
 
@@ -236,14 +301,23 @@ bool Hardware::parse_config_file(const std::string & config_yaml)
       all_joints_ref_from_id_.emplace(joint_id, joint_ptr);  // IDからもJointにアクセスできる
     }
     std::vector<std::string> sync_read_targets;
+    std::vector<std::string> sync_write_targets;
     if(config["joint_groups"][group_name]["sync_read"]){
       sync_read_targets = config["joint_groups"][group_name]["sync_read"].as<std::vector<std::string>>();
     }
-    auto joint_group_ptr = std::make_shared<joint::JointGroup>(joint_names, sync_read_targets);
+    if(config["joint_groups"][group_name]["sync_write"]){
+      sync_write_targets = config["joint_groups"][group_name]["sync_write"].as<std::vector<std::string>>();
+    }
+
+    auto joint_group_ptr = std::make_shared<joint::JointGroup>(joint_names, sync_read_targets, sync_write_targets);
     joint_groups_.emplace(group_name, joint_group_ptr);
 
     if(!create_sync_read_group(group_name)){
       std::cerr<<group_name<<"のsync readグループを作成できません."<<std::endl;
+      return false;
+    }
+    if(!create_sync_write_group(group_name)){
+      std::cerr<<group_name<<"のsync writeグループを作成できません."<<std::endl;
       return false;
     }
   }
@@ -296,13 +370,13 @@ bool Hardware::create_sync_read_group(const std::string & group_name)
   return true;
 }
 
-bool Hardware::create_sync_write_group(const std::string & group_name, const std::vector<std::string> & targets)
+bool Hardware::create_sync_write_group(const std::string & group_name)
 {
   // sync_write_groups_に、指定されたデータを書き込むSyncWriteGroupを追加する
   // できるだけ多くのデータをSyncWriteで書き込むため、インダイレクトアドレスを活用する
   uint16_t indirect_address = ADDR_INDIRECT_ADDRESS_29;
   uint16_t total_length = 0;
-  if(std::find(targets.begin(), targets.end(), "position") != targets.end()){
+  if(joint_groups_[group_name]->sync_write_position_enabled()){
     if(!set_indirect_address(group_name, indirect_address, ADDR_GOAL_POSITION, LEN_GOAL_POSITION)){
       std::cerr<<group_name<<"グループのgoal_positionをインダイレクトアドレスにセットできません."<<std::endl;
       return false;
@@ -320,7 +394,7 @@ bool Hardware::create_sync_write_group(const std::string & group_name, const std
   for(auto joint_name : joint_groups_[group_name]->joint_names()){
     auto id = all_joints_.at(joint_name)->id();
     if(!sync_write_groups_[group_name]->addParam(id, init_data)){
-      std::cerr<<group_name<<":"<<joint_name<<"のgroupSyncRead.addParam に失敗しました."<<std::endl;
+      std::cerr<<group_name<<":"<<joint_name<<"のgroupSyncWrite.addParam に失敗しました."<<std::endl;
       return false;
     }
   }
@@ -462,6 +536,11 @@ bool Hardware::parse_dxl_error(const std::string & func_name, const int dxl_comm
 double Hardware::dxl_pos_to_radian(const int32_t position)
 {
   return (position - DXL_HOME_POSITION) * TO_RADIANS;
+}
+
+uint32_t Hardware::radian_to_dxl_pos(const double position)
+{
+  return position * TO_DXL_POS + DXL_HOME_POSITION;
 }
 
 }  // namespace rt_manipulators_cpp

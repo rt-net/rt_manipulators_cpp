@@ -26,8 +26,10 @@ public:
   bool torque_on(const std::string & group_name);
   bool torque_off(const std::string & group_name);
   bool sync_read(const std::string & group_name);
+  bool sync_write(const std::string & group_name);
   bool get_positions(const std::string & group_name, std::vector<double> & positions);
   bool get_position(const uint8_t id, double & position);
+  bool set_position(const uint8_t id, const double position);
   bool start_thread(const std::vector<std::string> & group_names, const std::chrono::milliseconds & update_cycle_ms);
   bool stop_thread();
 
@@ -37,7 +39,7 @@ private:
   bool all_joints_contain(const std::string & joint_name);
   bool all_joints_contain_id(const uint8_t id);
   bool create_sync_read_group(const std::string & group_name);
-  bool create_sync_write_group(const std::string & group_name, const std::vector<std::string> & targets);
+  bool create_sync_write_group(const std::string & group_name);
   bool set_indirect_address(const std::string & group_name, const uint16_t addr_indirect_start, const uint16_t addr_target, const uint16_t len_target);
   void read_write_thread(const std::vector<std::string> & group_names, const std::chrono::milliseconds & update_cycle_ms);
   bool write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data);
@@ -48,6 +50,7 @@ private:
     const uint16_t address, const int dxl_comm_result, const uint8_t dxl_packet_error);
   bool parse_dxl_error(const std::string & func_name, const int dxl_comm_result);
   double dxl_pos_to_radian(const int32_t position);
+  uint32_t radian_to_dxl_pos(const double position);
 
   std::shared_ptr<dynamixel::PortHandler> port_handler_;
   std::shared_ptr<dynamixel::PacketHandler> packet_handler_;
