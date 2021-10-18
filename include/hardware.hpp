@@ -51,7 +51,7 @@ private:
 
   std::shared_ptr<dynamixel::PortHandler> port_handler_;
   std::shared_ptr<dynamixel::PacketHandler> packet_handler_;
-  std::map<JointGroupName, std::vector<JointName>> joint_groups_;
+  std::map<JointGroupName, std::shared_ptr<joint::JointGroup>> joint_groups_;
   std::map<JointName, std::shared_ptr<joint::Joint>> all_joints_;
   std::map<uint8_t, std::shared_ptr<joint::Joint>> all_joints_ref_from_id_;
   std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncRead>> sync_read_groups_;

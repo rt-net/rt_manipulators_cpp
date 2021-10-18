@@ -2,6 +2,8 @@
 #define JOINT_HPP_
 
 #include <cstdint>
+#include <string>
+#include <vector>
 
 namespace joint
 {
@@ -20,6 +22,16 @@ private:
   uint8_t id_;
   uint8_t operating_mode_;
   double position_;
+};
+
+class JointGroup
+{
+public:
+  JointGroup(const std::vector<std::string> & joint_names);
+  std::vector<std::string> joint_names() const;
+
+private:
+  std::vector<std::string> joint_names_;
 };
 
 }  // namespace rt_manipulators_cpp

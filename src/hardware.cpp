@@ -59,7 +59,7 @@ bool Hardware::load_config_file(const std::string & config_yaml)
   std::cout<<"Config file '"<<config_yaml<<"' loaded."<<std::endl;
   for(auto group : joint_groups_){
     std::cout<<group.first <<std::endl;
-    for(auto joint_name : group.second){
+    for(auto joint_name : group.second->joint_names()){
       std::cout<<"\t"<<joint_name;
       std::cout<<", id:"<<std::to_string(all_joints_.at(joint_name)->id());
       std::cout<<", mode:"<<std::to_string(all_joints_.at(joint_name)->operating_mode());
@@ -120,7 +120,7 @@ bool Hardware::sync_read(const std::string & group_name)
   }
 
   bool retval = true;
-  for(auto joint_name : joint_groups_[group_name]){
+  for(auto joint_name : joint_groups_[group_name]->joint_names()){
     auto id = all_joints_.at(joint_name)->id();
     if(!sync_read_groups_[group_name]->isAvailable(id, address_indirect_present_position_[group_name], LEN_PRESENT_POSITION)){
       // 意図的にpositionをsync_readしない場合があるため、エラーメッセージを表示しない
@@ -142,7 +142,7 @@ bool Hardware::get_positions(const std::string & group_name, std::vector<double>
     return false;
   }
 
-  for(auto joint_name : joint_groups_[group_name]){
+  for(auto joint_name : joint_groups_[group_name]->joint_names()){
     positions.push_back(all_joints_.at(joint_name)->get_position());
   }
   return true;
@@ -209,6 +209,7 @@ bool Hardware::parse_config_file(const std::string & config_yaml)
       return false;
     }
 
+    std::vector<JointName> joint_names;
     for(auto config_joint : config["joint_groups"][group_name]["joints"]){
       auto joint_name = config_joint.as<std::string>();
       if(all_joints_contain(joint_name)){
@@ -226,13 +227,15 @@ bool Hardware::parse_config_file(const std::string & config_yaml)
         return false;
       }
 
-      joint_groups_[group_name].push_back(joint_name);
+      joint_names.push_back(joint_name);
       auto joint_id = config[joint_name]["id"].as<int>();
       auto ope_mode = config[joint_name]["operating_mode"].as<int>();
       auto joint_ptr = std::make_shared<joint::Joint>(joint_id, ope_mode);
       all_joints_.emplace(joint_name, joint_ptr);
       all_joints_ref_from_id_.emplace(joint_id, joint_ptr);  // IDからもJointにアクセスできる
     }
+    auto joint_group_ptr = std::make_shared<joint::JointGroup>(joint_names);
+    joint_groups_.emplace(group_name, joint_group_ptr);
 
     if(config["joint_groups"][group_name]["sync_read"]){
       auto targets = config["joint_groups"][group_name]["sync_read"].as<std::vector<std::string>>();
@@ -280,7 +283,7 @@ bool Hardware::create_sync_read_group(const std::string & group_name, const std:
   sync_read_groups_[group_name] = std::make_shared<dynamixel::GroupSyncRead>(
     port_handler_.get(), packet_handler_.get(), ADDR_INDIRECT_DATA_1, total_length);
 
-  for(auto joint_name : joint_groups_[group_name]){
+  for(auto joint_name : joint_groups_[group_name]->joint_names()){
     auto id = all_joints_.at(joint_name)->id();
     if(!sync_read_groups_[group_name]->addParam(id)){
       std::cerr<<group_name<<":"<<joint_name<<"のgroupSyncRead.addParam に失敗しました."<<std::endl;
@@ -312,7 +315,7 @@ bool Hardware::create_sync_write_group(const std::string & group_name, const std
 
   uint8_t init_data[total_length] = {0};
 
-  for(auto joint_name : joint_groups_[group_name]){
+  for(auto joint_name : joint_groups_[group_name]->joint_names()){
     auto id = all_joints_.at(joint_name)->id();
     if(!sync_write_groups_[group_name]->addParam(id, init_data)){
       std::cerr<<group_name<<":"<<joint_name<<"のgroupSyncRead.addParam に失敗しました."<<std::endl;
@@ -379,7 +382,7 @@ bool Hardware::write_byte_data_to_group(const std::string & group_name, const ui
   }
 
   bool retval = true;
-  for(auto joint_name : joint_groups_[group_name]){
+  for(auto joint_name : joint_groups_[group_name]->joint_names()){
     auto id = all_joints_.at(joint_name)->id();
     if(!write_byte_data(id, address, write_data)){
       retval = false;
@@ -407,7 +410,7 @@ bool Hardware::write_word_data_to_group(const std::string & group_name, const ui
   }
 
   bool retval = true;
-  for(auto joint_name : joint_groups_[group_name]){
+  for(auto joint_name : joint_groups_[group_name]->joint_names()){
     auto id = all_joints_.at(joint_name)->id();
     if(!write_word_data(id, address, write_data)){
       retval = false;
