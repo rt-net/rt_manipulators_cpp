@@ -33,14 +33,21 @@ int main()
     return -1;
   }
 
-  // 角度の目標値をセット
+  hardware.write_max_acceleration_to_group("arm", M_PI);
+  hardware.write_max_velocity_to_group("arm", M_PI);
 
+  // 角度の目標値をセット
   std::cout<<"角度を書き込みます"<<std::endl;
-  std::vector<double> positions = {0, to_radians(30), to_radians(90)};
-  std::this_thread::sleep_for(std::chrono::seconds(3));
-  hardware.set_positions("arm", positions);
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+  hardware.set_position(8, to_radians(90));
   hardware.sync_write("arm");
-  std::this_thread::sleep_for(std::chrono::seconds(2));
+  std::this_thread::sleep_for(std::chrono::seconds(5));
+  hardware.set_position(8, to_radians(-90));
+  hardware.sync_write("arm");
+  std::this_thread::sleep_for(std::chrono::seconds(5));
+  hardware.set_position(8, to_radians(90));
+  hardware.sync_write("arm");
+  std::this_thread::sleep_for(std::chrono::seconds(5));
 
   // hardware.set_position(6, to_radians(30));
   // hardware.set_position(7, to_radians(30));

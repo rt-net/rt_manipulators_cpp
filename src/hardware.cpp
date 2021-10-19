@@ -9,13 +9,23 @@
 namespace rt_manipulators_cpp
 {
 
+// Ref: https://emanual.robotis.com/docs/en/dxl/x/xm430-w350/
 const double PROTOCOL_VERSION = 2.0;
 const int DXL_HOME_POSITION = 2048;
 const double TO_RADIANS = (180.0 / 2048.0) * M_PI / 180.0;
 const double TO_DXL_POS = 1.0 / TO_RADIANS;
+const double TO_VELOCITY_REV_PER_MIN = 0.229;
+const double TO_VELOCITY_RAD_PER_MIN = TO_VELOCITY_REV_PER_MIN * 2.0 * M_PI;
+const double TO_VELOCITY_RAD_PER_SEC = TO_VELOCITY_RAD_PER_MIN / 60.0;
+const double DXL_VELOCITY_FROM_RAD_PER_SEC = 1.0 / TO_VELOCITY_RAD_PER_SEC;
+const int DXL_MAX_VELOCITY = 32767;
+const double TO_ACCELERATION_REV_PER_MM = 214.577;
+const double TO_ACCELERATION_TO_RAD_PER_MM = TO_ACCELERATION_REV_PER_MM * 2.0 * M_PI;
+const double TO_ACCELERATION_TO_RAD_PER_SS = TO_ACCELERATION_TO_RAD_PER_MM / 3600.0;
+const double DXL_ACCELERATION_FROM_RAD_PER_SS = 1.0 / TO_ACCELERATION_TO_RAD_PER_SS;
+const int DXL_MAX_ACCELERATION = 32767;
 
 // Dynamixel XM Series address table
-// Ref: https://emanual.robotis.com/docs/en/dxl/x/xm430-w350/
 const uint16_t ADDR_TORQUE_ENABLE = 64;
 const uint16_t ADDR_POSITION_D_GAIN = 80;
 const uint16_t ADDR_POSITION_I_GAIN = 82;
@@ -23,6 +33,8 @@ const uint16_t ADDR_POSITION_P_GAIN = 84;
 const uint16_t ADDR_GOAL_CURRENT = 102;
 const uint16_t ADDR_GOAL_VELOCITY = 104;
 const uint16_t ADDR_GOAL_POSITION = 116;
+const uint16_t ADDR_PROFILE_ACCELERATION = 108;
+const uint16_t ADDR_PROFILE_VELOCITY = 112;
 const uint16_t ADDR_PRESENT_CURRENT = 126;
 const uint16_t ADDR_PRESENT_VELOCITY = 128;
 const uint16_t ADDR_PRESENT_POSITION = 132;
@@ -274,7 +286,7 @@ bool Hardware::set_positions(const std::string & group_name, std::vector<double>
   return true;
 }
 
-bool Hardware::set_max_acceleration_to_group(const std::string & group_name, const double acceleration_rpss)
+bool Hardware::write_max_acceleration_to_group(const std::string & group_name, const double acceleration_rpss)
 {
   // 指定されたグループ内のサーボモータの最大動作加速度（radian / s^2）を設定する
   if(!joint_groups_contain(group_name)){
@@ -282,9 +294,16 @@ bool Hardware::set_max_acceleration_to_group(const std::string & group_name, con
     return false;
   }
 
+  auto dxl_acceleration = to_dxl_acceleration(acceleration_rpss);
+  if(!write_double_word_data_to_group(group_name, ADDR_PROFILE_ACCELERATION, dxl_acceleration)){
+    std::cerr<<group_name<<"グループのProfile Accelerationの書き込みに失敗しました."<<std::endl;
+    return false;
+  }
+
+  return true;
 }
 
-bool Hardware::set_max_velocity_to_group(const std::string & group_name, const double velocity_rps)
+bool Hardware::write_max_velocity_to_group(const std::string & group_name, const double velocity_rps)
 {
   // 指定されたグループ内のサーボモータの最大動作加速度（radian / s^2）を設定する
   if(!joint_groups_contain(group_name)){
@@ -292,6 +311,13 @@ bool Hardware::set_max_velocity_to_group(const std::string & group_name, const d
     return false;
   }
 
+  auto dxl_velocity = to_dxl_velocity(velocity_rps);
+  if(!write_double_word_data_to_group(group_name, ADDR_PROFILE_VELOCITY, dxl_velocity)){
+    std::cerr<<group_name<<"グループのProfile Velocityの書き込みに失敗しました."<<std::endl;
+    return false;
+  }
+
+  return true;
 }
 
 bool Hardware::parse_config_file(const std::string & config_yaml)
@@ -614,12 +640,34 @@ uint32_t Hardware::radian_to_dxl_pos(const double position)
 
 uint32_t Hardware::to_dxl_acceleration(const double acceleration_rpss)
 {
+  // 加速度 rad/s^2をDYNAMIXELのデータに変換する
 
+  int dxl_acceleration = DXL_ACCELERATION_FROM_RAD_PER_SS * acceleration_rpss;
+  if(dxl_acceleration > DXL_MAX_ACCELERATION){
+    dxl_acceleration = DXL_MAX_ACCELERATION;
+  }else if(dxl_acceleration <= 0){
+    // XMシリーズのDYNAMIXELでは、'0'は最大加速度を意味する
+    // よって、加速度の最小値は'1'である
+    dxl_acceleration = 1;
+  }
+
+  return static_cast<uint32_t>(dxl_acceleration);
 }
 
 uint32_t Hardware::to_dxl_velocity(const double velocity_rps)
 {
+  // 速度 rad/sをDYNAMIXELのデータに変換する
 
+  int dxl_velocity = DXL_VELOCITY_FROM_RAD_PER_SEC * velocity_rps;
+  if(dxl_velocity > DXL_MAX_VELOCITY){
+    dxl_velocity = DXL_MAX_VELOCITY;
+  }else if(dxl_velocity <= 0){
+    // XMシリーズのDYNAMIXELでは、'0'は最大速度を意味する
+    // よって、速度の最小値は'1'である
+    dxl_velocity = 1;
+  }
+
+  return static_cast<uint32_t>(dxl_velocity);
 }
 
 }  // namespace rt_manipulators_cpp

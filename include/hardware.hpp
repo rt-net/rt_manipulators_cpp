@@ -33,8 +33,8 @@ public:
   bool get_positions(const std::string & group_name, std::vector<double> & positions);
   bool set_position(const uint8_t id, const double position);
   bool set_positions(const std::string & group_name, std::vector<double> & positions);
-  bool set_max_acceleration_to_group(const std::string & group_name, const double acceleration_rpss);
-  bool set_max_velocity_to_group(const std::string & group_name, const double velocity_rps);
+  bool write_max_acceleration_to_group(const std::string & group_name, const double acceleration_rpss);
+  bool write_max_velocity_to_group(const std::string & group_name, const double velocity_rps);
 
 private:
   bool parse_config_file(const std::string & config_yaml);
