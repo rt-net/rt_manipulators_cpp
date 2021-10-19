@@ -4,7 +4,7 @@ set -e
 
 BUILD_DIR=build
 
-echo "ビルドします"
+echo "ライブラリをビルドします"
 cd $(dirname $0)
 
 if [ ! -d $BUILD_DIR ]; then
@@ -15,4 +15,10 @@ cd $BUILD_DIR
 cmake ..
 make
 
-echo "ビルドしました"
+echo "ライブラリをビルドしました"
+
+echo "ライブラリをインストールします"
+sudo make install
+# 共有ライブラリのリンクとキャッシュファイルの作成
+sudo ldconfig
+echo "ライブラリをインストールしました"
