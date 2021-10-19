@@ -30,6 +30,7 @@ public:
   bool start_thread(const std::vector<std::string> & group_names, const std::chrono::milliseconds & update_cycle_ms);
   bool stop_thread();
   bool get_position(const uint8_t id, double & position);
+  bool get_position(const std::string & joint_name, double & position);
   bool get_positions(const std::string & group_name, std::vector<double> & positions);
   bool set_position(const uint8_t id, const double position);
   bool set_positions(const std::string & group_name, std::vector<double> & positions);

@@ -242,6 +242,17 @@ bool Hardware::get_position(const uint8_t id, double & position)
   return true;
 }
 
+bool Hardware::get_position(const std::string & joint_name, double & position)
+{
+  if(!all_joints_contain(joint_name)){
+    std::cerr<<joint_name<<"ジョイントは存在しません."<<std::endl;
+    return false;
+  }
+  position = all_joints_[joint_name]->get_present_position();
+  return true;
+
+}
+
 bool Hardware::get_positions(const std::string & group_name, std::vector<double> & positions)
 {
   if(!joint_groups_contain(group_name)){
