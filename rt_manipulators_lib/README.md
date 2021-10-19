@@ -34,6 +34,12 @@ Install the project...
 
 ビルドに成功すると、CMakeのデフォルトインストールディレクトリ(例：`/usr/local/lib`、`/usr/local/include`)に共有ライブラリ(`librt_manipulators_cpp.so`)とヘッダーファイル(`rt_manipulators_cpp/*.hpp`)がインストールされます。
 
+共有ライブラリは次のように使用できます。
+
+```sh
+$ g++ test.cpp -lrt_manipulators_cpp
+```
+
 ## ライブラリのアンインストール
 
 [uninstall_library.bash](./uninstall_library.bash)
