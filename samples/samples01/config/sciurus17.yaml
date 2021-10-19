@@ -44,7 +44,7 @@ joint_groups:
     sync_write:
       - position
 
-  body:
+  torso:
     joints:
       - waist_joint
       - neck_yaw_joint
