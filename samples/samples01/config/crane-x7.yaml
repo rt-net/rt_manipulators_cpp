@@ -1,6 +1,10 @@
 joint_groups:
   arm:
     joints:
+      - joint1
+      - joint2
+      - joint3
+      - joint4
       - joint5
       - joint6
       - joint7
@@ -13,7 +17,8 @@ joint_groups:
       - joint_hand
     sync_read:
       - position
-      - velocity
+    sync_write:
+      - position
 
 
 joint1: { id : 2, operating_mode: 3 }

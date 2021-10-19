@@ -6,8 +6,9 @@ BUILD_DIR=build
 
 echo "ライブラリをアンインストールするため、次のファイルを削除します"
 
-cat $BUILD_DIR/install_manifest.txt
+cd $(dirname $0)/$BUILD_DIR
+cat install_manifest.txt
 echo ""
-xargs sudo rm -rf < $BUILD_DIR/install_manifest.txt
+xargs sudo rm -rf < install_manifest.txt
 
 echo "アンインストールしました"
