@@ -10,7 +10,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # 生成された実行ファイルをソースのbinディレクトリに出力する
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-add_executable(x7_onoff
-    src/x7_onoff.cpp
+# サンプルのビルド
+set(list_samples
+    x7_onoff
+    s17_onoff
 )
-target_link_libraries(x7_onoff PRIVATE rt_manipulators_cpp)
+foreach(sample IN LISTS list_samples)
+    message("${sample}")
+    add_executable(${sample}
+        src/${sample}.cpp
+    )
+    target_link_libraries(${sample} PRIVATE rt_manipulators_cpp)
+endforeach()

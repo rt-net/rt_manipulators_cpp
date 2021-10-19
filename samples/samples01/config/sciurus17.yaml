@@ -1,29 +1,58 @@
 
 joint_groups:
   right_arm:
-    - right_arm_joint1
-    - right_arm_joint2
-    - right_arm_joint3
-    - right_arm_joint4
-    - right_arm_joint5
-    - right_arm_joint6
-    - right_arm_joint7
-    - right_arm_joint_hand
+    joints:
+      - right_arm_joint1
+      - right_arm_joint2
+      - right_arm_joint3
+      - right_arm_joint4
+      - right_arm_joint5
+      - right_arm_joint6
+      - right_arm_joint7
+    sync_read:
+      - position
+    sync_write:
+      - position
+
+  right_hand:
+    joints:
+      - right_arm_joint_hand
+    sync_read:
+      - position
+    sync_write:
+      - position
 
   left_arm:
-    - left_arm_joint1
-    - left_arm_joint2
-    - left_arm_joint3
-    - left_arm_joint4
-    - left_arm_joint5
-    - left_arm_joint6
-    - left_arm_joint7
-    - left_arm_joint_hand
+    joints:
+      - left_arm_joint1
+      - left_arm_joint2
+      - left_arm_joint3
+      - left_arm_joint4
+      - left_arm_joint5
+      - left_arm_joint6
+      - left_arm_joint7
+    sync_read:
+      - position
+    sync_write:
+      - position
+
+  left_hand:
+    joints:
+      - left_arm_joint_hand
+    sync_read:
+      - position
+    sync_write:
+      - position
 
   body:
-    - waist_joint
-    - neck_yaw_joint
-    - neck_pitch_joint
+    joints:
+      - waist_joint
+      - neck_yaw_joint
+      - neck_pitch_joint
+    sync_read:
+      - position
+    sync_write:
+      - position
 
 right_arm_joint1: { id : 2, operating_mode: 3 }
 right_arm_joint2: { id : 3, operating_mode: 3 }
