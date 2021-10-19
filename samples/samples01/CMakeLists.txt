@@ -14,6 +14,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(list_samples
     x7_onoff
     s17_onoff
+    x7_read_position
+    s17_read_position
 )
 foreach(sample IN LISTS list_samples)
     message("${sample}")

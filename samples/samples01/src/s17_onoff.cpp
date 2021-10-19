@@ -30,7 +30,7 @@ int main()
   }
 
   std::string group_name = "right_arm";
-  std::cout<<"サーボグループ:"<<group_name<<"のトルクをONにします."<<std::endl;
+  std::cout<<"ジョイントグループ:"<<group_name<<"のトルクをONにします."<<std::endl;
   if(!hardware.torque_on(group_name)){
     std::cerr<<group_name<<"グループのトルクをONできませんでした."<<std::endl;
     return -1;
@@ -40,7 +40,7 @@ int main()
   std::cout<<"Sciurus17制御基板の通信タイムアウト機能が働くと、トルクON後に脱力します."<<std::endl;
   std::this_thread::sleep_for(std::chrono::seconds(10));
 
-  std::cout<<"サーボグループ:"<<group_name<<"のトルクをOFFにします."<<std::endl;
+  std::cout<<"ジョイントグループ:"<<group_name<<"のトルクをOFFにします."<<std::endl;
   if(!hardware.torque_off(group_name)){
     std::cerr<<group_name<<"グループのトルクをOFFできませんでした."<<std::endl;
   }

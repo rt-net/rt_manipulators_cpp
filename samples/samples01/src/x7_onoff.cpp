@@ -30,7 +30,7 @@ int main()
   }
 
   std::string group_name = "arm";
-  std::cout<<"サーボグループ:"<<group_name<<"のトルクをONにします."<<std::endl;
+  std::cout<<"ジョイントグループ:"<<group_name<<"のトルクをONにします."<<std::endl;
   if(!hardware.torque_on(group_name)){
     std::cerr<<group_name<<"グループのトルクをONできませんでした."<<std::endl;
     return -1;
@@ -39,7 +39,7 @@ int main()
   std::cout<<"10秒間スリープします.ロボットに触れるとトルクがONになっていることがわかります."<<std::endl;
   std::this_thread::sleep_for(std::chrono::seconds(10));
 
-  std::cout<<"サーボグループ:"<<group_name<<"のトルクをOFFにします."<<std::endl;
+  std::cout<<"ジョイントグループ:"<<group_name<<"のトルクをOFFにします."<<std::endl;
   if(!hardware.torque_off(group_name)){
     std::cerr<<group_name<<"グループのトルクをOFFできませんでした."<<std::endl;
   }
