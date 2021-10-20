@@ -1,0 +1,35 @@
+name: BuildAndTest
+
+on: [workflow_dispatch] # 手動トリガー
+
+jobs:
+  lint:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v2
+      - run: pip install cpplint
+      - uses: actions/checkout@v2
+      - run: .tools/cpplint.bash
+
+  build:
+    needs: lint
+    strategy:
+      fail-fast: false # 他のjobが失敗してもキャンセルしない
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+    runs-on: ${{ matrix.os}}
+    steps:
+      - name: Install Dynamixel SDK
+        run: |
+          cd ..
+          git clone https://github.com/ROBOTIS-GIT/DynamixelSDK.git
+          cd DynamixelSDK/c++/build/linux64
+          make
+          sudo make install
+      - uses: actions/checkout@v2
+      - name: Build and insall library
+        run: ./rt_manipulators_lib/build_install_library.bash
+      - name: Build Samples
+        run: |
+          ./samples/samples01/build_samples.bash
