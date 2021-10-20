@@ -340,6 +340,32 @@ bool Hardware::write_max_velocity_to_group(const std::string & group_name, const
   return true;
 }
 
+bool Hardware::write_position_pid_gain_to_group(const std::string & group_name, const uint16_t p, const uint16_t i, const uint16_t d)
+{
+  // 指定されたグループ内のサーボモータの位置制御PIDゲインを設定する
+  if(!joint_groups_contain(group_name)){
+    std::cerr<<group_name<<"はjoint_groupsに存在しません."<<std::endl;
+    return false;
+  }
+
+  if(!write_word_data_to_group(group_name, ADDR_POSITION_P_GAIN, p)){
+    std::cerr<<group_name<<"グループのPosition P Gainの書き込みに失敗しました."<<std::endl;
+    return false;
+  }
+
+  if(!write_word_data_to_group(group_name, ADDR_POSITION_I_GAIN, i)){
+    std::cerr<<group_name<<"グループのPosition I Gainの書き込みに失敗しました."<<std::endl;
+    return false;
+  }
+
+  if(!write_word_data_to_group(group_name, ADDR_POSITION_D_GAIN, d)){
+    std::cerr<<group_name<<"グループのPosition D Gainの書き込みに失敗しました."<<std::endl;
+    return false;
+  }
+
+  return true;
+}
+
 bool Hardware::parse_config_file(const std::string & config_yaml)
 {
   // yamlファイルを読み取り、joint_groups_とall_joints_メンバ変数に格納する
