@@ -1,6 +1,6 @@
 name: BuildAndTest
 
-on: [workflow_dispatch] # 手動トリガー
+on: workflow_dispatch # 手動トリガー
 
 jobs:
   lint:
