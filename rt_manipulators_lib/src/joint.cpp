@@ -29,9 +29,7 @@ void Joint::set_present_position(const double position_radian) {
 
 double Joint::get_present_position() const { return present_position_; }
 
-void Joint::set_goal_position(const double position_radian) {
-  goal_position_ = position_radian;
-}
+void Joint::set_goal_position(const double position_radian) { goal_position_ = position_radian; }
 
 double Joint::get_goal_position() const { return goal_position_; }
 
@@ -60,36 +58,20 @@ JointGroup::JointGroup(const std::vector<std::string>& joint_names,
   }
 }
 
-std::vector<std::string> JointGroup::joint_names() const {
-  return joint_names_;
-}
+std::vector<std::string> JointGroup::joint_names() const { return joint_names_; }
 
-bool JointGroup::sync_read_position_enabled() const {
-  return sync_read_position_enabled_;
-}
+bool JointGroup::sync_read_position_enabled() const { return sync_read_position_enabled_; }
 
-bool JointGroup::sync_read_velocity_enabled() const {
-  return sync_read_velocity_enabled_;
-}
+bool JointGroup::sync_read_velocity_enabled() const { return sync_read_velocity_enabled_; }
 
-bool JointGroup::sync_read_current_enabled() const {
-  return sync_read_current_enabled_;
-}
+bool JointGroup::sync_read_current_enabled() const { return sync_read_current_enabled_; }
 
-bool JointGroup::sync_read_temperature_enabled() const {
-  return sync_read_temperature_enabled_;
-}
+bool JointGroup::sync_read_temperature_enabled() const { return sync_read_temperature_enabled_; }
 
-bool JointGroup::sync_write_position_enabled() const {
-  return sync_write_position_enabled_;
-}
+bool JointGroup::sync_write_position_enabled() const { return sync_write_position_enabled_; }
 
-bool JointGroup::sync_write_velocity_enabled() const {
-  return sync_write_velocity_enabled_;
-}
+bool JointGroup::sync_write_velocity_enabled() const { return sync_write_velocity_enabled_; }
 
-bool JointGroup::sync_write_current_enabled() const {
-  return sync_write_current_enabled_;
-}
+bool JointGroup::sync_write_current_enabled() const { return sync_write_current_enabled_; }
 
 }  // namespace joint

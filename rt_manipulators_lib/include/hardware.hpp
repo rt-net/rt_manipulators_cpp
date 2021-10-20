@@ -45,19 +45,15 @@ class Hardware {
   bool stop_thread();
   bool get_position(const uint8_t id, double& position);
   bool get_position(const std::string& joint_name, double& position);
-  bool get_positions(const std::string& group_name,
-                     std::vector<double>& positions);
+  bool get_positions(const std::string& group_name, std::vector<double>& positions);
   bool set_position(const uint8_t id, const double position);
   bool set_position(const std::string& joint_name, const double position);
-  bool set_positions(const std::string& group_name,
-                     std::vector<double>& positions);
+  bool set_positions(const std::string& group_name, std::vector<double>& positions);
   bool write_max_acceleration_to_group(const std::string& group_name,
                                        const double acceleration_rpss);
-  bool write_max_velocity_to_group(const std::string& group_name,
-                                   const double velocity_rps);
-  bool write_position_pid_gain_to_group(const std::string& group_name,
-                                        const uint16_t p, const uint16_t i,
-                                        const uint16_t d);
+  bool write_max_velocity_to_group(const std::string& group_name, const double velocity_rps);
+  bool write_position_pid_gain_to_group(const std::string& group_name, const uint16_t p,
+                                        const uint16_t i, const uint16_t d);
 
  private:
   bool parse_config_file(const std::string& config_yaml);
@@ -66,30 +62,21 @@ class Hardware {
   bool all_joints_contain_id(const uint8_t id);
   bool create_sync_read_group(const std::string& group_name);
   bool create_sync_write_group(const std::string& group_name);
-  bool set_indirect_address(const std::string& group_name,
-                            const uint16_t addr_indirect_start,
-                            const uint16_t addr_target,
-                            const uint16_t len_target);
+  bool set_indirect_address(const std::string& group_name, const uint16_t addr_indirect_start,
+                            const uint16_t addr_target, const uint16_t len_target);
   void read_write_thread(const std::vector<std::string>& group_names,
                          const std::chrono::milliseconds& update_cycle_ms);
-  bool write_byte_data(const uint8_t id, const uint16_t address,
-                       const uint8_t write_data);
-  bool write_byte_data_to_group(const std::string& group_name,
-                                const uint16_t address,
+  bool write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data);
+  bool write_byte_data_to_group(const std::string& group_name, const uint16_t address,
                                 const uint8_t write_data);
-  bool write_word_data(const uint8_t id, const uint16_t address,
-                       const uint16_t write_data);
-  bool write_word_data_to_group(const std::string& group_name,
-                                const uint16_t address,
+  bool write_word_data(const uint8_t id, const uint16_t address, const uint16_t write_data);
+  bool write_word_data_to_group(const std::string& group_name, const uint16_t address,
                                 const uint16_t write_data);
-  bool write_double_word_data(const uint8_t id, const uint16_t address,
-                              const uint32_t write_data);
-  bool write_double_word_data_to_group(const std::string& group_name,
-                                       const uint16_t address,
+  bool write_double_word_data(const uint8_t id, const uint16_t address, const uint32_t write_data);
+  bool write_double_word_data_to_group(const std::string& group_name, const uint16_t address,
                                        const uint32_t write_data);
-  bool parse_dxl_error(const std::string& func_name, const uint8_t id,
-                       const uint16_t address, const int dxl_comm_result,
-                       const uint8_t dxl_packet_error);
+  bool parse_dxl_error(const std::string& func_name, const uint8_t id, const uint16_t address,
+                       const int dxl_comm_result, const uint8_t dxl_packet_error);
   bool parse_dxl_error(const std::string& func_name, const int dxl_comm_result);
   double dxl_pos_to_radian(const int32_t position);
   uint32_t radian_to_dxl_pos(const double position);
@@ -101,10 +88,8 @@ class Hardware {
   std::map<JointGroupName, std::shared_ptr<joint::JointGroup>> joint_groups_;
   std::map<JointName, std::shared_ptr<joint::Joint>> all_joints_;
   std::map<uint8_t, std::shared_ptr<joint::Joint>> all_joints_ref_from_id_;
-  std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncRead>>
-      sync_read_groups_;
-  std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncWrite>>
-      sync_write_groups_;
+  std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncRead>> sync_read_groups_;
+  std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncWrite>> sync_write_groups_;
   std::map<JointGroupName, uint16_t> address_indirect_present_position_;
   std::map<JointGroupName, uint16_t> address_indirect_goal_position_;
   bool thread_enable_;
