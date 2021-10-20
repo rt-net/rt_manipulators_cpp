@@ -1,5 +1,12 @@
 # サンプル集01 ロボットのサーボモータを動かす
 
+- [サンプル集01 ロボットのサーボモータを動かす](#サンプル集01-ロボットのサーボモータを動かす)
+  - [通信設定](#通信設定)
+  - [サーボモータのトルクをON/OFFする](#サーボモータのトルクをonoffする)
+    - [解説](#解説)
+  - [サーボモータの現在角度を読み取る](#サーボモータの現在角度を読み取る)
+    - [解説](#解説-1)
+
 次のコマンドを実行して、サンプル集をビルドします。
 
 ```sh
@@ -7,14 +14,6 @@ $ ./build_samples.bash
 ```
 
 ビルドに成功すると`samples01/bin/`ディレクトリに実行ファイルが生成されます。
-
-## 目次
-
-- [通信設定](#通信設定)
-- [サーボモータのトルクをON/OFFする](#サーボモータのトルクをonoffする)
-  - [解説](#解説)
-- [サーボモータの現在角度を読み取る](#サーボモータの現在角度を読み取る)
-  - [解説](#解説-1)
 
 ## 通信設定
 
@@ -189,7 +188,7 @@ joint_groups:
       - position
 ```
 
-サーボモータの現在情報を取得するため、`Hardware.sync_read(group_name)`を実行します。
+サーボモータの現在情報を読み取るため、`Hardware.sync_read(group_name)`を実行します。
 引数にはジョイントグループ名を入力します。
 
 この関数を実行すると、ロボットとの通信が発生します。
@@ -199,7 +198,7 @@ hardware.sync_read("arm");
 ```
 
 サーボモータの現在角度を取得するため、`Hardware.get_position(id, position)`を実行します。
-引数にはサーボモータのIDと、角度の格納先を入力します
+引数にはサーボモータのIDと、角度(radian)の格納先を入力します。
 
 ```cpp
 double position;
@@ -216,8 +215,77 @@ hardware.get_position("joint1", position);
 ジョイントグループの現在角度を一括で取得する場合は、`Hardware.get_positions(group_name, positions)`を実行します。
 引数にはジョイントグループ名と、角度の格納先を入力します。
 
-
 ```cpp
 std::vector<double> positions;
 hardware.get_positions("arm", positions);
+```
+
+## サーボモータの目標角度を書き込む
+
+次のコマンドを実行します。
+
+***安全のためロボットの周りに物や人を近づけないでください。***
+
+```sh
+# CRANE-X7の場合
+$ cd bin/
+$ ./x7_write_position
+# Sciurus17の場合
+$ ./s17_write_position
+```
+
+### 解説
+
+サーボモータの最大動作加速度を設定するため、`Hardware.write_max_acceleration_to_group(group_name, acceleration)`を実行します。
+引数にはジョイントグループ名と、加速度(radian / s^2)を入力します。
+
+```cpp
+hardware.write_max_acceleration_to_group("arm", 0.5 * M_PI);
+```
+
+サーボモータの最大動作速度を設定するため、`Hardware.write_max_velocity_to_group(group_name, velocity)`を実行します。
+引数にはジョイントグループ名と、速度(radian / s)を入力します。
+
+```cpp
+hardware.write_max_velocity_to_group("arm", 0.5* M_PI);
+```
+
+サーボモータの位置制御PIDゲインを設定するため、`Hardware.write_position_pid_gain_to_group(group_name, p, i, d)`を実行します。
+引数にはジョイントグループ名と、PIDゲインを入力します。
+
+```cpp
+hardware.write_position_pid_gain_to_group("arm", 800, 0, 0);
+```
+
+サーボモータの目標角度を設定するため、`Hardware.set_position(id, position)`を実行します。
+引数にはサーボモータのIDと、目標角度(radian)を入力します。
+設定した目標角度をサーボモータへ書き込むためには、`Hardware.sync_write()`を実行します。
+
+```cpp
+double position = 0.0;
+hardware.set_position(2, position);
+```
+
+ジョイント名で指定することも可能です。
+
+```cpp
+double position = 0.0;
+hardware.set_position("joint1", position);
+```
+
+ジョイントグループの目標角度を一括で設定する場合は、`Hardware.set_positions(group_name, positions)`を実行します。
+引数にはジョイントグループ名と、目標角度を入力します。
+
+```cpp
+std::vector<double> positions(7, 0.0);
+hardware.get_positions("arm", positions);
+```
+
+サーボモータへ目標値を書き込むため、`Hardware.sync_write(group_name)`を実行します。
+引数にはジョイントグループ名を入力します。
+
+この関数を実行すると、ロボットとの通信が発生します。
+
+```cpp
+hardware.sync_write("arm");
 ```

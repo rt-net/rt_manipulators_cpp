@@ -16,6 +16,7 @@ set(list_samples
     s17_onoff
     x7_read_position
     s17_read_position
+    x7_write_position
 )
 foreach(sample IN LISTS list_samples)
     message("${sample}")
