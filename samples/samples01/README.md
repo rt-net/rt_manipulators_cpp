@@ -259,6 +259,26 @@ CRANE-X7との接続を解除します.
 
 ### 解説
 
+サーボモータに目標角度を書き込むため、
+コンフィグファイルのジョイントグループに`sync_write:position`を追加します。
+
+```yaml
+joint_groups:
+  ジョイントグループ名(1):
+    joints:
+      - ジョイント名(1)
+      - ジョイント名(2)
+      - ジョイント名(3)
+    sync_write:
+      - position
+  ジョイントグループ名(2):
+    joints:
+      - ジョイント名(4)
+      - ジョイント名(5)
+    sync_write:
+      - position
+```
+
 サーボモータの最大動作加速度を設定するため、`Hardware.write_max_acceleration_to_group(group_name, acceleration)`を実行します。
 引数にはジョイントグループ名と、加速度(radian / s^2)を入力します。
 
