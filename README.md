@@ -6,8 +6,7 @@
 [上半身人型ロボット**Sciurus17(シューラスセブンティーン)**](https://rt-net.jp/products/sciurus17/)
 を動かすための、C++ライブラリおよびサンプルプログラムを提供します。
 
-<img src=https://rt-net.github.io/images/crane-x7/CRANE-X7-500x500.png width=300px />
-<img src=https://rt-net.github.io/images/sciurus17/Sciurus17-500x500.png width=300px />
+<img src=https://rt-net.github.io/images/crane-x7/CRANE-X7-500x500.png width=400px /><img src=https://rt-net.github.io/images/sciurus17/Sciurus17-500x500.png width=400px />
 
 ## 動作環境
 
