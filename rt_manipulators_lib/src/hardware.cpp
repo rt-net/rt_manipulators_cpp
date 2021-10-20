@@ -200,7 +200,7 @@ bool Hardware::sync_write(const std::string & group_name)
     return false;
   }
 
-  return false;
+  return true;
 }
 
 bool Hardware::start_thread(const std::vector<std::string> & group_names, const std::chrono::milliseconds & update_cycle_ms)
@@ -250,7 +250,6 @@ bool Hardware::get_position(const std::string & joint_name, double & position)
   }
   position = all_joints_[joint_name]->get_present_position();
   return true;
-
 }
 
 bool Hardware::get_positions(const std::string & group_name, std::vector<double> & positions)
@@ -273,6 +272,16 @@ bool Hardware::set_position(const uint8_t id, const double position)
     return false;
   }
   all_joints_ref_from_id_[id]->set_goal_position(position);
+  return true;
+}
+
+bool Hardware::set_position(const std::string & joint_name, const double position)
+{
+  if(!all_joints_contain(joint_name)){
+    std::cerr<<joint_name<<"ジョイントは存在しません."<<std::endl;
+    return false;
+  }
+  all_joints_[joint_name]->set_goal_position(position);
   return true;
 }
 

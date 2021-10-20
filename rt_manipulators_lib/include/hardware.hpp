@@ -33,6 +33,7 @@ public:
   bool get_position(const std::string & joint_name, double & position);
   bool get_positions(const std::string & group_name, std::vector<double> & positions);
   bool set_position(const uint8_t id, const double position);
+  bool set_position(const std::string & joint_name, const double position);
   bool set_positions(const std::string & group_name, std::vector<double> & positions);
   bool write_max_acceleration_to_group(const std::string & group_name, const double acceleration_rpss);
   bool write_max_velocity_to_group(const std::string & group_name, const double velocity_rps);
