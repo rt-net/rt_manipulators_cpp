@@ -69,7 +69,7 @@ int main()
 
   std::vector<double> target_positions(7, 0.0);
   std::cout<<"armグループのサーボ目標角度に0.0 radを書き込みます."<<std::endl;
-  std::cout<<"5秒後にX7が垂直姿勢に移行するため、X7の周りに物や人を近づけないで下さい."<<std::endl;
+  std::cout<<"5秒後にX7が垂直姿勢へ移行するため、X7の周りに物や人を近づけないで下さい."<<std::endl;
   std::this_thread::sleep_for(std::chrono::seconds(5));
   hardware.set_positions("arm", target_positions);
   if(!hardware.sync_write("arm")){
