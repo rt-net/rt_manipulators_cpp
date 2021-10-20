@@ -213,6 +213,11 @@ bool Hardware::start_thread(const std::vector<std::string> & group_names, const 
     }
   }
 
+  if(thread_enable_){
+    std::cerr<<"すでにスレッドが立ち上がっています."<<std::endl;
+    return false;
+  }
+
   thread_enable_ = true;
   read_write_thread_ = std::make_shared<std::thread>(&Hardware::read_write_thread, this, group_names, update_cycle_ms);
 
@@ -546,6 +551,7 @@ void Hardware::read_write_thread(const std::vector<std::string> & group_names, c
 
     for(auto group_name : group_names){
       sync_read(group_name);
+      sync_write(group_name);
     }
 
     std::this_thread::sleep_until(next_start_time);
