@@ -162,7 +162,7 @@ $ ./x7_read_position
 $ ./s17_read_position
 ```
 
-実行結果
+実行結果（CRANE-X7の場合）
 
 ```sh
 ...
