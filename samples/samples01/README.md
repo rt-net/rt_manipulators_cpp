@@ -248,7 +248,7 @@ $ ./x7_write_position
 $ ./s17_write_position
 ```
 
-実行結果
+実行結果（CRANE-X7の場合）
 
 ```sh
 ...
