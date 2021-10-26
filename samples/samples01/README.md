@@ -53,7 +53,7 @@ $ ./x7_onoff
 $ ./s17_onoff
 ```
 
-実行結果
+実行結果（CRANE-X7の場合）
 
 ```sh
 CRANE-X7のトルクをON/OFFするサンプルです.
