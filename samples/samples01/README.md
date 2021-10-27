@@ -313,6 +313,18 @@ hardware.write_max_velocity_to_group("arm", 0.5* M_PI);
 hardware.write_position_pid_gain_to_group("arm", 800, 0, 0);
 ```
 
+指定したサーボモータにPIDゲインを設定する場合は、`Hardware.write_position_pid_gain(id, p, i, d)`を実行します。
+
+```cpp
+hardware.write_position_pid_gain(2, 800, 0, 0);
+```
+
+ジョイント名で指定することも可能です。
+
+```cpp
+hardware.write_position_pid_gain("joint1", 800, 0, 0);
+```
+
 サーボモータの目標角度を設定するため、`Hardware.set_position(id, position)`を実行します。
 引数にはサーボモータのIDと、目標角度(radian)を入力します。
 設定した目標角度をサーボモータへ書き込むためには、`Hardware.sync_write()`を実行します。

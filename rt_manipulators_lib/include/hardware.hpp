@@ -52,6 +52,10 @@ class Hardware {
   bool write_max_acceleration_to_group(const std::string& group_name,
                                        const double acceleration_rpss);
   bool write_max_velocity_to_group(const std::string& group_name, const double velocity_rps);
+  bool write_position_pid_gain(const uint8_t id, const uint16_t p, const uint16_t i,
+                               const uint16_t d);
+  bool write_position_pid_gain(const std::string& joint_name, const uint16_t p, const uint16_t i,
+                               const uint16_t d);
   bool write_position_pid_gain_to_group(const std::string& group_name, const uint16_t p,
                                         const uint16_t i, const uint16_t d);
 

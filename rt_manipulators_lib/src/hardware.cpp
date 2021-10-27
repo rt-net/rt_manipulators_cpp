@@ -347,6 +347,46 @@ bool Hardware::write_max_velocity_to_group(const std::string& group_name,
   return true;
 }
 
+bool Hardware::write_position_pid_gain(const uint8_t id, const uint16_t p, const uint16_t i,
+                               const uint16_t d) {
+  // 指定されたサーボモータの位置制御PIDゲインを設定する
+  if (!all_joints_contain_id(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+
+  if (!write_word_data(id, ADDR_POSITION_P_GAIN, p)) {
+    std::cerr << "ID:" << std::to_string(id);
+    std::cerr << "のPosition P Gainの書き込みに失敗しました." << std::endl;
+    return false;
+  }
+
+  if (!write_word_data(id, ADDR_POSITION_I_GAIN, i)) {
+    std::cerr << "ID:" << std::to_string(id);
+    std::cerr << "のPosition I Gainの書き込みに失敗しました." << std::endl;
+    return false;
+  }
+
+  if (!write_word_data(id, ADDR_POSITION_D_GAIN, d)) {
+    std::cerr << "ID:" << std::to_string(id);
+    std::cerr << "のPosition D Gainの書き込みに失敗しました." << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool Hardware::write_position_pid_gain(const std::string& joint_name, const uint16_t p,
+                                       const uint16_t i, const uint16_t d) {
+  // 指定されたサーボモータの位置制御PIDゲインを設定する
+  if (!all_joints_contain(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+
+  return write_position_pid_gain(all_joints_.at(joint_name)->id(), p, i, d);
+}
+
 bool Hardware::write_position_pid_gain_to_group(const std::string& group_name, const uint16_t p,
                                                 const uint16_t i, const uint16_t d) {
   // 指定されたグループ内のサーボモータの位置制御PIDゲインを設定する

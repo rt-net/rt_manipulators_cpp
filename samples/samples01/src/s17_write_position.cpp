@@ -72,6 +72,15 @@ int main() {
     std::cerr << "torsoグループにPIDゲインを書き込めませんでした." << std::endl;
     return -1;
   }
+  // PIDゲインは指定したサーボモータにも設定できます.
+  if (!hardware.write_position_pid_gain(9, 800, 0, 0)) {
+    std::cerr << "ID:9ジョイントにPIDゲインを書き込めませんでした." << std::endl;
+    return -1;
+  }
+  if (!hardware.write_position_pid_gain("right_arm_joint_hand", 800, 0, 0)) {
+    std::cerr << "right_arm_joint_handジョイントにPIDゲインを書き込めませんでした." << std::endl;
+    return -1;
+  }
 
   if (!hardware.torque_on("right_hand")) {
     std::cerr << "right_handグループのトルクをONできませんでした." << std::endl;
