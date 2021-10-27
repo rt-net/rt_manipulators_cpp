@@ -591,11 +591,11 @@ void Hardware::read_write_thread(const std::vector<std::string>& group_names,
                                  const std::chrono::milliseconds& update_cycle_ms) {
   // sync_read、sync_writeを繰り返すスレッド
 
-  auto current_time = std::chrono::steady_clock::now();
+  static auto current_time = std::chrono::steady_clock::now();
   auto next_start_time = current_time;
   while (thread_enable_) {
-    current_time = std::chrono::steady_clock::now();
     next_start_time = current_time + update_cycle_ms;
+    current_time = next_start_time;
 
     for (auto group_name : group_names) {
       sync_read(group_name);
