@@ -48,7 +48,9 @@ int main() {
     return -1;
   }
 
-  std::cout << "10秒間スリープします.ロボットに触れるとトルクがONになっていることがわかります."
+  std::cout << "10秒間スリープします." << std::endl;
+  std::cout << "サーボモータの制御モードが位置制御モードのとき、"
+            << "ロボットに触れるとトルクがONになっていることがわかります."
             << std::endl;
   std::this_thread::sleep_for(std::chrono::seconds(10));
 
