@@ -76,6 +76,11 @@ Hardware::Hardware(const std::string device_name) {
       dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION));
 }
 
+Hardware::~Hardware() {
+  stop_thread();
+  disconnect();
+}
+
 bool Hardware::load_config_file(const std::string& config_yaml) {
   if (parse_config_file(config_yaml) == false) {
     return false;
@@ -234,6 +239,12 @@ bool Hardware::start_thread(const std::vector<std::string>& group_names,
 
 bool Hardware::stop_thread() {
   // スレッド内部の無限ループを停止する
+
+  // start_thread()を実行し、リソースを確保していなければfalseを返して終了
+  if (!read_write_thread_) {
+    return false;
+  }
+
   thread_enable_ = false;
 
   // スレッドが停止するまで待機

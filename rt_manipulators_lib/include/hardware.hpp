@@ -33,6 +33,7 @@ using JointName = std::string;
 class Hardware {
  public:
   explicit Hardware(const std::string device_name);
+  ~Hardware();
   bool load_config_file(const std::string& config_yaml);
   bool connect(const int baudrate = 3000000);
   void disconnect();
