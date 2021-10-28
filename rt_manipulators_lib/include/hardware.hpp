@@ -59,6 +59,17 @@ class Hardware {
   bool write_position_pid_gain_to_group(const std::string& group_name, const uint16_t p,
                                         const uint16_t i, const uint16_t d);
 
+ protected:
+  bool write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data);
+  bool write_byte_data_to_group(const std::string& group_name, const uint16_t address,
+                                const uint8_t write_data);
+  bool write_word_data(const uint8_t id, const uint16_t address, const uint16_t write_data);
+  bool write_word_data_to_group(const std::string& group_name, const uint16_t address,
+                                const uint16_t write_data);
+  bool write_double_word_data(const uint8_t id, const uint16_t address, const uint32_t write_data);
+  bool write_double_word_data_to_group(const std::string& group_name, const uint16_t address,
+                                       const uint32_t write_data);
+
  private:
   bool parse_config_file(const std::string& config_yaml);
   bool joint_groups_contain(const std::string& group_name);
@@ -70,15 +81,6 @@ class Hardware {
                             const uint16_t addr_target, const uint16_t len_target);
   void read_write_thread(const std::vector<std::string>& group_names,
                          const std::chrono::milliseconds& update_cycle_ms);
-  bool write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data);
-  bool write_byte_data_to_group(const std::string& group_name, const uint16_t address,
-                                const uint8_t write_data);
-  bool write_word_data(const uint8_t id, const uint16_t address, const uint16_t write_data);
-  bool write_word_data_to_group(const std::string& group_name, const uint16_t address,
-                                const uint16_t write_data);
-  bool write_double_word_data(const uint8_t id, const uint16_t address, const uint32_t write_data);
-  bool write_double_word_data_to_group(const std::string& group_name, const uint16_t address,
-                                       const uint32_t write_data);
   bool parse_dxl_error(const std::string& func_name, const uint8_t id, const uint16_t address,
                        const int dxl_comm_result, const uint8_t dxl_packet_error);
   bool parse_dxl_error(const std::string& func_name, const int dxl_comm_result);

@@ -413,6 +413,92 @@ bool Hardware::write_position_pid_gain_to_group(const std::string& group_name, c
   return true;
 }
 
+bool Hardware::write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data) {
+  uint8_t dxl_error = 0;
+  int dxl_result =
+      packet_handler_->write1ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
+
+  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
+    return false;
+  }
+  return true;
+}
+
+bool Hardware::write_byte_data_to_group(const std::string& group_name, const uint16_t address,
+                                        const uint8_t write_data) {
+  if (!joint_groups_contain(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  bool retval = true;
+  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+    auto id = all_joints_.at(joint_name)->id();
+    if (!write_byte_data(id, address, write_data)) {
+      retval = false;
+    }
+  }
+  return retval;
+}
+
+bool Hardware::write_word_data(const uint8_t id, const uint16_t address,
+                               const uint16_t write_data) {
+  uint8_t dxl_error = 0;
+  int dxl_result =
+      packet_handler_->write2ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
+
+  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
+    return false;
+  }
+  return true;
+}
+
+bool Hardware::write_word_data_to_group(const std::string& group_name, const uint16_t address,
+                                        const uint16_t write_data) {
+  if (!joint_groups_contain(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  bool retval = true;
+  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+    auto id = all_joints_.at(joint_name)->id();
+    if (!write_word_data(id, address, write_data)) {
+      retval = false;
+    }
+  }
+  return retval;
+}
+
+bool Hardware::write_double_word_data(const uint8_t id, const uint16_t address,
+                                      const uint32_t write_data) {
+  uint8_t dxl_error = 0;
+  int dxl_result =
+      packet_handler_->write4ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
+
+  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
+    return false;
+  }
+  return true;
+}
+
+bool Hardware::write_double_word_data_to_group(const std::string& group_name,
+                                               const uint16_t address, const uint32_t write_data) {
+  if (!joint_groups_contain(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  bool retval = true;
+  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+    auto id = all_joints_.at(joint_name)->id();
+    if (!write_double_word_data(id, address, write_data)) {
+      retval = false;
+    }
+  }
+  return retval;
+}
+
 bool Hardware::parse_config_file(const std::string& config_yaml) {
   // yamlファイルを読み取り、joint_groups_とall_joints_メンバ変数に格納する
   std::ifstream fs(config_yaml);
@@ -604,92 +690,6 @@ void Hardware::read_write_thread(const std::vector<std::string>& group_names,
 
     std::this_thread::sleep_until(next_start_time);
   }
-}
-
-bool Hardware::write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data) {
-  uint8_t dxl_error = 0;
-  int dxl_result =
-      packet_handler_->write1ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
-
-  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
-    return false;
-  }
-  return true;
-}
-
-bool Hardware::write_byte_data_to_group(const std::string& group_name, const uint16_t address,
-                                        const uint8_t write_data) {
-  if (!joint_groups_contain(group_name)) {
-    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
-    return false;
-  }
-
-  bool retval = true;
-  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
-    auto id = all_joints_.at(joint_name)->id();
-    if (!write_byte_data(id, address, write_data)) {
-      retval = false;
-    }
-  }
-  return retval;
-}
-
-bool Hardware::write_word_data(const uint8_t id, const uint16_t address,
-                               const uint16_t write_data) {
-  uint8_t dxl_error = 0;
-  int dxl_result =
-      packet_handler_->write2ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
-
-  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
-    return false;
-  }
-  return true;
-}
-
-bool Hardware::write_word_data_to_group(const std::string& group_name, const uint16_t address,
-                                        const uint16_t write_data) {
-  if (!joint_groups_contain(group_name)) {
-    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
-    return false;
-  }
-
-  bool retval = true;
-  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
-    auto id = all_joints_.at(joint_name)->id();
-    if (!write_word_data(id, address, write_data)) {
-      retval = false;
-    }
-  }
-  return retval;
-}
-
-bool Hardware::write_double_word_data(const uint8_t id, const uint16_t address,
-                                      const uint32_t write_data) {
-  uint8_t dxl_error = 0;
-  int dxl_result =
-      packet_handler_->write4ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
-
-  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
-    return false;
-  }
-  return true;
-}
-
-bool Hardware::write_double_word_data_to_group(const std::string& group_name,
-                                               const uint16_t address, const uint32_t write_data) {
-  if (!joint_groups_contain(group_name)) {
-    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
-    return false;
-  }
-
-  bool retval = true;
-  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
-    auto id = all_joints_.at(joint_name)->id();
-    if (!write_double_word_data(id, address, write_data)) {
-      retval = false;
-    }
-  }
-  return retval;
 }
 
 bool Hardware::parse_dxl_error(const std::string& func_name, const uint8_t id,
