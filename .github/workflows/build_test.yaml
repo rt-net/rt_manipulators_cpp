@@ -4,7 +4,6 @@ on: workflow_dispatch # 手動トリガー
 
 jobs:
   lint:
-    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v2
@@ -27,6 +26,8 @@ jobs:
           cd DynamixelSDK/c++/build/linux64
           make
           sudo make install
+      - name: Install dependencies
+        run: sudo apt install libyaml-cpp-dev
       - uses: actions/checkout@v2
       - name: Build and insall library
         run: ./rt_manipulators_lib/build_install_library.bash
