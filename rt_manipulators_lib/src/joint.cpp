@@ -44,14 +44,14 @@ JointGroup::JointGroup(const std::vector<std::string>& joint_names,
       sync_write_position_enabled_(false),
       sync_write_velocity_enabled_(false),
       sync_write_current_enabled_(false) {
-  for (auto target : sync_read_targets) {
+  for (const auto & target : sync_read_targets) {
     if (target == "position") sync_read_position_enabled_ = true;
     if (target == "velocity") sync_read_velocity_enabled_ = true;
     if (target == "current") sync_read_current_enabled_ = true;
     if (target == "temperature") sync_read_temperature_enabled_ = true;
   }
 
-  for (auto target : sync_write_targets) {
+  for (const auto & target : sync_write_targets) {
     if (target == "position") sync_write_position_enabled_ = true;
     if (target == "velocity") sync_write_velocity_enabled_ = true;
     if (target == "current") sync_write_current_enabled_ = true;

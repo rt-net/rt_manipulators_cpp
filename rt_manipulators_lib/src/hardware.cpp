@@ -87,9 +87,9 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
   }
 
   std::cout << "Config file '" << config_yaml << "' loaded." << std::endl;
-  for (auto group : joint_groups_) {
+  for (const auto & group : joint_groups_) {
     std::cout << group.first << std::endl;
-    for (auto joint_name : group.second->joint_names()) {
+    for (const auto & joint_name : group.second->joint_names()) {
       std::cout << "\t" << joint_name;
       std::cout << ", id:" << std::to_string(all_joints_.at(joint_name)->id());
       std::cout << ", mode:" << std::to_string(all_joints_.at(joint_name)->operating_mode());
@@ -126,7 +126,7 @@ bool Hardware::torque_on(const std::string& group_name) {
     std::cerr << group_name << "グループのトルクON後のsync_readに失敗しました." << std::endl;
     return false;
   }
-  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
     all_joints_.at(joint_name)
         ->set_goal_position(all_joints_.at(joint_name)->get_present_position());
   }
@@ -158,7 +158,7 @@ bool Hardware::sync_read(const std::string& group_name) {
 
   bool retval = true;
   if (joint_groups_[group_name]->sync_read_position_enabled()) {
-    for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+    for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
       auto id = all_joints_.at(joint_name)->id();
       if (!sync_read_groups_[group_name]->isAvailable(
               id, address_indirect_present_position_[group_name], LEN_PRESENT_POSITION)) {
@@ -188,7 +188,7 @@ bool Hardware::sync_write(const std::string& group_name) {
     return false;
   }
 
-  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
     std::vector<uint8_t> write_data;
     if (joint_groups_[group_name]->sync_write_position_enabled()) {
       uint32_t goal_position = radian_to_dxl_pos(all_joints_.at(joint_name)->get_goal_position());
@@ -218,7 +218,7 @@ bool Hardware::sync_write(const std::string& group_name) {
 bool Hardware::start_thread(const std::vector<std::string>& group_names,
                             const std::chrono::milliseconds& update_cycle_ms) {
   // read, writeを繰り返すスレッドを開始する
-  for (auto group_name : group_names) {
+  for (const auto & group_name : group_names) {
     if (!joint_groups_contain(group_name)) {
       std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
       return false;
@@ -279,7 +279,7 @@ bool Hardware::get_positions(const std::string& group_name, std::vector<double>&
     return false;
   }
 
-  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
     positions.push_back(all_joints_.at(joint_name)->get_present_position());
   }
   return true;
@@ -443,7 +443,7 @@ bool Hardware::write_byte_data_to_group(const std::string& group_name, const uin
   }
 
   bool retval = true;
-  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
     auto id = all_joints_.at(joint_name)->id();
     if (!write_byte_data(id, address, write_data)) {
       retval = false;
@@ -472,7 +472,7 @@ bool Hardware::write_word_data_to_group(const std::string& group_name, const uin
   }
 
   bool retval = true;
-  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
     auto id = all_joints_.at(joint_name)->id();
     if (!write_word_data(id, address, write_data)) {
       retval = false;
@@ -501,7 +501,7 @@ bool Hardware::write_double_word_data_to_group(const std::string& group_name,
   }
 
   bool retval = true;
-  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
     auto id = all_joints_.at(joint_name)->id();
     if (!write_double_word_data(id, address, write_data)) {
       retval = false;
@@ -519,7 +519,7 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
   }
 
   YAML::Node config = YAML::LoadFile(config_yaml);
-  for (auto config_joint_group : config["joint_groups"]) {
+  for (const auto & config_joint_group : config["joint_groups"]) {
     auto group_name = config_joint_group.first.as<std::string>();
     if (joint_groups_contain(group_name)) {
       std::cerr << group_name << "グループが2つ以上存在します." << std::endl;
@@ -532,7 +532,7 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
     }
 
     std::vector<JointName> joint_names;
-    for (auto config_joint : config["joint_groups"][group_name]["joints"]) {
+    for (const auto & config_joint : config["joint_groups"][group_name]["joints"]) {
       auto joint_name = config_joint.as<std::string>();
       if (all_joints_contain(joint_name)) {
         std::cerr << joint_name << "ジョイントが2つ以上存在します." << std::endl;
@@ -617,7 +617,7 @@ bool Hardware::create_sync_read_group(const std::string& group_name) {
   sync_read_groups_[group_name] = std::make_shared<dynamixel::GroupSyncRead>(
       port_handler_.get(), packet_handler_.get(), ADDR_INDIRECT_DATA_1, total_length);
 
-  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
     auto id = all_joints_.at(joint_name)->id();
     if (!sync_read_groups_[group_name]->addParam(id)) {
       std::cerr << group_name << ":" << joint_name << "のgroupSyncRead.addParam に失敗しました."
@@ -652,7 +652,7 @@ bool Hardware::create_sync_write_group(const std::string& group_name) {
 
   uint8_t init_data[total_length] = {0};
 
-  for (auto joint_name : joint_groups_[group_name]->joint_names()) {
+  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
     auto id = all_joints_.at(joint_name)->id();
     if (!sync_write_groups_[group_name]->addParam(id, init_data)) {
       std::cerr << group_name << ":" << joint_name << "のgroupSyncWrite.addParam に失敗しました."
@@ -694,7 +694,7 @@ void Hardware::read_write_thread(const std::vector<std::string>& group_names,
     next_start_time = current_time + update_cycle_ms;
     current_time = next_start_time;
 
-    for (auto group_name : group_names) {
+    for (const auto & group_name : group_names) {
       sync_read(group_name);
       sync_write(group_name);
     }
