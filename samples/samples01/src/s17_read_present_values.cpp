@@ -18,6 +18,25 @@
 #include <vector>
 #include "rt_manipulators_cpp/hardware.hpp"
 
+void print_names(void) {
+  std::cout << "position[rad], ";
+  std::cout << "velocity[rad/s], ";
+  std::cout << "current[A], ";
+  std::cout << "voltage[V], ";
+  std::cout << "temperature[deg]";
+  std::cout << std::endl;
+}
+
+void print_values(const double position, const double velocity, const double current,
+                  const double voltage, const int8_t temperature) {
+  std::cout << std::to_string(position) << ", ";
+  std::cout << std::to_string(velocity) << ", ";
+  std::cout << std::to_string(current) << ", ";
+  std::cout << std::to_string(voltage) << ", ";
+  std::cout << std::to_string(temperature);
+  std::cout << std::endl;
+}
+
 int main() {
   std::cout << "Sciurus17のサーボモータ";
   std::cout << "位置、速度、電流、入力電圧、温度を読み取るサンプルです." << std::endl;
@@ -64,21 +83,42 @@ int main() {
           hardware.get_currents(group_name, currents) &&
           hardware.get_voltages(group_name, voltages) &&
           hardware.get_temperatures(group_name, temperatures)) {
-        std::cout << group_name;
-        std::cout << " : index, position[rad], velocity[rad/s], current[A]";
-        std::cout << ", voltage[V], temperature[deg]";
-        std::cout << std::endl;
+        std::cout << group_name << ": index, ";
+        print_names();
         for (int i = 0; i < positions.size(); i++) {
           std::cout << std::to_string(i) << ", ";
-          std::cout << std::to_string(positions[i]) << ", ";
-          std::cout << std::to_string(velocities[i]) << ", ";
-          std::cout << std::to_string(currents[i]) << ", ";
-          std::cout << std::to_string(voltages[i]) << ", ";
-          std::cout << std::to_string(temperatures[i]) << ", ";
-          std::cout << std::endl;
+          print_values(positions[i], velocities[i], currents[i], voltages[i], temperatures[i]);
         }
       }
     }
+
+    const int dxl_id = 9;
+    const std::string joint_name = "right_arm_joint_hand";
+    double position;
+    double velocity;
+    double current;
+    double voltage;
+    int8_t temperature;
+    if (hardware.get_position(dxl_id, position) &&
+        hardware.get_velocity(dxl_id, velocity) &&
+        hardware.get_current(dxl_id, current) &&
+        hardware.get_voltage(dxl_id, voltage) &&
+        hardware.get_temperature(dxl_id, temperature)) {
+      std::cout << "ID:" << std::to_string(dxl_id) << ": ";
+      print_names();
+      print_values(position, velocity, current, voltage, temperature);
+    }
+
+    if (hardware.get_position(joint_name, position) &&
+        hardware.get_velocity(joint_name, velocity) &&
+        hardware.get_current(joint_name, current) &&
+        hardware.get_voltage(joint_name, voltage) &&
+        hardware.get_temperature(joint_name, temperature)) {
+      std::cout << joint_name << ": ";
+      print_names();
+      print_values(position, velocity, current, voltage, temperature);
+    }
+
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 
