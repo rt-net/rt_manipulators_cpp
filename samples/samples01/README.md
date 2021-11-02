@@ -11,7 +11,8 @@
     - [解説](#解説-2)
   - [スレッドでサーボモータの角度を読み書きする](#スレッドでサーボモータの角度を読み書きする)
     - [解説](#解説-3)
-  - [サーボモータの速度、電流、電圧、温度を読み取る](#サーボモータの速度電流電圧温度を読み取る)
+  - [サーボモータの速度、電流、入力電圧、温度を読み取る](#サーボモータの速度電流入力電圧温度を読み取る)
+    - [解説](#解説-4)
   - [サーボモータの目標速度を書き込む](#サーボモータの目標速度を書き込む)
   - [サーボモータの目標電流を書き込む](#サーボモータの目標電流を書き込む)
 
@@ -416,9 +417,129 @@ hardware.start_thread(group_names, std::chrono::milliseconds(10));
 hardware.stop_thread();
 ```
 
-## サーボモータの速度、電流、電圧、温度を読み取る
+## サーボモータの速度、電流、入力電圧、温度を読み取る
 
-未実装です
+次のコマンドを実行します。サーボモータの現在角度、速度、電流、入力電圧、温度がターミナルに表示されます。
+
+```sh
+# CRANE-X7の場合
+$ cd bin/
+$ ./x7_read_present_values
+# Sciurus17の場合
+$ ./s17_read_present_values
+```
+
+実行結果（CRANE-X7の場合）
+
+```sh
+...
+サーボモータの電流値を観察しやすくするため、
+5秒後にhandグループのトルクがONします.
+arm : index, position[rad], velocity[rad/s], current[A], voltage[V], temperature[deg]
+0, -0.174874, 0.000000, 0.000000, 12.200000, 31, 
+1, -1.601476, 0.000000, 0.000000, 12.100000, 31, 
+2, -1.187301, 0.000000, 0.000000, 12.000000, 31, 
+3, -2.468175, 0.000000, -0.005380, 11.800000, 32, 
+4, 1.883728, -0.095923, -0.002690, 11.700000, 32, 
+5, 1.144350, 0.023981, 0.000000, 11.700000, 34, 
+6, -0.809942, -0.503597, -0.008070, 11.700000, 34, 
+hand : index, position[rad], velocity[rad/s], current[A], voltage[V], temperature[deg]
+0, 0.757787, 0.000000, 0.123740, 11.700000, 36, 
+...
+```
+
+### 解説
+
+サーボモータの現在値を取得するため、
+コンフィグファイルのジョイントグループに`sync_read:{position, velocity, current, voltage, temperature}`を追加します。
+
+読み取りたいデータ項目を`sync_read`に追加してください。
+
+```yaml
+joint_groups:
+  ジョイントグループ名(1):
+    joints:
+      - ジョイント名(1)
+      - ジョイント名(2)
+      - ジョイント名(3)
+    sync_read:
+      - position
+      - velocity
+      - current
+      - voltage
+      - temperature 
+  ジョイントグループ名(2):
+    joints:
+      - ジョイント名(4)
+      - ジョイント名(5)
+    sync_read:
+      - current
+      - temperature 
+```
+
+サーボモータの現在情報を読み取るため、`Hardware.sync_read(group_name)`を実行します。
+引数にはジョイントグループ名を入力します。
+
+この関数を実行すると、ロボットとの通信が発生します。
+
+```cpp
+hardware.sync_read("arm");
+```
+
+サーボモータの速度を取得するため、`Hardware.get_velocity(id, velocity)`を実行します。
+引数にはサーボモータのIDと、速度(radian per second)の格納先を入力します。
+
+```cpp
+double velocity;
+hardware.get_velocity(2, velocity);
+```
+
+サーボモータの電流(ampere)は、`Hardware.get_current(id, current)`で取得できます。
+
+```cpp
+double current;
+hardware.get_current(2, current);
+```
+
+サーボモータの入力電圧(volt)は、`Hardware.get_voltage(id, voltage)`で取得できます。
+
+```cpp
+double voltage;
+hardware.get_voltage(2, voltage);
+```
+
+サーボモータの温度(degree Celsius)は、`Hardware.get_temperature(id, temperature)`で取得できます。
+
+```cpp
+int8_t temperature;
+hardware.get_temperature(2, temperature);
+```
+
+ジョイント名で指定することも可能です。
+
+```cpp
+double velocity;
+double current;
+double voltage;
+int8_t temperature;
+hardware.get_velocity("joint1", velocity);
+hardware.get_current("joint1", current);
+hardware.get_voltage("joint1", voltage);
+hardware.get_temperature("joint1", temperature);
+```
+
+ジョイントグループの現在値を一括で取得することも可能です。
+
+```cpp
+std::vector<double> velocities;
+std::vector<double> currents;
+std::vector<double> voltages;
+std::vector<int8_t> temperatures;
+hardware.get_velocities("arm", velocities);
+hardware.get_currents("arm", currents);
+hardware.get_voltages("arm", voltages);
+hardware.get_temperatures("arm", temperatures);
+```
 
 ## サーボモータの目標速度を書き込む
 
