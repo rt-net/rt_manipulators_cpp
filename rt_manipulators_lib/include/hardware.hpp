@@ -56,7 +56,7 @@ class Hardware {
   bool get_voltage(const uint8_t id, double& voltage);
   bool get_voltage(const std::string& joint_name, double& voltage);
   bool get_voltages(const std::string& group_name, std::vector<double>& voltages);
-  bool get_temperatrue(const uint8_t id, int8_t& temperature);
+  bool get_temperature(const uint8_t id, int8_t& temperature);
   bool get_temperature(const std::string& joint_name, int8_t& temperature);
   bool get_temperatures(const std::string& group_name, std::vector<int8_t>& temperatures);
   bool set_position(const uint8_t id, const double position);

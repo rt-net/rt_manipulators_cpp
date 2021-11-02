@@ -441,7 +441,7 @@ bool Hardware::get_voltages(const std::string& group_name, std::vector<double>& 
   return true;
 }
 
-bool Hardware::get_temperatrue(const uint8_t id, int8_t& temperature) {
+bool Hardware::get_temperature(const uint8_t id, int8_t& temperature) {
   if (!all_joints_contain_id(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
     return false;
