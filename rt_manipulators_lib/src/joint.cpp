@@ -57,7 +57,13 @@ int8_t Joint::get_present_temperature() const { return present_temperature_; }
 
 void Joint::set_goal_position(const double position_radian) { goal_position_ = position_radian; }
 
+void Joint::set_goal_velocity(const double velocity_rps) {
+  goal_velocity_ = velocity_rps;
+}
+
 double Joint::get_goal_position() const { return goal_position_; }
+
+double Joint::get_goal_velocity() const { return goal_velocity_; }
 
 JointGroup::JointGroup(const std::vector<std::string>& joint_names,
                        const std::vector<std::string>& sync_read_targets,

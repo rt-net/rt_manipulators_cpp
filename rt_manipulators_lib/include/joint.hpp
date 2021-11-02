@@ -37,7 +37,9 @@ class Joint {
   double get_present_voltage() const;
   int8_t get_present_temperature() const;
   void set_goal_position(const double position_radian);
+  void set_goal_velocity(const double velocity_rps);
   double get_goal_position() const;
+  double get_goal_velocity() const;
 
  private:
   uint8_t id_;
@@ -48,6 +50,7 @@ class Joint {
   double present_voltage_;
   int8_t present_temperature_;
   double goal_position_;
+  double goal_velocity_;
 };
 
 class JointGroup {

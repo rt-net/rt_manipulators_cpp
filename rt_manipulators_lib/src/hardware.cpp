@@ -42,6 +42,7 @@ const double TO_CURRENT_AMPERE = 0.00269;
 const double TO_VOLTAGE_VOLT = 0.1;
 
 // Dynamixel XM Series address table
+const uint16_t ADDR_OPERATING_MODE = 11;
 const uint16_t ADDR_TORQUE_ENABLE = 64;
 const uint16_t ADDR_POSITION_D_GAIN = 80;
 const uint16_t ADDR_POSITION_I_GAIN = 82;
@@ -262,6 +263,14 @@ bool Hardware::sync_write(const std::string& group_name) {
       write_data.push_back(DXL_HIBYTE(DXL_LOWORD(goal_position)));
       write_data.push_back(DXL_LOBYTE(DXL_HIWORD(goal_position)));
       write_data.push_back(DXL_HIBYTE(DXL_HIWORD(goal_position)));
+    }
+
+    if (joint_groups_[group_name]->sync_write_velocity_enabled()) {
+      uint32_t goal_velocity = to_dxl_velocity(all_joints_.at(joint_name)->get_goal_velocity());
+      write_data.push_back(DXL_LOBYTE(DXL_LOWORD(goal_velocity)));
+      write_data.push_back(DXL_HIBYTE(DXL_LOWORD(goal_velocity)));
+      write_data.push_back(DXL_LOBYTE(DXL_HIWORD(goal_velocity)));
+      write_data.push_back(DXL_HIBYTE(DXL_HIWORD(goal_velocity)));
     }
 
     auto id = all_joints_.at(joint_name)->id();
@@ -509,6 +518,44 @@ bool Hardware::set_positions(const std::string& group_name, std::vector<double>&
   return true;
 }
 
+bool Hardware::set_velocity(const uint8_t id, const double velocity) {
+  if (!all_joints_contain_id(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+  all_joints_ref_from_id_[id]->set_goal_velocity(velocity);
+  return true;
+}
+
+bool Hardware::set_velocity(const std::string& joint_name, const double velocity) {
+  if (!all_joints_contain(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+  all_joints_[joint_name]->set_goal_velocity(velocity);
+  return true;
+}
+
+bool Hardware::set_velocities(const std::string& group_name, std::vector<double>& velocities) {
+  if (!joint_groups_contain(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  if (joint_groups_[group_name]->joint_names().size() != velocities.size()) {
+    std::cerr << "目標値のサイズ:" << velocities.size();
+    std::cerr << "がジョイント数:" << joint_groups_[group_name]->joint_names().size();
+    std::cerr << "と一致しません." << std::endl;
+    return false;
+  }
+
+  for (size_t i = 0; i < velocities.size(); i++) {
+    auto joint_name = joint_groups_[group_name]->joint_names()[i];
+    all_joints_[joint_name]->set_goal_velocity(velocities[i]);
+  }
+  return true;
+}
+
 bool Hardware::write_max_acceleration_to_group(const std::string& group_name,
                                                const double acceleration_rpss) {
   // 指定されたグループ内のサーボモータの最大動作加速度（radian / s^2）を設定する
@@ -535,7 +582,7 @@ bool Hardware::write_max_velocity_to_group(const std::string& group_name,
     return false;
   }
 
-  auto dxl_velocity = to_dxl_velocity(velocity_rps);
+  auto dxl_velocity = to_dxl_profile_velocity(velocity_rps);
   if (!write_double_word_data_to_group(group_name, ADDR_PROFILE_VELOCITY, dxl_velocity)) {
     std::cerr << group_name << "グループのProfile Velocityの書き込みに失敗しました." << std::endl;
     return false;
@@ -696,6 +743,19 @@ bool Hardware::write_double_word_data_to_group(const std::string& group_name,
   return retval;
 }
 
+bool Hardware::read_byte_data(const uint8_t id, const uint16_t address, uint8_t& read_data) {
+  uint8_t dxl_error = 0;
+  uint8_t data = 0;
+  int dxl_result =
+      packet_handler_->read1ByteTxRx(port_handler_.get(), id, address, &data, &dxl_error);
+
+  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
+    return false;
+  }
+  read_data = data;
+  return true;
+}
+
 bool Hardware::parse_config_file(const std::string& config_yaml) {
   // yamlファイルを読み取り、joint_groups_とall_joints_メンバ変数に格納する
   std::ifstream fs(config_yaml);
@@ -757,6 +817,11 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
         std::make_shared<joint::JointGroup>(joint_names, sync_read_targets, sync_write_targets);
     joint_groups_.emplace(group_name, joint_group_ptr);
 
+    if (!write_operating_mode(group_name)) {
+      std::cerr << group_name << "のOperating Modeを設定できません." << std::endl;
+      return false;
+    }
+
     if (!create_sync_read_group(group_name)) {
       std::cerr << group_name << "のsync readグループを作成できません." << std::endl;
       return false;
@@ -780,6 +845,42 @@ bool Hardware::all_joints_contain(const std::string& joint_name) {
 
 bool Hardware::all_joints_contain_id(const uint8_t id) {
   return all_joints_ref_from_id_.find(id) != all_joints_ref_from_id_.end();
+}
+
+bool Hardware::write_operating_mode(const std::string& group_name) {
+  // サーボモータから動作モードを読み取り、
+  // コンフィグファイルと一致しない場合、動作モードを書き込む
+  // 動作モードはROM領域にあるため、データ書き込み回数を抑えたい
+  const std::vector<uint8_t> SUPPORT_MODE_LIST = {0, 1, 3, 5};
+
+  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
+    auto target_ope_mode = all_joints_.at(joint_name)->operating_mode();
+    auto result = std::find(SUPPORT_MODE_LIST.begin(), SUPPORT_MODE_LIST.end(), target_ope_mode);
+    if (result == SUPPORT_MODE_LIST.end()) {
+      std::cout << joint_name << "にライブラリがサポートしないOperating Mode:";
+      std::cout << std::to_string(target_ope_mode) << "が設定されています." << std::endl;
+      return false;
+    }
+
+    auto id = all_joints_.at(joint_name)->id();
+    uint8_t present_ope_mode;
+    if (!read_byte_data(id, ADDR_OPERATING_MODE, present_ope_mode)) {
+      std::cout << joint_name << "ジョイントのOperating Modeを読み取れません." << std::endl;
+      return false;
+    }
+
+    if (target_ope_mode != present_ope_mode) {
+      if (!write_byte_data(id, ADDR_OPERATING_MODE, target_ope_mode)) {
+        std::cout << joint_name << "ジョイントにOperating Modeを書き込めません." << std::endl;
+        std::cout << "トルクがONになっている場合はOFFしてください." << std::endl;
+        return false;
+      }
+      std::cout << joint_name << "ジョイントにOperating Mode:";
+      std::cout << std::to_string(target_ope_mode) << "を書き込みました." << std::endl;
+    }
+  }
+
+  return true;
 }
 
 bool Hardware::create_sync_read_group(const std::string& group_name) {
@@ -853,19 +954,30 @@ bool Hardware::create_sync_read_group(const std::string& group_name) {
 bool Hardware::create_sync_write_group(const std::string& group_name) {
   // sync_write_groups_に、指定されたデータを書き込むSyncWriteGroupを追加する
   // できるだけ多くのデータをSyncWriteで書き込むため、インダイレクトアドレスを活用する
-  uint16_t indirect_address = ADDR_INDIRECT_ADDRESS_29;
+  uint16_t start_address = ADDR_INDIRECT_ADDRESS_29;
   uint16_t total_length = 0;
-  if (joint_groups_[group_name]->sync_write_position_enabled()) {
-    if (!set_indirect_address(group_name, indirect_address, ADDR_GOAL_POSITION,
-                              LEN_GOAL_POSITION)) {
-      std::cerr << group_name
-                << "グループのgoal_positionをインダイレクトアドレスにセットできません."
-                << std::endl;
+
+  auto append = [this, group_name, &start_address, &total_length](
+    auto target_addr, auto target_len, auto name){
+    if (!set_indirect_address(group_name, start_address, target_addr, target_len)) {
+      std::cerr << name << "をindirect addressにセットできません." << std::endl;
       return false;
     }
-    address_indirect_goal_position_[group_name] = ADDR_INDIRECT_DATA_29 + total_length;
-    total_length += LEN_GOAL_POSITION;
-    indirect_address += LEN_INDIRECT_ADDRESS * LEN_GOAL_POSITION;
+    total_length += target_len;
+    start_address += LEN_INDIRECT_ADDRESS * target_len;
+    return true;
+  };
+
+  if (joint_groups_[group_name]->sync_write_position_enabled()) {
+    if (!append(ADDR_GOAL_POSITION, LEN_GOAL_POSITION, "goal_position")) {
+      return false;
+    }
+  }
+
+  if (joint_groups_[group_name]->sync_write_velocity_enabled()) {
+    if (!append(ADDR_GOAL_VELOCITY, LEN_GOAL_VELOCITY, "goal_velocity")) {
+      return false;
+    }
   }
 
   sync_write_groups_[group_name] = std::make_shared<dynamixel::GroupSyncWrite>(
@@ -981,6 +1093,10 @@ uint32_t Hardware::radian_to_dxl_pos(const double position) {
   return position * TO_DXL_POS + DXL_HOME_POSITION;
 }
 
+uint32_t Hardware::to_dxl_velocity(const double velocity_rps) {
+  return velocity_rps * DXL_VELOCITY_FROM_RAD_PER_SEC;
+}
+
 uint32_t Hardware::to_dxl_acceleration(const double acceleration_rpss) {
   // 加速度 rad/s^2をDYNAMIXELのデータに変換する
 
@@ -996,8 +1112,8 @@ uint32_t Hardware::to_dxl_acceleration(const double acceleration_rpss) {
   return static_cast<uint32_t>(dxl_acceleration);
 }
 
-uint32_t Hardware::to_dxl_velocity(const double velocity_rps) {
-  // 速度 rad/sをDYNAMIXELのデータに変換する
+uint32_t Hardware::to_dxl_profile_velocity(const double velocity_rps) {
+  // 速度 rad/sをDYNAMIXELのProfile Velocityデータに変換する
 
   int dxl_velocity = DXL_VELOCITY_FROM_RAD_PER_SEC * velocity_rps;
   if (dxl_velocity > DXL_MAX_VELOCITY) {
