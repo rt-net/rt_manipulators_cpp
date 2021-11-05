@@ -523,6 +523,12 @@ bool Hardware::set_velocity(const uint8_t id, const double velocity) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
     return false;
   }
+
+  if (!thread_enable_) {
+    std::cerr << "目標速度を書き込む場合は、安全のためstart_thread()を実行してください." << std::endl;
+    return false;
+  }
+
   all_joints_ref_from_id_[id]->set_goal_velocity(velocity);
   return true;
 }
@@ -532,6 +538,12 @@ bool Hardware::set_velocity(const std::string& joint_name, const double velocity
     std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
     return false;
   }
+
+  if (!thread_enable_) {
+    std::cerr << "目標速度を書き込む場合は、安全のためstart_thread()を実行してください." << std::endl;
+    return false;
+  }
+
   all_joints_[joint_name]->set_goal_velocity(velocity);
   return true;
 }
@@ -546,6 +558,11 @@ bool Hardware::set_velocities(const std::string& group_name, std::vector<double>
     std::cerr << "目標値のサイズ:" << velocities.size();
     std::cerr << "がジョイント数:" << joint_groups_[group_name]->joint_names().size();
     std::cerr << "と一致しません." << std::endl;
+    return false;
+  }
+
+  if (!thread_enable_) {
+    std::cerr << "目標速度を書き込む場合は、安全のためstart_thread()を実行してください." << std::endl;
     return false;
   }
 
