@@ -86,6 +86,7 @@ class Hardware {
   bool write_double_word_data_to_group(const std::string& group_name, const uint16_t address,
                                        const uint32_t write_data);
   bool read_byte_data(const uint8_t id, const uint16_t address, uint8_t& read_data);
+  bool read_double_word_data(const uint8_t id, const uint16_t address, uint32_t& read_data);
 
  private:
   bool parse_config_file(const std::string& config_yaml);
@@ -93,6 +94,7 @@ class Hardware {
   bool all_joints_contain(const std::string& joint_name);
   bool all_joints_contain_id(const uint8_t id);
   bool write_operating_mode(const std::string& group_name);
+  bool limit_goal_velocity_by_present_position(const std::string& group_name);
   bool create_sync_read_group(const std::string& group_name);
   bool create_sync_write_group(const std::string& group_name);
   bool set_indirect_address(const std::string& group_name, const uint16_t addr_indirect_start,

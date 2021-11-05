@@ -5,6 +5,7 @@ joint_groups:
       - joint6
       - joint7
     sync_read:
+      - position
       - velocity
     sync_write:
       - velocity
@@ -12,6 +13,7 @@ joint_groups:
     joints:
       - joint_hand
     sync_read:
+      - position
       - velocity
     sync_write:
       - velocity

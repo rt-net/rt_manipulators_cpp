@@ -43,6 +43,8 @@ const double TO_VOLTAGE_VOLT = 0.1;
 
 // Dynamixel XM Series address table
 const uint16_t ADDR_OPERATING_MODE = 11;
+const uint16_t ADDR_MAX_POSITION_LIMIT = 48;
+const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
 const uint16_t ADDR_TORQUE_ENABLE = 64;
 const uint16_t ADDR_POSITION_D_GAIN = 80;
 const uint16_t ADDR_POSITION_I_GAIN = 82;
@@ -72,7 +74,8 @@ const uint16_t LEN_PRESENT_VOLTAGE = 2;
 const uint16_t LEN_PRESENT_TEMPERATURE = 1;
 const uint16_t LEN_INDIRECT_ADDRESS = 2;
 
-Hardware::Hardware(const std::string device_name) {
+Hardware::Hardware(const std::string device_name) : 
+  thread_enable_(false) {
   port_handler_ = std::shared_ptr<dynamixel::PortHandler>(
       dynamixel::PortHandler::getPortHandler(device_name.c_str()));
   packet_handler_ = std::shared_ptr<dynamixel::PacketHandler>(
@@ -116,7 +119,16 @@ bool Hardware::connect(const int baudrate) {
   return true;
 }
 
-void Hardware::disconnect() { port_handler_->closePort(); }
+void Hardware::disconnect() {
+  // 速度指示モードの場合は、安全のためトルクをOFFする
+  for (auto& [group_name, group] : joint_groups_) {
+    if (group->sync_write_velocity_enabled()) {
+      torque_off(group_name);
+    }
+  }
+
+  port_handler_->closePort();
+}
 
 bool Hardware::torque_on(const std::string& group_name) {
   if (!write_byte_data_to_group(group_name, ADDR_TORQUE_ENABLE, 1)) {
@@ -327,6 +339,20 @@ bool Hardware::stop_thread() {
     read_write_thread_->join();
   }
 
+  // リソースを解放
+  read_write_thread_.reset();
+
+  // ジョイントが速度指示モードの場合goal_velocityを0にする
+  for (auto& [group_name, group] : joint_groups_) {
+    if (group->sync_write_velocity_enabled()) {
+      for (const auto & joint_name : group->joint_names()) {
+          std::cout << joint_name << "ジョイントの goal_velocityを0で上書きします." << std::endl;
+          all_joints_.at(joint_name)->set_goal_velocity(0);
+      }
+      sync_write(group_name);
+    }
+  }
+
   return true;
 }
 
@@ -525,7 +551,8 @@ bool Hardware::set_velocity(const uint8_t id, const double velocity) {
   }
 
   if (!thread_enable_) {
-    std::cerr << "目標速度を書き込む場合は、安全のためstart_thread()を実行してください." << std::endl;
+    std::cerr << "目標速度を書き込む場合は、";
+    std::cerr << "安全のためstart_thread()を実行してください." << std::endl;
     return false;
   }
 
@@ -540,7 +567,8 @@ bool Hardware::set_velocity(const std::string& joint_name, const double velocity
   }
 
   if (!thread_enable_) {
-    std::cerr << "目標速度を書き込む場合は、安全のためstart_thread()を実行してください." << std::endl;
+    std::cerr << "目標速度を書き込む場合は、";
+    std::cerr << "安全のためstart_thread()を実行してください." << std::endl;
     return false;
   }
 
@@ -562,7 +590,8 @@ bool Hardware::set_velocities(const std::string& group_name, std::vector<double>
   }
 
   if (!thread_enable_) {
-    std::cerr << "目標速度を書き込む場合は、安全のためstart_thread()を実行してください." << std::endl;
+    std::cerr << "目標速度を書き込む場合は、";
+    std::cerr << "安全のためstart_thread()を実行してください." << std::endl;
     return false;
   }
 
@@ -773,6 +802,20 @@ bool Hardware::read_byte_data(const uint8_t id, const uint16_t address, uint8_t&
   return true;
 }
 
+bool Hardware::read_double_word_data(const uint8_t id, const uint16_t address,
+                                     uint32_t& read_data) {
+  uint8_t dxl_error = 0;
+  uint32_t data = 0;
+  int dxl_result =
+      packet_handler_->read4ByteTxRx(port_handler_.get(), id, address, &data, &dxl_error);
+
+  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
+    return false;
+  }
+  read_data = data;
+  return true;
+}
+
 bool Hardware::parse_config_file(const std::string& config_yaml) {
   // yamlファイルを読み取り、joint_groups_とall_joints_メンバ変数に格納する
   std::ifstream fs(config_yaml);
@@ -815,7 +858,21 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
       joint_names.push_back(joint_name);
       auto joint_id = config[joint_name]["id"].as<int>();
       auto ope_mode = config[joint_name]["operating_mode"].as<int>();
-      auto joint_ptr = std::make_shared<joint::Joint>(joint_id, ope_mode);
+
+      uint32_t dxl_max_pos_limit = 0;
+      uint32_t dxl_min_pos_limit = 0;
+      if (!read_double_word_data(joint_id, ADDR_MAX_POSITION_LIMIT, dxl_max_pos_limit)) {
+        std::cerr << joint_name << "のMax Position Limitの読み取りに失敗しました." << std::endl;
+        return false;
+      }
+      if (!read_double_word_data(joint_id, ADDR_MIN_POSITION_LIMIT, dxl_min_pos_limit)) {
+        std::cerr << joint_name << "のMin Position Limitの読み取りに失敗しました." << std::endl;
+        return false;
+      }
+
+      auto joint_ptr = std::make_shared<joint::Joint>(
+        joint_id, ope_mode,
+        dxl_pos_to_radian(dxl_max_pos_limit), dxl_pos_to_radian(dxl_min_pos_limit));
       all_joints_.emplace(joint_name, joint_ptr);
       all_joints_ref_from_id_.emplace(joint_id, joint_ptr);  // IDからもJointにアクセスできる
     }
@@ -894,6 +951,24 @@ bool Hardware::write_operating_mode(const std::string& group_name) {
       }
       std::cout << joint_name << "ジョイントにOperating Mode:";
       std::cout << std::to_string(target_ope_mode) << "を書き込みました." << std::endl;
+    }
+  }
+
+  return true;
+}
+
+bool Hardware::limit_goal_velocity_by_present_position(const std::string& group_name) {
+  // ジョイントの現在角度がmax/min position limit を超えた場合、goal_velocityを0にする
+  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
+    auto max_position_limit = all_joints_.at(joint_name)->max_position_limit();
+    auto min_position_limit = all_joints_.at(joint_name)->min_position_limit();
+    auto present_position = all_joints_.at(joint_name)->get_present_position();
+
+    if (present_position > max_position_limit || present_position < min_position_limit) {
+      std::cout << joint_name << "ジョイントの現在角度が限界角度に到達しました、";
+      std::cout << "goal_velocityを0で上書きします." << std::endl;
+      all_joints_.at(joint_name)->set_goal_velocity(0);
+      return false;
     }
   }
 
@@ -1046,6 +1121,9 @@ void Hardware::read_write_thread(const std::vector<std::string>& group_names,
 
     for (const auto & group_name : group_names) {
       sync_read(group_name);
+      if (joint_groups_[group_name]->sync_write_velocity_enabled()) {
+        limit_goal_velocity_by_present_position(group_name);
+      }
       sync_write(group_name);
     }
 

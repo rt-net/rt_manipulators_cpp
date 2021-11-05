@@ -37,139 +37,44 @@ int main() {
     return -1;
   }
 
-  // std::cout << "armグループのサーボ最大加速度を0.5pi rad/s^2、最大速度を0.5pi rad/sに設定します."
-  //           << std::endl;
-  // if (!hardware.write_max_acceleration_to_group("arm", 0.5 * M_PI)) {
-  //   std::cerr << "armグループの最大加速度を設定できませんでした." << std::endl;
-  //   return -1;
-  // }
-
-  // if (!hardware.write_max_velocity_to_group("arm", 0.5 * M_PI)) {
-  //   std::cerr << "armグループの最大速度を設定できませんでした." << std::endl;
-  //   return -1;
-  // }
-
-  // std::cout << "handグループのサーボ最大加速度を0.5pi rad/s^2、最大速度を0.5pi rad/sに設定します."
-  //           << std::endl;
-  // if (!hardware.write_max_acceleration_to_group("hand", 0.5 * M_PI)) {
-  //   std::cerr << "handグループの最大加速度を設定できませんでした." << std::endl;
-  //   return -1;
-  // }
-
-  // if (!hardware.write_max_velocity_to_group("hand", 0.5 * M_PI)) {
-  //   std::cerr << "handグループの最大速度を設定できませんでした." << std::endl;
-  //   return -1;
-  // }
-
-  // std::cout << "arm、handグループのサーボ位置制御PIDゲインに(800, 0, 0)を書き込みます."
-  //           << std::endl;
-  // if (!hardware.write_position_pid_gain_to_group("arm", 800, 0, 0)) {
-  //   std::cerr << "armグループにPIDゲインを書き込めませんでした." << std::endl;
-  //   return -1;
-  // }
-  // if (!hardware.write_position_pid_gain_to_group("hand", 800, 0, 0)) {
-  //   std::cerr << "handグループにPIDゲインを書き込めませんでした." << std::endl;
-  //   return -1;
-  // }
-  // // PIDゲインは指定したサーボモータにも設定できます.
-  // if (!hardware.write_position_pid_gain(9, 800, 0, 0)) {
-  //   std::cerr << "ID:9ジョイントにPIDゲインを書き込めませんでした." << std::endl;
-  //   return -1;
-  // }
-  // if (!hardware.write_position_pid_gain("joint_hand", 800, 0, 0)) {
-  //   std::cerr << "joint_handジョイントにPIDゲインを書き込めませんでした." << std::endl;
-  //   return -1;
-  // }
-
   if (!hardware.torque_on("forearm")) {
     std::cerr << "forearmグループのトルクをONできませんでした." << std::endl;
     return -1;
   }
 
-  // if (!hardware.torque_on("hand")) {
-  //   std::cerr << "handグループのトルクをONできませんでした." << std::endl;
-  //   return -1;
-  // }
+  std::cout << "read/writeスレッドを起動します." << std::endl;
+  std::vector<std::string> group_names = {"forearm"};
+  if (!hardware.start_thread(group_names, std::chrono::milliseconds(10))) {
+    std::cerr << "スレッドの起動に失敗しました." << std::endl;
+    return -1;
+  }
 
-  hardware.set_velocity(8, -M_PI);
-  hardware.sync_write("forearm");
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  // 目標速度を段階的に早くする
+  const double MAX_VELOCITY = M_PI;
+  const double STEPS = 10;
 
-  hardware.set_velocity(8, 0);
-  hardware.sync_write("forearm");
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  for(int i=0; i<STEPS; i++){
+    double goal_velocity = M_PI * i / static_cast<double>(STEPS);
+    std::cout << "goal_velocity:" << goal_velocity << " rad/s" << std::endl;
+    hardware.set_velocity(6, goal_velocity);
+    hardware.set_velocity(7, goal_velocity);
+    hardware.set_velocity(8, goal_velocity);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    hardware.set_velocity("joint5", -goal_velocity);
+    hardware.set_velocity("joint6", -goal_velocity);
+    hardware.set_velocity("joint7", -goal_velocity);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+  }
 
-  // std::vector<double> target_positions(7, 0.0);
-  // std::cout << "armグループのサーボ目標角度に0.0 radを書き込みます." << std::endl;
-  // std::cout << "5秒後にX7が垂直姿勢へ移行するため、X7の周りに物や人を近づけないで下さい."
-  //           << std::endl;
-  // std::this_thread::sleep_for(std::chrono::seconds(5));
-  // hardware.set_positions("arm", target_positions);
-  // if (!hardware.sync_write("arm")) {
-  //   std::cerr << "armグループのsync writeに失敗しました." << std::endl;
-  // }
-  // std::cout << "5秒間スリープして動作完了を待ちます." << std::endl;
-  // std::this_thread::sleep_for(std::chrono::seconds(5));
+  std::vector<double> goal_velocities = {0.0, 0.0, 0.0};
+  hardware.set_velocities("forearm", goal_velocities);
 
-  // int dxl_id = 5;
-  // double target_position = -120.0 * M_PI / 180.0;  // radian
-
-  // std::cout << "ID:" << std::to_string(dxl_id) << "のサーボ目標角度に"
-  //           << std::to_string(target_position) << " radを書き込みます." << std::endl;
-  // hardware.set_position(dxl_id, target_position);
-  // if (!hardware.sync_write("arm")) {
-  //   std::cerr << "armグループのsync writeに失敗しました." << std::endl;
-  // }
-  // std::cout << "5秒間スリープして動作完了を待ちます." << std::endl;
-  // std::this_thread::sleep_for(std::chrono::seconds(5));
-
-  // std::string joint_name = "joint_hand";
-  // target_position = 30.0 * M_PI / 180.0;  // radian
-  // std::cout << joint_name << "ジョイントのサーボ目標角度に" << std::to_string(target_position)
-  //           << " radを書き込みます." << std::endl;
-  // hardware.set_position(joint_name, target_position);
-  // if (!hardware.sync_write("hand")) {
-  //   std::cerr << "handグループのsync writeに失敗しました." << std::endl;
-  // }
-  // std::cout << "5秒間スリープして動作完了を待ちます." << std::endl;
-  // std::this_thread::sleep_for(std::chrono::seconds(5));
-
-  // target_position = 0.0;  // radian
-  // std::cout << joint_name << "ジョイントのサーボ目標角度に" << std::to_string(target_position)
-  //           << " radを書き込みます." << std::endl;
-  // hardware.set_position(joint_name, target_position);
-  // if (!hardware.sync_write("hand")) {
-  //   std::cerr << "handグループのsync writeに失敗しました." << std::endl;
-  // }
-  // std::cout << "5秒間スリープして動作完了を待ちます." << std::endl;
-  // std::this_thread::sleep_for(std::chrono::seconds(5));
-
-  // std::cout << "arm、handグループのサーボ位置制御PIDゲインに(5, 0, 0)を書き込み、脱力させます."
-  //           << std::endl;
-  // if (!hardware.write_position_pid_gain_to_group("arm", 5, 0, 0)) {
-  //   std::cerr << "armグループにPIDゲインを書き込めませんでした." << std::endl;
-  // }
-  // if (!hardware.write_position_pid_gain_to_group("hand", 5, 0, 0)) {
-  //   std::cerr << "handグループにPIDゲインを書き込めませんでした." << std::endl;
-  // }
-  // std::cout << "10秒間スリープします." << std::endl;
-  // std::this_thread::sleep_for(std::chrono::seconds(10));
+  std::cout << "スレッドを停止します." << std::endl;
+  hardware.stop_thread();
 
   if (!hardware.torque_off("forearm")) {
     std::cerr << "forearmグループのトルクをOFFできませんでした." << std::endl;
   }
-
-  if (!hardware.torque_off("hand")) {
-    std::cerr << "handグループのトルクをOFFできませんでした." << std::endl;
-  }
-
-  // if (!hardware.write_position_pid_gain_to_group("arm", 800, 0, 0)) {
-  //   std::cerr << "armグループにPIDゲインを書き込めませんでした." << std::endl;
-  // }
-  // if (!hardware.write_position_pid_gain_to_group("hand", 800, 0, 0)) {
-  //   std::cerr << "handグループにPIDゲインを書き込めませんでした." << std::endl;
-  // }
-  // std::this_thread::sleep_for(std::chrono::seconds(1));
 
   std::cout << "CRANE-X7との接続を解除します." << std::endl;
   hardware.disconnect();
