@@ -125,6 +125,7 @@ class Hardware {
   std::map<JointGroupName, uint16_t> addr_sync_read_current_;
   std::map<JointGroupName, uint16_t> addr_sync_read_voltage_;
   std::map<JointGroupName, uint16_t> addr_sync_read_temperature_;
+  bool is_connected_;
   bool thread_enable_;
   std::shared_ptr<std::thread> read_write_thread_;
 };

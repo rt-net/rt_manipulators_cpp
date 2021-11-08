@@ -75,7 +75,7 @@ const uint16_t LEN_PRESENT_TEMPERATURE = 1;
 const uint16_t LEN_INDIRECT_ADDRESS = 2;
 
 Hardware::Hardware(const std::string device_name) :
-  thread_enable_(false) {
+  is_connected_(false), thread_enable_(false) {
   port_handler_ = std::shared_ptr<dynamixel::PortHandler>(
       dynamixel::PortHandler::getPortHandler(device_name.c_str()));
   packet_handler_ = std::shared_ptr<dynamixel::PacketHandler>(
@@ -127,18 +127,29 @@ bool Hardware::connect(const int baudrate) {
     return false;
   }
 
+  is_connected_ = true;
   return true;
 }
 
 void Hardware::disconnect() {
-  // 速度指示モードの場合は、安全のためトルクをOFFする
+  if (is_connected_ == false) {
+    return;
+  }
+
+  // 速度指示モードの場合は、goal_velocityを0にする
   for (auto& [group_name, group] : joint_groups_) {
     if (group->sync_write_velocity_enabled()) {
-      torque_off(group_name);
+      std::cout << group_name << "グループにはvelocityのsync_writeが設定されています." << std::endl;
+      std::cout << "安全のため, disconnect()関数内で目標速度 0 rad/sを書き込みます." << std::endl;
+      for (const auto & joint_name : group->joint_names()) {
+          all_joints_.at(joint_name)->set_goal_velocity(0);
+      }
+      sync_write(group_name);
     }
   }
 
   port_handler_->closePort();
+  is_connected_ = false;
 }
 
 bool Hardware::torque_on(const std::string& group_name) {
@@ -353,11 +364,12 @@ bool Hardware::stop_thread() {
   // リソースを解放
   read_write_thread_.reset();
 
-  // ジョイントが速度指示モードの場合goal_velocityを0にする
+  // 速度指示モードの場合は、goal_velocityを0にする
   for (auto& [group_name, group] : joint_groups_) {
     if (group->sync_write_velocity_enabled()) {
+      std::cout << group_name << "グループにはvelocityのsync_writeが設定されています." << std::endl;
+      std::cout << "安全のため, stop_thread()関数内で目標速度 0 rad/sを書き込みます." << std::endl;
       for (const auto & joint_name : group->joint_names()) {
-          std::cout << joint_name << "ジョイントの goal_velocityを0で上書きします." << std::endl;
           all_joints_.at(joint_name)->set_goal_velocity(0);
       }
       sync_write(group_name);
