@@ -27,7 +27,15 @@ class Joint {
   uint8_t id() const;
   uint8_t operating_mode() const;
   void set_present_position(const double position_radian);
+  void set_present_velocity(const double velocity_rps);
+  void set_present_current(const double current_ampere);
+  void set_present_voltage(const double voltage_volt);
+  void set_present_temperature(const int8_t temperature_degree);
   double get_present_position() const;
+  double get_present_velocity() const;
+  double get_present_current() const;
+  double get_present_voltage() const;
+  int8_t get_present_temperature() const;
   void set_goal_position(const double position_radian);
   double get_goal_position() const;
 
@@ -35,6 +43,10 @@ class Joint {
   uint8_t id_;
   uint8_t operating_mode_;
   double present_position_;
+  double present_velocity_;
+  double present_current_;
+  double present_voltage_;
+  int8_t present_temperature_;
   double goal_position_;
 };
 
@@ -47,6 +59,7 @@ class JointGroup {
   bool sync_read_position_enabled() const;
   bool sync_read_velocity_enabled() const;
   bool sync_read_current_enabled() const;
+  bool sync_read_voltage_enabled() const;
   bool sync_read_temperature_enabled() const;
   bool sync_write_position_enabled() const;
   bool sync_write_velocity_enabled() const;
@@ -57,6 +70,7 @@ class JointGroup {
   bool sync_read_position_enabled_;
   bool sync_read_velocity_enabled_;
   bool sync_read_current_enabled_;
+  bool sync_read_voltage_enabled_;
   bool sync_read_temperature_enabled_;
   bool sync_write_position_enabled_;
   bool sync_write_velocity_enabled_;
