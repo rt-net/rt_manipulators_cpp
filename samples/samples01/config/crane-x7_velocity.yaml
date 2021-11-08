@@ -9,17 +9,7 @@ joint_groups:
       - velocity
     sync_write:
       - velocity
-  hand:
-    joints:
-      - joint_hand
-    sync_read:
-      - position
-      - velocity
-    sync_write:
-      - velocity
 
-
-joint5: { id : 6, operating_mode: 1 }
-joint6: { id : 7, operating_mode: 1 }
-joint7: { id : 8, operating_mode: 1 }
-joint_hand: { id : 9, operating_mode: 1 }
+joint5: { id : 6, operating_mode: 1, max_pos_limit_margin: 0.524, min_pos_limit_margin: 0.524}
+joint6: { id : 7, operating_mode: 1, max_pos_limit_margin: 0.524, min_pos_limit_margin: 0.524}
+joint7: { id : 8, operating_mode: 1, max_pos_limit_margin: 0.524, min_pos_limit_margin: 0.524}

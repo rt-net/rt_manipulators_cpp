@@ -74,7 +74,7 @@ const uint16_t LEN_PRESENT_VOLTAGE = 2;
 const uint16_t LEN_PRESENT_TEMPERATURE = 1;
 const uint16_t LEN_INDIRECT_ADDRESS = 2;
 
-Hardware::Hardware(const std::string device_name) : 
+Hardware::Hardware(const std::string device_name) :
   thread_enable_(false) {
   port_handler_ = std::shared_ptr<dynamixel::PortHandler>(
       dynamixel::PortHandler::getPortHandler(device_name.c_str()));
@@ -870,9 +870,20 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
         return false;
       }
 
+      // 角度リミット値をラジアンに変換
+      double max_position_limit = dxl_pos_to_radian(dxl_max_pos_limit);
+      double min_position_limit = dxl_pos_to_radian(dxl_min_pos_limit);
+
+      // 角度リミット値にマージンを加算する
+      if (config[joint_name]["max_pos_limit_margin"]) {
+        max_position_limit -= config[joint_name]["max_pos_limit_margin"].as<double>();
+      }
+      if (config[joint_name]["min_pos_limit_margin"]) {
+        min_position_limit += config[joint_name]["min_pos_limit_margin"].as<double>();
+      }
+
       auto joint_ptr = std::make_shared<joint::Joint>(
-        joint_id, ope_mode,
-        dxl_pos_to_radian(dxl_max_pos_limit), dxl_pos_to_radian(dxl_min_pos_limit));
+        joint_id, ope_mode, max_position_limit, min_position_limit);
       all_joints_.emplace(joint_name, joint_ptr);
       all_joints_ref_from_id_.emplace(joint_id, joint_ptr);  // IDからもJointにアクセスできる
     }
@@ -959,20 +970,24 @@ bool Hardware::write_operating_mode(const std::string& group_name) {
 
 bool Hardware::limit_goal_velocity_by_present_position(const std::string& group_name) {
   // ジョイントの現在角度がmax/min position limit を超えた場合、goal_velocityを0にする
+  bool retval = true;
   for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
     auto max_position_limit = all_joints_.at(joint_name)->max_position_limit();
     auto min_position_limit = all_joints_.at(joint_name)->min_position_limit();
     auto present_position = all_joints_.at(joint_name)->get_present_position();
+    auto goal_velocity = all_joints_.at(joint_name)->get_goal_velocity();
+    bool has_exceeded_max_pos_limit = present_position > max_position_limit && goal_velocity > 0;
+    bool has_exceeded_min_pos_limit = present_position < min_position_limit && goal_velocity < 0;
 
-    if (present_position > max_position_limit || present_position < min_position_limit) {
+    if (has_exceeded_max_pos_limit || has_exceeded_min_pos_limit) {
       std::cout << joint_name << "ジョイントの現在角度が限界角度に到達しました、";
       std::cout << "goal_velocityを0で上書きします." << std::endl;
       all_joints_.at(joint_name)->set_goal_velocity(0);
-      return false;
+      retval = false;
     }
   }
 
-  return true;
+  return retval;
 }
 
 bool Hardware::create_sync_read_group(const std::string& group_name) {
