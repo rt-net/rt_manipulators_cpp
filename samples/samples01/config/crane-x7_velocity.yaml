@@ -6,7 +6,6 @@ joint_groups:
       - joint7
     sync_read:
       - position
-      - velocity
     sync_write:
       - velocity
 

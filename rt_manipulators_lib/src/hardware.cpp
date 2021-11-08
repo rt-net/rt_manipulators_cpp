@@ -88,14 +88,25 @@ Hardware::~Hardware() {
 }
 
 bool Hardware::load_config_file(const std::string& config_yaml) {
+  // コンフィグファイルの読み込み
   if (parse_config_file(config_yaml) == false) {
     return false;
   }
 
+  // sync_readとsync_writeの関係をチェック
+  for (auto& [group_name, group] : joint_groups_) {
+    if (group->sync_write_velocity_enabled() && !group->sync_read_position_enabled()) {
+      std::cerr << group_name << "グループはvelocityをsync_writeしますが, ";
+      std::cerr << "positionをsync_readしません." << std::endl;
+      std::cerr << "positionもsync_readするようにコンフィグファイルを修正して下さい." << std::endl;
+      return false;
+    }
+  }
+
   std::cout << "Config file '" << config_yaml << "' loaded." << std::endl;
-  for (const auto & group : joint_groups_) {
-    std::cout << group.first << std::endl;
-    for (const auto & joint_name : group.second->joint_names()) {
+  for (auto& [group_name, group] : joint_groups_) {
+    std::cout << group_name << std::endl;
+    for (const auto & joint_name : group->joint_names()) {
       std::cout << "\t" << joint_name;
       std::cout << ", id:" << std::to_string(all_joints_.at(joint_name)->id());
       std::cout << ", mode:" << std::to_string(all_joints_.at(joint_name)->operating_mode());
