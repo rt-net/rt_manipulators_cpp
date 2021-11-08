@@ -23,6 +23,7 @@ set(list_samples
     x7_read_present_values
     s17_read_present_values
     x7_write_velocity
+    s17_write_velocity
 )
 foreach(sample IN LISTS list_samples)
     message("${sample}")
