@@ -78,7 +78,7 @@ int main() {
   // 目標速度を段階的に早くする
   const double MAX_VELOCITY = M_PI;
   const double STEPS = 10;
-  for (int i=0; i < STEPS; i++) {
+  for (int i=1; i <=STEPS; i++) {
     double goal_velocity = MAX_VELOCITY * i / static_cast<double>(STEPS);
     std::cout << "set velocity:" << goal_velocity << " rad/s" << std::endl;
     hardware.set_velocity(6, goal_velocity);

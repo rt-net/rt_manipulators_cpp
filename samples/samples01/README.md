@@ -559,7 +559,7 @@ hardware.get_temperatures("arm", temperatures);
 ## サーボモータの目標速度を書き込む
 
 次のコマンドを実行します。
-CRANE-X7は前腕を回転させます。**前腕が浮くようにX7の腕を持ち上げて下さい**
+CRANE-X7は前腕を回転させます。**前腕が浮くようにCRANE-X7の腕を持ち上げて下さい**
 
 Sciurus17は両腕の手首を回転させます。
 
@@ -575,14 +575,15 @@ $ ./s17_write_velocity
 
 ```sh
 ...
+forearmグループのサーボ最大加速度を5pi rad/s^2に設定します.
+forearmグループのサーボ速度制御PIゲインに(100, 1920)を書き込みます.
 read/writeスレッドを起動します.
 5秒後に手先が動き出すため、手先の周りに物や人を近づけないで下さい.
-set velocity:0 rad/s
-set velocity:-0 rad/s
 set velocity:0.314159 rad/s
-joint6ジョイントの現在角度が限界角度に到達しました、goal_velocityを0で上書きします.
 set velocity:-0.314159 rad/s
-set velocity:0.628319 rad/s
+...
+set velocity:2.82743 rad/s
+joint5ジョイントの現在角度が限界角度に到達しました、goal_velocityを0で上書きします.
 joint6ジョイントの現在角度が限界角度に到達しました、goal_velocityを0で上書きします.
 ...
 スレッドを停止します.
@@ -653,8 +654,8 @@ hardware.write_velocity_pi_gain(2, 100, 1920);
 hardware.write_velocity_pi_gain("joint1", 100, 1920);
 ```
 
-サーボモータに目標速度を書き込む場合は、
-`Hardware.start_thread(group_names, update_cycle_ms)`を実行し、スレッドを起動しておきます。
+サーボモータに目標速度を書き込む準備として、
+`Hardware.start_thread(group_names, update_cycle_ms)`を実行し、スレッドを起動します。
 
 ```cpp
 std::vector<std::string> group_names = {"arm", "hand"};
