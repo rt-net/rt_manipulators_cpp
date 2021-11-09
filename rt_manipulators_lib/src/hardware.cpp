@@ -96,7 +96,7 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
   }
 
   // sync_readとsync_writeの関係をチェック
-  for (auto& [group_name, group] : joint_groups_) {
+  for (const auto& [group_name, group] : joint_groups_) {
     if (group->sync_write_velocity_enabled() && !group->sync_read_position_enabled()) {
       std::cerr << group_name << "グループはvelocityをsync_writeしますが, ";
       std::cerr << "positionをsync_readしません." << std::endl;
@@ -106,7 +106,7 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
   }
 
   std::cout << "Config file '" << config_yaml << "' loaded." << std::endl;
-  for (auto& [group_name, group] : joint_groups_) {
+  for (const auto& [group_name, group] : joint_groups_) {
     std::cout << group_name << std::endl;
     for (const auto & joint_name : group->joint_names()) {
       std::cout << "\t" << joint_name;
@@ -139,7 +139,7 @@ void Hardware::disconnect() {
   }
 
   // 速度指示モードの場合は、goal_velocityを0にする
-  for (auto& [group_name, group] : joint_groups_) {
+  for (const auto& [group_name, group] : joint_groups_) {
     if (group->sync_write_velocity_enabled()) {
       std::cout << group_name << "グループにはvelocityのsync_writeが設定されています." << std::endl;
       std::cout << "安全のため, disconnect()関数内で目標速度 0 rad/sを書き込みます." << std::endl;
