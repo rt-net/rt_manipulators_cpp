@@ -633,6 +633,25 @@ joint_groups:
 ジョイント名(3): { id : 2, operating_mode: 1, max_pos_limit_margin: 0.5, min_pos_limit_margin: 0.5}
 ```
 
+サーボモータの速度制御PIゲインを設定するため、`Hardware.write_velocity_pi_gain_to_group(group_name, p, i)`を実行します。
+引数にはジョイントグループ名と、PIゲインを入力します。
+
+```cpp
+hardware.write_velocity_pi_gain_to_group("arm", 100, 1920);
+```
+
+指定したサーボモータにPIゲインを設定する場合は、`Hardware.write_velocity_pi_gain(id, p, i)`を実行します。
+
+```cpp
+hardware.write_velocity_pi_gain(2, 100, 1920);
+```
+
+ジョイント名で指定することも可能です。
+
+```cpp
+hardware.write_velocity_pi_gain("joint1", 100, 1920);
+```
+
 サーボモータに目標速度を書き込む場合は、
 `Hardware.start_thread(group_names, update_cycle_ms)`を実行し、スレッドを起動しておきます。
 
