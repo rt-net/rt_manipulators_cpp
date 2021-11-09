@@ -52,7 +52,7 @@ int main() {
   }
   // PIゲインは指定したサーボモータにも設定できます.
   if (!hardware.write_velocity_pi_gain(7, 100, 1920)) {
-    std::cerr << "ID:9ジョイントにPIゲインを書き込めませんでした." << std::endl;
+    std::cerr << "ID:7ジョイントにPIゲインを書き込めませんでした." << std::endl;
     return -1;
   }
   if (!hardware.write_velocity_pi_gain("joint7", 100, 1920)) {

@@ -40,6 +40,31 @@ int main() {
   std::vector<std::string> group_names = {"right_wrist", "left_wrist"};
 
   for (const auto & group_name : group_names) {
+    std::cout << group_name << "グループのサーボ最大加速度を5pi rad/s^2に設定します."
+              << std::endl;
+    if (!hardware.write_max_acceleration_to_group(group_name, 5.0 * M_PI)) {
+      std::cerr << group_name << "グループの最大加速度を設定できませんでした." << std::endl;
+      return -1;
+    }
+
+    std::cout << group_name << "グループのサーボ速度制御PIゲインに(100, 1920)を書き込みます."
+              << std::endl;
+    if (!hardware.write_velocity_pi_gain_to_group(group_name, 100, 1920)) {
+      std::cerr << group_name << "グループにPIゲインを書き込めませんでした." << std::endl;
+      return -1;
+    }
+  }
+  // PIゲインは指定したサーボモータにも設定できます.
+  if (!hardware.write_velocity_pi_gain(7, 100, 1920)) {
+    std::cerr << "ID:7ジョイントにPIゲインを書き込めませんでした." << std::endl;
+    return -1;
+  }
+  if (!hardware.write_velocity_pi_gain("right_arm_joint7", 100, 1920)) {
+    std::cerr << "right_arm_joint7ジョイントにPIゲインを書き込めませんでした." << std::endl;
+    return -1;
+  }
+
+  for (const auto & group_name : group_names) {
     if (!hardware.torque_on(group_name)) {
       std::cerr << group_name << "グループのトルクをONできませんでした." << std::endl;
       return -1;
