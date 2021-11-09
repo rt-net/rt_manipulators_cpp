@@ -74,6 +74,10 @@ class Hardware {
                                const uint16_t d);
   bool write_position_pid_gain_to_group(const std::string& group_name, const uint16_t p,
                                         const uint16_t i, const uint16_t d);
+  bool write_velocity_pi_gain(const uint8_t id, const uint16_t p, const uint16_t i);
+  bool write_velocity_pi_gain(const std::string& joint_name, const uint16_t p, const uint16_t i);
+  bool write_velocity_pi_gain_to_group(const std::string& group_name, const uint16_t p,
+                                       const uint16_t i);
 
  protected:
   bool write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data);

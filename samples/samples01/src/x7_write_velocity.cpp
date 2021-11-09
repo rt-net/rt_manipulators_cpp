@@ -37,6 +37,29 @@ int main() {
     return -1;
   }
 
+  std::cout << "forearmグループのサーボ最大加速度を5pi rad/s^2に設定します."
+            << std::endl;
+  if (!hardware.write_max_acceleration_to_group("forearm", 5.0 * M_PI)) {
+    std::cerr << "forearmグループの最大加速度を設定できませんでした." << std::endl;
+    return -1;
+  }
+
+  std::cout << "forearmグループのサーボ速度制御PIゲインに(100, 1920)を書き込みます."
+            << std::endl;
+  if (!hardware.write_velocity_pi_gain_to_group("forearm", 100, 1920)) {
+    std::cerr << "forearmグループにPIゲインを書き込めませんでした." << std::endl;
+    return -1;
+  }
+  // PIゲインは指定したサーボモータにも設定できます.
+  if (!hardware.write_velocity_pi_gain(7, 100, 1920)) {
+    std::cerr << "ID:9ジョイントにPIゲインを書き込めませんでした." << std::endl;
+    return -1;
+  }
+  if (!hardware.write_velocity_pi_gain("joint7", 100, 1920)) {
+    std::cerr << "joint7ジョイントにPIゲインを書き込めませんでした." << std::endl;
+    return -1;
+  }
+
   if (!hardware.torque_on("forearm")) {
     std::cerr << "forearmグループのトルクをONできませんでした." << std::endl;
     return -1;

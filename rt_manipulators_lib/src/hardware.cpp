@@ -46,6 +46,8 @@ const uint16_t ADDR_OPERATING_MODE = 11;
 const uint16_t ADDR_MAX_POSITION_LIMIT = 48;
 const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
 const uint16_t ADDR_TORQUE_ENABLE = 64;
+const uint16_t ADDR_VELOCITY_I_GAIN = 76;
+const uint16_t ADDR_VELOCITY_P_GAIN = 78;
 const uint16_t ADDR_POSITION_D_GAIN = 80;
 const uint16_t ADDR_POSITION_I_GAIN = 82;
 const uint16_t ADDR_POSITION_P_GAIN = 84;
@@ -720,6 +722,60 @@ bool Hardware::write_position_pid_gain_to_group(const std::string& group_name, c
 
   if (!write_word_data_to_group(group_name, ADDR_POSITION_D_GAIN, d)) {
     std::cerr << group_name << "グループのPosition D Gainの書き込みに失敗しました." << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool Hardware::write_velocity_pi_gain(const uint8_t id, const uint16_t p, const uint16_t i) {
+  // 指定されたサーボモータの速度制御PIゲインを設定する
+  if (!all_joints_contain_id(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+
+  if (!write_word_data(id, ADDR_VELOCITY_P_GAIN, p)) {
+    std::cerr << "ID:" << std::to_string(id);
+    std::cerr << "のVelocity P Gainの書き込みに失敗しました." << std::endl;
+    return false;
+  }
+
+  if (!write_word_data(id, ADDR_VELOCITY_I_GAIN, i)) {
+    std::cerr << "ID:" << std::to_string(id);
+    std::cerr << "のVelocity I Gainの書き込みに失敗しました." << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool Hardware::write_velocity_pi_gain(const std::string& joint_name, const uint16_t p,
+                                      const uint16_t i) {
+  // 指定されたサーボモータの速度制御PIゲインを設定する
+  if (!all_joints_contain(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+
+  return write_velocity_pi_gain(all_joints_.at(joint_name)->id(), p, i);
+}
+
+bool Hardware::write_velocity_pi_gain_to_group(const std::string& group_name, const uint16_t p,
+                                       const uint16_t i) {
+  // 指定されたグループ内のサーボモータの速度制御PIゲインを設定する
+  if (!joint_groups_contain(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  if (!write_word_data_to_group(group_name, ADDR_VELOCITY_P_GAIN, p)) {
+    std::cerr << group_name << "グループのVelocity P Gainの書き込みに失敗しました." << std::endl;
+    return false;
+  }
+
+  if (!write_word_data_to_group(group_name, ADDR_VELOCITY_I_GAIN, i)) {
+    std::cerr << group_name << "グループのVelocity I Gainの書き込みに失敗しました." << std::endl;
     return false;
   }
 
