@@ -1167,11 +1167,11 @@ bool Hardware::create_sync_write_group(const std::string& group_name) {
   sync_write_groups_[group_name] = std::make_shared<dynamixel::GroupSyncWrite>(
       port_handler_.get(), packet_handler_.get(), ADDR_INDIRECT_DATA_29, total_length);
 
-  uint8_t init_data[total_length] = {0};
+  std::vector<uint8_t> init_data(total_length, 0);
 
   for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
     auto id = all_joints_.at(joint_name)->id();
-    if (!sync_write_groups_[group_name]->addParam(id, init_data)) {
+    if (!sync_write_groups_[group_name]->addParam(id, init_data.data())) {
       std::cerr << group_name << ":" << joint_name << "のgroupSyncWrite.addParam に失敗しました."
                 << std::endl;
       return false;
