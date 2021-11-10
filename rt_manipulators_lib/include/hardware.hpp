@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "joint.hpp"
+#include "hardware_joints.hpp"
 
 namespace rt_manipulators_cpp {
 
@@ -119,6 +120,7 @@ class Hardware {
 
   std::shared_ptr<dynamixel::PortHandler> port_handler_;
   std::shared_ptr<dynamixel::PacketHandler> packet_handler_;
+  hardware::Joints joints_;
   std::map<JointGroupName, std::shared_ptr<joint::JointGroup>> joint_groups_;
   std::map<JointName, std::shared_ptr<joint::Joint>> all_joints_;
   std::map<uint8_t, std::shared_ptr<joint::Joint>> all_joints_ref_from_id_;

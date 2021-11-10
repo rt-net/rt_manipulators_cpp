@@ -96,7 +96,7 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
   }
 
   // sync_readとsync_writeの関係をチェック
-  for (const auto& [group_name, group] : joint_groups_) {
+  for (const auto& [group_name, group] : joints_.groups()) {
     if (group->sync_write_velocity_enabled() && !group->sync_read_position_enabled()) {
       std::cerr << group_name << "グループはvelocityをsync_writeしますが, ";
       std::cerr << "positionをsync_readしません." << std::endl;
@@ -106,12 +106,12 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
   }
 
   std::cout << "Config file '" << config_yaml << "' loaded." << std::endl;
-  for (const auto& [group_name, group] : joint_groups_) {
+  for (const auto& [group_name, group] : joints_.groups()) {
     std::cout << group_name << std::endl;
     for (const auto & joint_name : group->joint_names()) {
       std::cout << "\t" << joint_name;
-      std::cout << ", id:" << std::to_string(all_joints_.at(joint_name)->id());
-      std::cout << ", mode:" << std::to_string(all_joints_.at(joint_name)->operating_mode());
+      std::cout << ", id:" << std::to_string(joints_.joint(joint_name)->id());
+      std::cout << ", mode:" << std::to_string(joints_.joint(joint_name)->operating_mode());
       std::cout << std::endl;
     }
   }
@@ -139,12 +139,12 @@ void Hardware::disconnect() {
   }
 
   // 速度指示モードの場合は、goal_velocityを0にする
-  for (const auto& [group_name, group] : joint_groups_) {
+  for (const auto& [group_name, group] : joints_.groups()) {
     if (group->sync_write_velocity_enabled()) {
       std::cout << group_name << "グループにはvelocityのsync_writeが設定されています." << std::endl;
       std::cout << "安全のため, disconnect()関数内で目標速度 0 rad/sを書き込みます." << std::endl;
       for (const auto & joint_name : group->joint_names()) {
-          all_joints_.at(joint_name)->set_goal_velocity(0);
+          joints_.joint(joint_name)->set_goal_velocity(0);
       }
       sync_write(group_name);
     }
@@ -165,9 +165,9 @@ bool Hardware::torque_on(const std::string& group_name) {
     std::cerr << group_name << "グループのトルクON後のsync_readに失敗しました." << std::endl;
     return false;
   }
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    all_joints_.at(joint_name)
-        ->set_goal_position(all_joints_.at(joint_name)->get_present_position());
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    joints_.joint(joint_name)
+        ->set_goal_position(joints_.joint(joint_name)->get_present_position());
   }
   return true;
 }
@@ -179,7 +179,7 @@ bool Hardware::torque_off(const std::string& group_name) {
 bool Hardware::sync_read(const std::string& group_name) {
   // 指定されたグループのsyncReadを実行して、サーボモータからデータを読み取る
   // 読み取ったデータはメンバ変数に格納する
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
@@ -196,7 +196,7 @@ bool Hardware::sync_read(const std::string& group_name) {
   }
 
   auto get_data = [this](auto group_name, auto joint_name, auto addr, auto len, auto & data){
-    auto id = all_joints_.at(joint_name)->id();
+    auto id = joints_.joint(joint_name)->id();
     if (!sync_read_groups_[group_name]->isAvailable(id, addr, len)) {
       std::cerr << "id: " << std::to_string(id);
       std::cerr << ", addr: " << std::to_string(addr);
@@ -210,12 +210,12 @@ bool Hardware::sync_read(const std::string& group_name) {
   };
 
   bool retval = true;
-  if (joint_groups_[group_name]->sync_read_position_enabled()) {
-    for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
+  if (joints_.group(group_name)->sync_read_position_enabled()) {
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
       int32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_position_[group_name],
                   LEN_PRESENT_POSITION, data)) {
-        all_joints_.at(joint_name)->set_present_position(dxl_pos_to_radian(data));
+        joints_.joint(joint_name)->set_present_position(dxl_pos_to_radian(data));
       } else {
         std::cerr << joint_name << "のpresent_positionを取得できません." << std::endl;
         retval = false;
@@ -223,12 +223,12 @@ bool Hardware::sync_read(const std::string& group_name) {
     }
   }
 
-  if (joint_groups_[group_name]->sync_read_velocity_enabled()) {
-    for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
+  if (joints_.group(group_name)->sync_read_velocity_enabled()) {
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
       int32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_velocity_[group_name],
                   LEN_PRESENT_VELOCITY, data)) {
-        all_joints_.at(joint_name)->set_present_velocity(dxl_velocity_to_rps(data));
+        joints_.joint(joint_name)->set_present_velocity(dxl_velocity_to_rps(data));
       } else {
         std::cerr << joint_name << "のpresent_velocityを取得できません." << std::endl;
         retval = false;
@@ -236,12 +236,12 @@ bool Hardware::sync_read(const std::string& group_name) {
     }
   }
 
-  if (joint_groups_[group_name]->sync_read_current_enabled()) {
-    for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
+  if (joints_.group(group_name)->sync_read_current_enabled()) {
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
       int16_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_current_[group_name],
                   LEN_PRESENT_CURRENT, data)) {
-        all_joints_.at(joint_name)->set_present_current(dxl_current_to_ampere(data));
+        joints_.joint(joint_name)->set_present_current(dxl_current_to_ampere(data));
       } else {
         std::cerr << joint_name << "のpresent_currentを取得できません." << std::endl;
         retval = false;
@@ -249,12 +249,12 @@ bool Hardware::sync_read(const std::string& group_name) {
     }
   }
 
-  if (joint_groups_[group_name]->sync_read_voltage_enabled()) {
-    for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
+  if (joints_.group(group_name)->sync_read_voltage_enabled()) {
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
       int16_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_voltage_[group_name],
                   LEN_PRESENT_VOLTAGE, data)) {
-        all_joints_.at(joint_name)->set_present_voltage(dxl_voltage_to_volt(data));
+        joints_.joint(joint_name)->set_present_voltage(dxl_voltage_to_volt(data));
       } else {
         std::cerr << joint_name << "のpresent_voltageを取得できません." << std::endl;
         retval = false;
@@ -262,12 +262,12 @@ bool Hardware::sync_read(const std::string& group_name) {
     }
   }
 
-  if (joint_groups_[group_name]->sync_read_temperature_enabled()) {
-    for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
+  if (joints_.group(group_name)->sync_read_temperature_enabled()) {
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
       int8_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_temperature_[group_name],
                   LEN_PRESENT_TEMPERATURE, data)) {
-        all_joints_.at(joint_name)->set_present_temperature(data);
+        joints_.joint(joint_name)->set_present_temperature(data);
       } else {
         std::cerr << joint_name << "のpresent_temperatureを取得できません." << std::endl;
         retval = false;
@@ -281,7 +281,7 @@ bool Hardware::sync_read(const std::string& group_name) {
 bool Hardware::sync_write(const std::string& group_name) {
   // 指定されたグループのsyncWriteを実行して、サーボモータにデータを書き込む
   // 書き込むデータはメンバ変数から取り出す
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
@@ -291,25 +291,25 @@ bool Hardware::sync_write(const std::string& group_name) {
     return false;
   }
 
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     std::vector<uint8_t> write_data;
-    if (joint_groups_[group_name]->sync_write_position_enabled()) {
-      uint32_t goal_position = radian_to_dxl_pos(all_joints_.at(joint_name)->get_goal_position());
+    if (joints_.group(group_name)->sync_write_position_enabled()) {
+      uint32_t goal_position = radian_to_dxl_pos(joints_.joint(joint_name)->get_goal_position());
       write_data.push_back(DXL_LOBYTE(DXL_LOWORD(goal_position)));
       write_data.push_back(DXL_HIBYTE(DXL_LOWORD(goal_position)));
       write_data.push_back(DXL_LOBYTE(DXL_HIWORD(goal_position)));
       write_data.push_back(DXL_HIBYTE(DXL_HIWORD(goal_position)));
     }
 
-    if (joint_groups_[group_name]->sync_write_velocity_enabled()) {
-      uint32_t goal_velocity = to_dxl_velocity(all_joints_.at(joint_name)->get_goal_velocity());
+    if (joints_.group(group_name)->sync_write_velocity_enabled()) {
+      uint32_t goal_velocity = to_dxl_velocity(joints_.joint(joint_name)->get_goal_velocity());
       write_data.push_back(DXL_LOBYTE(DXL_LOWORD(goal_velocity)));
       write_data.push_back(DXL_HIBYTE(DXL_LOWORD(goal_velocity)));
       write_data.push_back(DXL_LOBYTE(DXL_HIWORD(goal_velocity)));
       write_data.push_back(DXL_HIBYTE(DXL_HIWORD(goal_velocity)));
     }
 
-    auto id = all_joints_.at(joint_name)->id();
+    auto id = joints_.joint(joint_name)->id();
     if (!sync_write_groups_[group_name]->changeParam(id, write_data.data())) {
       std::cerr << group_name << ":" << std::to_string(id)
                 << " のsyncWrite->changeParamに失敗しました." << std::endl;
@@ -330,7 +330,7 @@ bool Hardware::start_thread(const std::vector<std::string>& group_names,
                             const std::chrono::milliseconds& update_cycle_ms) {
   // read, writeを繰り返すスレッドを開始する
   for (const auto & group_name : group_names) {
-    if (!joint_groups_contain(group_name)) {
+    if (!joints_.has_group(group_name)) {
       std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
       return false;
     }
@@ -367,12 +367,12 @@ bool Hardware::stop_thread() {
   read_write_thread_.reset();
 
   // 速度指示モードの場合は、goal_velocityを0にする
-  for (auto& [group_name, group] : joint_groups_) {
+  for (const auto& [group_name, group] : joints_.groups()) {
     if (group->sync_write_velocity_enabled()) {
       std::cout << group_name << "グループにはvelocityのsync_writeが設定されています." << std::endl;
       std::cout << "安全のため, stop_thread()関数内で目標速度 0 rad/sを書き込みます." << std::endl;
       for (const auto & joint_name : group->joint_names()) {
-          all_joints_.at(joint_name)->set_goal_velocity(0);
+          joints_.joint(joint_name)->set_goal_velocity(0);
       }
       sync_write(group_name);
     }
@@ -382,195 +382,195 @@ bool Hardware::stop_thread() {
 }
 
 bool Hardware::get_position(const uint8_t id, double& position) {
-  if (!all_joints_contain_id(id)) {
+  if (!joints_.has_joint(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
     return false;
   }
-  position = all_joints_ref_from_id_[id]->get_present_position();
+  position = joints_.joint(id)->get_present_position();
   return true;
 }
 
 bool Hardware::get_position(const std::string& joint_name, double& position) {
-  if (!all_joints_contain(joint_name)) {
+  if (!joints_.has_joint(joint_name)) {
     std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
     return false;
   }
-  position = all_joints_[joint_name]->get_present_position();
+  position = joints_.joint(joint_name)->get_present_position();
   return true;
 }
 
 bool Hardware::get_positions(const std::string& group_name, std::vector<double>& positions) {
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
 
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    positions.push_back(all_joints_.at(joint_name)->get_present_position());
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    positions.push_back(joints_.joint(joint_name)->get_present_position());
   }
   return true;
 }
 
 bool Hardware::get_velocity(const uint8_t id, double& velocity) {
-  if (!all_joints_contain_id(id)) {
+  if (!joints_.has_joint(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
     return false;
   }
-  velocity = all_joints_ref_from_id_[id]->get_present_velocity();
+  velocity = joints_.joint(id)->get_present_velocity();
   return true;
 }
 
 bool Hardware::get_velocity(const std::string& joint_name, double& velocity) {
-  if (!all_joints_contain(joint_name)) {
+  if (!joints_.has_joint(joint_name)) {
     std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
     return false;
   }
-  velocity = all_joints_[joint_name]->get_present_velocity();
+  velocity = joints_.joint(joint_name)->get_present_velocity();
   return true;
 }
 
 bool Hardware::get_velocities(const std::string& group_name, std::vector<double>& velocities) {
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
 
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    velocities.push_back(all_joints_.at(joint_name)->get_present_velocity());
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    velocities.push_back(joints_.joint(joint_name)->get_present_velocity());
   }
   return true;
 }
 
 bool Hardware::get_current(const uint8_t id, double& current) {
-  if (!all_joints_contain_id(id)) {
+  if (!joints_.has_joint(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
     return false;
   }
-  current = all_joints_ref_from_id_[id]->get_present_current();
+  current = joints_.joint(id)->get_present_current();
   return true;
 }
 
 bool Hardware::get_current(const std::string& joint_name, double& current) {
-  if (!all_joints_contain(joint_name)) {
+  if (!joints_.has_joint(joint_name)) {
     std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
     return false;
   }
-  current = all_joints_[joint_name]->get_present_current();
+  current = joints_.joint(joint_name)->get_present_current();
   return true;
 }
 
 bool Hardware::get_currents(const std::string& group_name, std::vector<double>& currents) {
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
 
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    currents.push_back(all_joints_.at(joint_name)->get_present_current());
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    currents.push_back(joints_.joint(joint_name)->get_present_current());
   }
   return true;
 }
 
 bool Hardware::get_voltage(const uint8_t id, double& voltage) {
-  if (!all_joints_contain_id(id)) {
+  if (!joints_.has_joint(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
     return false;
   }
-  voltage = all_joints_ref_from_id_[id]->get_present_voltage();
+  voltage = joints_.joint(id)->get_present_voltage();
   return true;
 }
 
 bool Hardware::get_voltage(const std::string& joint_name, double& voltage) {
-  if (!all_joints_contain(joint_name)) {
+  if (!joints_.has_joint(joint_name)) {
     std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
     return false;
   }
-  voltage = all_joints_[joint_name]->get_present_voltage();
+  voltage = joints_.joint(joint_name)->get_present_voltage();
   return true;
 }
 
 bool Hardware::get_voltages(const std::string& group_name, std::vector<double>& voltages) {
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
 
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    voltages.push_back(all_joints_.at(joint_name)->get_present_voltage());
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    voltages.push_back(joints_.joint(joint_name)->get_present_voltage());
   }
   return true;
 }
 
 bool Hardware::get_temperature(const uint8_t id, int8_t& temperature) {
-  if (!all_joints_contain_id(id)) {
+  if (!joints_.has_joint(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
     return false;
   }
-  temperature = all_joints_ref_from_id_[id]->get_present_temperature();
+  temperature = joints_.joint(id)->get_present_temperature();
   return true;
 }
 
 bool Hardware::get_temperature(const std::string& joint_name, int8_t& temperature) {
-  if (!all_joints_contain(joint_name)) {
+  if (!joints_.has_joint(joint_name)) {
     std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
     return false;
   }
-  temperature = all_joints_[joint_name]->get_present_temperature();
+  temperature = joints_.joint(joint_name)->get_present_temperature();
   return true;
 }
 
 bool Hardware::get_temperatures(const std::string& group_name, std::vector<int8_t>& temperatures) {
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
 
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    temperatures.push_back(all_joints_.at(joint_name)->get_present_temperature());
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    temperatures.push_back(joints_.joint(joint_name)->get_present_temperature());
   }
   return true;
 }
 
 bool Hardware::set_position(const uint8_t id, const double position) {
-  if (!all_joints_contain_id(id)) {
+  if (!joints_.has_joint(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
     return false;
   }
-  all_joints_ref_from_id_[id]->set_goal_position(position);
+  joints_.joint(id)->set_goal_position(position);
   return true;
 }
 
 bool Hardware::set_position(const std::string& joint_name, const double position) {
-  if (!all_joints_contain(joint_name)) {
+  if (!joints_.has_joint(joint_name)) {
     std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
     return false;
   }
-  all_joints_[joint_name]->set_goal_position(position);
+  joints_.joint(joint_name)->set_goal_position(position);
   return true;
 }
 
 bool Hardware::set_positions(const std::string& group_name, std::vector<double>& positions) {
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
 
-  if (joint_groups_[group_name]->joint_names().size() != positions.size()) {
+  if (joints_.group(group_name)->joint_names().size() != positions.size()) {
     std::cerr << "目標値のサイズ:" << positions.size();
-    std::cerr << "がジョイント数:" << joint_groups_[group_name]->joint_names().size();
+    std::cerr << "がジョイント数:" << joints_.group(group_name)->joint_names().size();
     std::cerr << "と一致しません." << std::endl;
     return false;
   }
 
   for (size_t i = 0; i < positions.size(); i++) {
-    auto joint_name = joint_groups_[group_name]->joint_names()[i];
-    all_joints_[joint_name]->set_goal_position(positions[i]);
+    auto joint_name = joints_.group(group_name)->joint_names()[i];
+    joints_.joint(joint_name)->set_goal_position(positions[i]);
   }
   return true;
 }
 
 bool Hardware::set_velocity(const uint8_t id, const double velocity) {
-  if (!all_joints_contain_id(id)) {
+  if (!joints_.has_joint(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
     return false;
   }
@@ -581,12 +581,12 @@ bool Hardware::set_velocity(const uint8_t id, const double velocity) {
     return false;
   }
 
-  all_joints_ref_from_id_[id]->set_goal_velocity(velocity);
+  joints_.joint(id)->set_goal_velocity(velocity);
   return true;
 }
 
 bool Hardware::set_velocity(const std::string& joint_name, const double velocity) {
-  if (!all_joints_contain(joint_name)) {
+  if (!joints_.has_joint(joint_name)) {
     std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
     return false;
   }
@@ -597,19 +597,19 @@ bool Hardware::set_velocity(const std::string& joint_name, const double velocity
     return false;
   }
 
-  all_joints_[joint_name]->set_goal_velocity(velocity);
+  joints_.joint(joint_name)->set_goal_velocity(velocity);
   return true;
 }
 
 bool Hardware::set_velocities(const std::string& group_name, std::vector<double>& velocities) {
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
 
-  if (joint_groups_[group_name]->joint_names().size() != velocities.size()) {
+  if (joints_.group(group_name)->joint_names().size() != velocities.size()) {
     std::cerr << "目標値のサイズ:" << velocities.size();
-    std::cerr << "がジョイント数:" << joint_groups_[group_name]->joint_names().size();
+    std::cerr << "がジョイント数:" << joints_.group(group_name)->joint_names().size();
     std::cerr << "と一致しません." << std::endl;
     return false;
   }
@@ -621,8 +621,8 @@ bool Hardware::set_velocities(const std::string& group_name, std::vector<double>
   }
 
   for (size_t i = 0; i < velocities.size(); i++) {
-    auto joint_name = joint_groups_[group_name]->joint_names()[i];
-    all_joints_[joint_name]->set_goal_velocity(velocities[i]);
+    auto joint_name = joints_.group(group_name)->joint_names()[i];
+    joints_.joint(joint_name)->set_goal_velocity(velocities[i]);
   }
   return true;
 }
@@ -630,7 +630,7 @@ bool Hardware::set_velocities(const std::string& group_name, std::vector<double>
 bool Hardware::write_max_acceleration_to_group(const std::string& group_name,
                                                const double acceleration_rpss) {
   // 指定されたグループ内のサーボモータの最大動作加速度（radian / s^2）を設定する
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
@@ -648,7 +648,7 @@ bool Hardware::write_max_acceleration_to_group(const std::string& group_name,
 bool Hardware::write_max_velocity_to_group(const std::string& group_name,
                                            const double velocity_rps) {
   // 指定されたグループ内のサーボモータの最大動作加速度（radian / s^2）を設定する
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
@@ -665,7 +665,7 @@ bool Hardware::write_max_velocity_to_group(const std::string& group_name,
 bool Hardware::write_position_pid_gain(const uint8_t id, const uint16_t p, const uint16_t i,
                                const uint16_t d) {
   // 指定されたサーボモータの位置制御PIDゲインを設定する
-  if (!all_joints_contain_id(id)) {
+  if (!joints_.has_joint(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
     return false;
   }
@@ -694,18 +694,18 @@ bool Hardware::write_position_pid_gain(const uint8_t id, const uint16_t p, const
 bool Hardware::write_position_pid_gain(const std::string& joint_name, const uint16_t p,
                                        const uint16_t i, const uint16_t d) {
   // 指定されたサーボモータの位置制御PIDゲインを設定する
-  if (!all_joints_contain(joint_name)) {
+  if (!joints_.has_joint(joint_name)) {
     std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
     return false;
   }
 
-  return write_position_pid_gain(all_joints_.at(joint_name)->id(), p, i, d);
+  return write_position_pid_gain(joints_.joint(joint_name)->id(), p, i, d);
 }
 
 bool Hardware::write_position_pid_gain_to_group(const std::string& group_name, const uint16_t p,
                                                 const uint16_t i, const uint16_t d) {
   // 指定されたグループ内のサーボモータの位置制御PIDゲインを設定する
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
@@ -730,7 +730,7 @@ bool Hardware::write_position_pid_gain_to_group(const std::string& group_name, c
 
 bool Hardware::write_velocity_pi_gain(const uint8_t id, const uint16_t p, const uint16_t i) {
   // 指定されたサーボモータの速度制御PIゲインを設定する
-  if (!all_joints_contain_id(id)) {
+  if (!joints_.has_joint(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
     return false;
   }
@@ -753,18 +753,18 @@ bool Hardware::write_velocity_pi_gain(const uint8_t id, const uint16_t p, const 
 bool Hardware::write_velocity_pi_gain(const std::string& joint_name, const uint16_t p,
                                       const uint16_t i) {
   // 指定されたサーボモータの速度制御PIゲインを設定する
-  if (!all_joints_contain(joint_name)) {
+  if (!joints_.has_joint(joint_name)) {
     std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
     return false;
   }
 
-  return write_velocity_pi_gain(all_joints_.at(joint_name)->id(), p, i);
+  return write_velocity_pi_gain(joints_.joint(joint_name)->id(), p, i);
 }
 
 bool Hardware::write_velocity_pi_gain_to_group(const std::string& group_name, const uint16_t p,
                                        const uint16_t i) {
   // 指定されたグループ内のサーボモータの速度制御PIゲインを設定する
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
@@ -795,14 +795,14 @@ bool Hardware::write_byte_data(const uint8_t id, const uint16_t address, const u
 
 bool Hardware::write_byte_data_to_group(const std::string& group_name, const uint16_t address,
                                         const uint8_t write_data) {
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
 
   bool retval = true;
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    auto id = all_joints_.at(joint_name)->id();
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    auto id = joints_.joint(joint_name)->id();
     if (!write_byte_data(id, address, write_data)) {
       retval = false;
     }
@@ -824,14 +824,14 @@ bool Hardware::write_word_data(const uint8_t id, const uint16_t address,
 
 bool Hardware::write_word_data_to_group(const std::string& group_name, const uint16_t address,
                                         const uint16_t write_data) {
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
 
   bool retval = true;
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    auto id = all_joints_.at(joint_name)->id();
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    auto id = joints_.joint(joint_name)->id();
     if (!write_word_data(id, address, write_data)) {
       retval = false;
     }
@@ -853,14 +853,14 @@ bool Hardware::write_double_word_data(const uint8_t id, const uint16_t address,
 
 bool Hardware::write_double_word_data_to_group(const std::string& group_name,
                                                const uint16_t address, const uint32_t write_data) {
-  if (!joint_groups_contain(group_name)) {
+  if (!joints_.has_group(group_name)) {
     std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
     return false;
   }
 
   bool retval = true;
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    auto id = all_joints_.at(joint_name)->id();
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    auto id = joints_.joint(joint_name)->id();
     if (!write_double_word_data(id, address, write_data)) {
       retval = false;
     }
@@ -906,7 +906,7 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
   YAML::Node config = YAML::LoadFile(config_yaml);
   for (const auto & config_joint_group : config["joint_groups"]) {
     auto group_name = config_joint_group.first.as<std::string>();
-    if (joint_groups_contain(group_name)) {
+    if (joints_.has_group(group_name)) {
       std::cerr << group_name << "グループが2つ以上存在します." << std::endl;
       return false;
     }
@@ -919,7 +919,7 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
     std::vector<JointName> joint_names;
     for (const auto & config_joint : config["joint_groups"][group_name]["joints"]) {
       auto joint_name = config_joint.as<std::string>();
-      if (all_joints_contain(joint_name)) {
+      if (joints_.has_joint(joint_name)) {
         std::cerr << joint_name << "ジョイントが2つ以上存在します." << std::endl;
         return false;
       }
@@ -959,10 +959,8 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
         min_position_limit += config[joint_name]["pos_limit_margin"].as<double>();
       }
 
-      auto joint_ptr = std::make_shared<joint::Joint>(
-        joint_id, ope_mode, max_position_limit, min_position_limit);
-      all_joints_.emplace(joint_name, joint_ptr);
-      all_joints_ref_from_id_.emplace(joint_id, joint_ptr);  // IDからもJointにアクセスできる
+      auto joint = joint::Joint(joint_id, ope_mode, max_position_limit, min_position_limit);
+      joints_.append_joint(joint_name, joint);
     }
     std::vector<std::string> sync_read_targets;
     std::vector<std::string> sync_write_targets;
@@ -975,9 +973,8 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
           config["joint_groups"][group_name]["sync_write"].as<std::vector<std::string>>();
     }
 
-    auto joint_group_ptr =
-        std::make_shared<joint::JointGroup>(joint_names, sync_read_targets, sync_write_targets);
-    joint_groups_.emplace(group_name, joint_group_ptr);
+    auto joint_group = joint::JointGroup(joint_names, sync_read_targets, sync_write_targets);
+    joints_.append_group(group_name, joint_group);
 
     if (!write_operating_mode(group_name)) {
       std::cerr << group_name << "のOperating Modeを設定できません." << std::endl;
@@ -1015,8 +1012,8 @@ bool Hardware::write_operating_mode(const std::string& group_name) {
   // 動作モードはROM領域にあるため、データ書き込み回数を抑えたい
   const std::vector<uint8_t> SUPPORT_MODE_LIST = {0, 1, 3, 5};
 
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    auto target_ope_mode = all_joints_.at(joint_name)->operating_mode();
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    auto target_ope_mode = joints_.joint(joint_name)->operating_mode();
     auto result = std::find(SUPPORT_MODE_LIST.begin(), SUPPORT_MODE_LIST.end(), target_ope_mode);
     if (result == SUPPORT_MODE_LIST.end()) {
       std::cout << joint_name << "にライブラリがサポートしないOperating Mode:";
@@ -1024,7 +1021,7 @@ bool Hardware::write_operating_mode(const std::string& group_name) {
       return false;
     }
 
-    auto id = all_joints_.at(joint_name)->id();
+    auto id = joints_.joint(joint_name)->id();
     uint8_t present_ope_mode;
     if (!read_byte_data(id, ADDR_OPERATING_MODE, present_ope_mode)) {
       std::cout << joint_name << "ジョイントのOperating Modeを読み取れません." << std::endl;
@@ -1048,18 +1045,18 @@ bool Hardware::write_operating_mode(const std::string& group_name) {
 bool Hardware::limit_goal_velocity_by_present_position(const std::string& group_name) {
   // ジョイントの現在角度がmax/min position limit を超えた場合、goal_velocityを0にする
   bool retval = true;
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    auto max_position_limit = all_joints_.at(joint_name)->max_position_limit();
-    auto min_position_limit = all_joints_.at(joint_name)->min_position_limit();
-    auto present_position = all_joints_.at(joint_name)->get_present_position();
-    auto goal_velocity = all_joints_.at(joint_name)->get_goal_velocity();
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    auto max_position_limit = joints_.joint(joint_name)->max_position_limit();
+    auto min_position_limit = joints_.joint(joint_name)->min_position_limit();
+    auto present_position = joints_.joint(joint_name)->get_present_position();
+    auto goal_velocity = joints_.joint(joint_name)->get_goal_velocity();
     bool has_exceeded_max_pos_limit = present_position > max_position_limit && goal_velocity > 0;
     bool has_exceeded_min_pos_limit = present_position < min_position_limit && goal_velocity < 0;
 
     if (has_exceeded_max_pos_limit || has_exceeded_min_pos_limit) {
       std::cout << joint_name << "ジョイントの現在角度が限界角度に到達しました、";
       std::cout << "goal_velocityを0で上書きします." << std::endl;
-      all_joints_.at(joint_name)->set_goal_velocity(0);
+      joints_.joint(joint_name)->set_goal_velocity(0);
       retval = false;
     }
   }
@@ -1085,35 +1082,35 @@ bool Hardware::create_sync_read_group(const std::string& group_name) {
     return true;
   };
 
-  if (joint_groups_[group_name]->sync_read_position_enabled()) {
+  if (joints_.group(group_name)->sync_read_position_enabled()) {
     if (!append(ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION, "present_position",
         addr_sync_read_position_[group_name])) {
       return false;
     }
   }
 
-  if (joint_groups_[group_name]->sync_read_velocity_enabled()) {
+  if (joints_.group(group_name)->sync_read_velocity_enabled()) {
     if (!append(ADDR_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY, "present_velocity",
         addr_sync_read_velocity_[group_name])) {
       return false;
     }
   }
 
-  if (joint_groups_[group_name]->sync_read_current_enabled()) {
+  if (joints_.group(group_name)->sync_read_current_enabled()) {
     if (!append(ADDR_PRESENT_CURRENT, LEN_PRESENT_CURRENT, "present_current",
         addr_sync_read_current_[group_name])) {
       return false;
     }
   }
 
-  if (joint_groups_[group_name]->sync_read_voltage_enabled()) {
+  if (joints_.group(group_name)->sync_read_voltage_enabled()) {
     if (!append(ADDR_PRESENT_VOLTAGE, LEN_PRESENT_VOLTAGE, "present_voltage",
         addr_sync_read_voltage_[group_name])) {
       return false;
     }
   }
 
-  if (joint_groups_[group_name]->sync_read_temperature_enabled()) {
+  if (joints_.group(group_name)->sync_read_temperature_enabled()) {
     if (!append(ADDR_PRESENT_TEMPERATURE, LEN_PRESENT_TEMPERATURE, "present_temperature",
         addr_sync_read_temperature_[group_name])) {
       return false;
@@ -1123,8 +1120,8 @@ bool Hardware::create_sync_read_group(const std::string& group_name) {
   sync_read_groups_[group_name] = std::make_shared<dynamixel::GroupSyncRead>(
       port_handler_.get(), packet_handler_.get(), ADDR_INDIRECT_DATA_1, total_length);
 
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    auto id = all_joints_.at(joint_name)->id();
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    auto id = joints_.joint(joint_name)->id();
     if (!sync_read_groups_[group_name]->addParam(id)) {
       std::cerr << group_name << ":" << joint_name << "のgroupSyncRead.addParam に失敗しました."
                 << std::endl;
@@ -1152,13 +1149,13 @@ bool Hardware::create_sync_write_group(const std::string& group_name) {
     return true;
   };
 
-  if (joint_groups_[group_name]->sync_write_position_enabled()) {
+  if (joints_.group(group_name)->sync_write_position_enabled()) {
     if (!append(ADDR_GOAL_POSITION, LEN_GOAL_POSITION, "goal_position")) {
       return false;
     }
   }
 
-  if (joint_groups_[group_name]->sync_write_velocity_enabled()) {
+  if (joints_.group(group_name)->sync_write_velocity_enabled()) {
     if (!append(ADDR_GOAL_VELOCITY, LEN_GOAL_VELOCITY, "goal_velocity")) {
       return false;
     }
@@ -1169,8 +1166,8 @@ bool Hardware::create_sync_write_group(const std::string& group_name) {
 
   std::vector<uint8_t> init_data(total_length, 0);
 
-  for (const auto & joint_name : joint_groups_[group_name]->joint_names()) {
-    auto id = all_joints_.at(joint_name)->id();
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    auto id = joints_.joint(joint_name)->id();
     if (!sync_write_groups_[group_name]->addParam(id, init_data.data())) {
       std::cerr << group_name << ":" << joint_name << "のgroupSyncWrite.addParam に失敗しました."
                 << std::endl;
@@ -1213,7 +1210,7 @@ void Hardware::read_write_thread(const std::vector<std::string>& group_names,
 
     for (const auto & group_name : group_names) {
       sync_read(group_name);
-      if (joint_groups_[group_name]->sync_write_velocity_enabled()) {
+      if (joints_.group(group_name)->sync_write_velocity_enabled()) {
         limit_goal_velocity_by_present_position(group_name);
       }
       sync_write(group_name);

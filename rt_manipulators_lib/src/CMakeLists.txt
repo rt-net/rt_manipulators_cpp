@@ -7,6 +7,7 @@ add_library(${library_name}
     SHARED
     hardware.cpp
     joint.cpp
+    hardware_joints.cpp
 )
 set_target_properties(${library_name} PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
