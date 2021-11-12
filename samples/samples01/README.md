@@ -575,8 +575,8 @@ $ ./s17_write_velocity
 
 ```sh
 ...
-forearmグループのサーボ最大加速度を5pi rad/s^2に設定します.
-forearmグループのサーボ速度制御PIゲインに(100, 1920)を書き込みます.
+wristグループのサーボ最大加速度を5pi rad/s^2に設定します.
+wristグループのサーボ速度制御PIゲインに(100, 1920)を書き込みます.
 read/writeスレッドを起動します.
 5秒後に手先が動き出すため、手先の周りに物や人を近づけないで下さい.
 set velocity:0.314159 rad/s
@@ -587,10 +587,10 @@ joint5ジョイントの現在角度が限界角度に到達しました、goal_
 joint6ジョイントの現在角度が限界角度に到達しました、goal_velocityを0で上書きします.
 ...
 スレッドを停止します.
-forearmグループにはvelocityのsync_writeが設定されています.
+wristグループにはvelocityのsync_writeが設定されています.
 安全のため, stop_thread()関数内で目標速度 0 rad/sを書き込みます.
 CRANE-X7との接続を解除します.
-forearmグループにはvelocityのsync_writeが設定されています.
+wristグループにはvelocityのsync_writeが設定されています.
 安全のため, disconnect()関数内で目標速度 0 rad/sを書き込みます.
 ```
 
@@ -604,7 +604,7 @@ forearmグループにはvelocityのsync_writeが設定されています.
 コンフィグファイル読み込み時に、サーボモータ内部のパラメータである`Operating Mode`に
 `1 (速度制御モード)`が書き込まれます.
 
-ジョイントの`max_pos_limit_margin`と`min_pos_limit_margin`は、
+ジョイントの`pos_limit_margin`は、
 サーボモータ内部に設定された可動範囲（`Max/Min Position Limit`）から、
 どれくらいの角度余裕(radian)を設けるかというパラメータです.
 
@@ -617,7 +617,7 @@ forearmグループにはvelocityのsync_writeが設定されています.
 サーボモータの現在角度が可動範囲の限界値付近にあるとき、
 目標速度`0 radian / second`を書き込んでも回転速度が下がりきらず、
 現在角度が可動範囲を超える場合があります.
-安全ため、コンフィグファイルの`max_pos_limit_margin`と`min_pos_limit_margin`に0以上の数値を設定し、
+安全ため、コンフィグファイルの`pos_limit_margin`に0以上の数値を設定し、
 可動範囲を狭くしてください.
 
 ```yaml
@@ -632,9 +632,9 @@ joint_groups:
     sync_read:
       - position
 
-ジョイント名(1): { id : 0, operating_mode: 1, max_pos_limit_margin: 0.5, min_pos_limit_margin: 0.5}
-ジョイント名(2): { id : 1, operating_mode: 1, max_pos_limit_margin: 0.5, min_pos_limit_margin: 0.5}
-ジョイント名(3): { id : 2, operating_mode: 1, max_pos_limit_margin: 0.5, min_pos_limit_margin: 0.5}
+ジョイント名(1): { id : 0, operating_mode: 1, pos_limit_margin: 0.5}
+ジョイント名(2): { id : 1, operating_mode: 1, pos_limit_margin: 0.5}
+ジョイント名(3): { id : 2, operating_mode: 1, pos_limit_margin: 0.5}
 ```
 
 サーボモータの速度制御PIゲインを設定するため、`Hardware.write_velocity_pi_gain_to_group(group_name, p, i)`を実行します。
