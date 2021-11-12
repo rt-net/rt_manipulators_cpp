@@ -15,7 +15,6 @@
 #ifndef RT_MANIPULATORS_LIB_INCLUDE_HARDWARE_HPP_
 #define RT_MANIPULATORS_LIB_INCLUDE_HARDWARE_HPP_
 
-#include <dynamixel_sdk/dynamixel_sdk.h>
 #include <chrono>
 #include <map>
 #include <memory>
@@ -25,6 +24,7 @@
 
 #include "joint.hpp"
 #include "hardware_joints.hpp"
+#include "hardware_communicator.hpp"
 
 namespace rt_manipulators_cpp {
 
@@ -81,17 +81,12 @@ class Hardware {
                                        const uint16_t i);
 
  protected:
-  bool write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data);
   bool write_byte_data_to_group(const std::string& group_name, const uint16_t address,
                                 const uint8_t write_data);
-  bool write_word_data(const uint8_t id, const uint16_t address, const uint16_t write_data);
   bool write_word_data_to_group(const std::string& group_name, const uint16_t address,
                                 const uint16_t write_data);
-  bool write_double_word_data(const uint8_t id, const uint16_t address, const uint32_t write_data);
   bool write_double_word_data_to_group(const std::string& group_name, const uint16_t address,
                                        const uint32_t write_data);
-  bool read_byte_data(const uint8_t id, const uint16_t address, uint8_t& read_data);
-  bool read_double_word_data(const uint8_t id, const uint16_t address, uint32_t& read_data);
 
  private:
   bool parse_config_file(const std::string& config_yaml);
@@ -103,9 +98,6 @@ class Hardware {
                             const uint16_t addr_target, const uint16_t len_target);
   void read_write_thread(const std::vector<std::string>& group_names,
                          const std::chrono::milliseconds& update_cycle_ms);
-  bool parse_dxl_error(const std::string& func_name, const uint8_t id, const uint16_t address,
-                       const int dxl_comm_result, const uint8_t dxl_packet_error);
-  bool parse_dxl_error(const std::string& func_name, const int dxl_comm_result);
   double dxl_pos_to_radian(const int32_t position);
   double dxl_velocity_to_rps(const int32_t velocity) const;
   double dxl_current_to_ampere(const int16_t current) const;
@@ -115,17 +107,13 @@ class Hardware {
   uint32_t to_dxl_acceleration(const double acceleration_rpss);
   uint32_t to_dxl_profile_velocity(const double velocity_rps);
 
-  std::shared_ptr<dynamixel::PortHandler> port_handler_;
-  std::shared_ptr<dynamixel::PacketHandler> packet_handler_;
   hardware_joints::Joints joints_;
-  std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncRead>> sync_read_groups_;
-  std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncWrite>> sync_write_groups_;
+  std::shared_ptr<hardware_communicator::Communicator> comm_;
   std::map<JointGroupName, uint16_t> addr_sync_read_position_;
   std::map<JointGroupName, uint16_t> addr_sync_read_velocity_;
   std::map<JointGroupName, uint16_t> addr_sync_read_current_;
   std::map<JointGroupName, uint16_t> addr_sync_read_voltage_;
   std::map<JointGroupName, uint16_t> addr_sync_read_temperature_;
-  bool is_connected_;
   bool thread_enable_;
   std::shared_ptr<std::thread> read_write_thread_;
 };

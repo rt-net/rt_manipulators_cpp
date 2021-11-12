@@ -77,11 +77,8 @@ const uint16_t LEN_PRESENT_TEMPERATURE = 1;
 const uint16_t LEN_INDIRECT_ADDRESS = 2;
 
 Hardware::Hardware(const std::string device_name) :
-  is_connected_(false), thread_enable_(false) {
-  port_handler_ = std::shared_ptr<dynamixel::PortHandler>(
-      dynamixel::PortHandler::getPortHandler(device_name.c_str()));
-  packet_handler_ = std::shared_ptr<dynamixel::PacketHandler>(
-      dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION));
+  thread_enable_(false) {
+  comm_ = std::make_shared<hardware_communicator::Communicator>(device_name);
 }
 
 Hardware::~Hardware() {
@@ -120,21 +117,15 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
 }
 
 bool Hardware::connect(const int baudrate) {
-  if (!port_handler_->setBaudRate(baudrate)) {
-    std::cerr << "Unable to set baudrate: " << std::to_string(baudrate) << std::endl;
-    return false;
-  }
-  if (!port_handler_->openPort()) {
-    std::cerr << "Unable to open port: " << port_handler_->getPortName() << std::endl;
+  if (!comm_->connect()) {
     return false;
   }
 
-  is_connected_ = true;
   return true;
 }
 
 void Hardware::disconnect() {
-  if (is_connected_ == false) {
+  if (!comm_->is_connected()) {
     return;
   }
 
@@ -150,8 +141,7 @@ void Hardware::disconnect() {
     }
   }
 
-  port_handler_->closePort();
-  is_connected_ = false;
+  comm_->disconnect();
 }
 
 bool Hardware::torque_on(const std::string& group_name) {
@@ -184,27 +174,27 @@ bool Hardware::sync_read(const std::string& group_name) {
     return false;
   }
 
-  if (!sync_read_groups_[group_name]) {
+  if (!comm_->sync_read_group(group_name)) {
     std::cerr << group_name << "にはsync_readが設定されていません." << std::endl;
     return false;
   }
 
-  int dxl_result = sync_read_groups_[group_name]->txRxPacket();
-  if (!parse_dxl_error(std::string(__func__), dxl_result)) {
+  int dxl_result = comm_->sync_read_group(group_name)->txRxPacket();
+  if (!comm_->parse_dxl_error(std::string(__func__), dxl_result)) {
     std::cerr << group_name << "のsync readに失敗しました." << std::endl;
     return false;
   }
 
   auto get_data = [this](auto group_name, auto joint_name, auto addr, auto len, auto & data){
     auto id = joints_.joint(joint_name)->id();
-    if (!sync_read_groups_[group_name]->isAvailable(id, addr, len)) {
+    if (!comm_->sync_read_group(group_name)->isAvailable(id, addr, len)) {
       std::cerr << "id: " << std::to_string(id);
       std::cerr << ", addr: " << std::to_string(addr);
       std::cerr << ", len: " << std::to_string(len);
       std::cerr << " is not available." << std::endl;
       return false;
     } else {
-      data = sync_read_groups_[group_name]->getData(id, addr, len);
+      data = comm_->sync_read_group(group_name)->getData(id, addr, len);
       return true;
     }
   };
@@ -286,7 +276,7 @@ bool Hardware::sync_write(const std::string& group_name) {
     return false;
   }
 
-  if (!sync_write_groups_[group_name]) {
+  if (!comm_->sync_write_group(group_name)) {
     std::cerr << group_name << "にはsync_writeが設定されていません." << std::endl;
     return false;
   }
@@ -310,15 +300,15 @@ bool Hardware::sync_write(const std::string& group_name) {
     }
 
     auto id = joints_.joint(joint_name)->id();
-    if (!sync_write_groups_[group_name]->changeParam(id, write_data.data())) {
+    if (!comm_->sync_write_group(group_name)->changeParam(id, write_data.data())) {
       std::cerr << group_name << ":" << std::to_string(id)
                 << " のsyncWrite->changeParamに失敗しました." << std::endl;
       return false;
     }
   }
 
-  int dxl_result = sync_write_groups_[group_name]->txPacket();
-  if (!parse_dxl_error(std::string(__func__), dxl_result)) {
+  int dxl_result = comm_->sync_write_group(group_name)->txPacket();
+  if (!comm_->parse_dxl_error(std::string(__func__), dxl_result)) {
     std::cerr << group_name << "のsync writeに失敗しました." << std::endl;
     return false;
   }
@@ -526,19 +516,19 @@ bool Hardware::write_position_pid_gain(const uint8_t id, const uint16_t p, const
     return false;
   }
 
-  if (!write_word_data(id, ADDR_POSITION_P_GAIN, p)) {
+  if (!comm_->write_word_data(id, ADDR_POSITION_P_GAIN, p)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のPosition P Gainの書き込みに失敗しました." << std::endl;
     return false;
   }
 
-  if (!write_word_data(id, ADDR_POSITION_I_GAIN, i)) {
+  if (!comm_->write_word_data(id, ADDR_POSITION_I_GAIN, i)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のPosition I Gainの書き込みに失敗しました." << std::endl;
     return false;
   }
 
-  if (!write_word_data(id, ADDR_POSITION_D_GAIN, d)) {
+  if (!comm_->write_word_data(id, ADDR_POSITION_D_GAIN, d)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のPosition D Gainの書き込みに失敗しました." << std::endl;
     return false;
@@ -591,13 +581,13 @@ bool Hardware::write_velocity_pi_gain(const uint8_t id, const uint16_t p, const 
     return false;
   }
 
-  if (!write_word_data(id, ADDR_VELOCITY_P_GAIN, p)) {
+  if (!comm_->write_word_data(id, ADDR_VELOCITY_P_GAIN, p)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のVelocity P Gainの書き込みに失敗しました." << std::endl;
     return false;
   }
 
-  if (!write_word_data(id, ADDR_VELOCITY_I_GAIN, i)) {
+  if (!comm_->write_word_data(id, ADDR_VELOCITY_I_GAIN, i)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のVelocity I Gainの書き込みに失敗しました." << std::endl;
     return false;
@@ -638,17 +628,6 @@ bool Hardware::write_velocity_pi_gain_to_group(const std::string& group_name, co
   return true;
 }
 
-bool Hardware::write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data) {
-  uint8_t dxl_error = 0;
-  int dxl_result =
-      packet_handler_->write1ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
-
-  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
-    return false;
-  }
-  return true;
-}
-
 bool Hardware::write_byte_data_to_group(const std::string& group_name, const uint16_t address,
                                         const uint8_t write_data) {
   if (!joints_.has_group(group_name)) {
@@ -659,23 +638,11 @@ bool Hardware::write_byte_data_to_group(const std::string& group_name, const uin
   bool retval = true;
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
-    if (!write_byte_data(id, address, write_data)) {
+    if (!comm_->write_byte_data(id, address, write_data)) {
       retval = false;
     }
   }
   return retval;
-}
-
-bool Hardware::write_word_data(const uint8_t id, const uint16_t address,
-                               const uint16_t write_data) {
-  uint8_t dxl_error = 0;
-  int dxl_result =
-      packet_handler_->write2ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
-
-  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
-    return false;
-  }
-  return true;
 }
 
 bool Hardware::write_word_data_to_group(const std::string& group_name, const uint16_t address,
@@ -688,23 +655,11 @@ bool Hardware::write_word_data_to_group(const std::string& group_name, const uin
   bool retval = true;
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
-    if (!write_word_data(id, address, write_data)) {
+    if (!comm_->write_word_data(id, address, write_data)) {
       retval = false;
     }
   }
   return retval;
-}
-
-bool Hardware::write_double_word_data(const uint8_t id, const uint16_t address,
-                                      const uint32_t write_data) {
-  uint8_t dxl_error = 0;
-  int dxl_result =
-      packet_handler_->write4ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
-
-  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
-    return false;
-  }
-  return true;
 }
 
 bool Hardware::write_double_word_data_to_group(const std::string& group_name,
@@ -717,38 +672,11 @@ bool Hardware::write_double_word_data_to_group(const std::string& group_name,
   bool retval = true;
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
-    if (!write_double_word_data(id, address, write_data)) {
+    if (!comm_->write_double_word_data(id, address, write_data)) {
       retval = false;
     }
   }
   return retval;
-}
-
-bool Hardware::read_byte_data(const uint8_t id, const uint16_t address, uint8_t& read_data) {
-  uint8_t dxl_error = 0;
-  uint8_t data = 0;
-  int dxl_result =
-      packet_handler_->read1ByteTxRx(port_handler_.get(), id, address, &data, &dxl_error);
-
-  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
-    return false;
-  }
-  read_data = data;
-  return true;
-}
-
-bool Hardware::read_double_word_data(const uint8_t id, const uint16_t address,
-                                     uint32_t& read_data) {
-  uint8_t dxl_error = 0;
-  uint32_t data = 0;
-  int dxl_result =
-      packet_handler_->read4ByteTxRx(port_handler_.get(), id, address, &data, &dxl_error);
-
-  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
-    return false;
-  }
-  read_data = data;
-  return true;
 }
 
 bool Hardware::parse_config_file(const std::string& config_yaml) {
@@ -796,11 +724,11 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
 
       uint32_t dxl_max_pos_limit = 0;
       uint32_t dxl_min_pos_limit = 0;
-      if (!read_double_word_data(joint_id, ADDR_MAX_POSITION_LIMIT, dxl_max_pos_limit)) {
+      if (!comm_->read_double_word_data(joint_id, ADDR_MAX_POSITION_LIMIT, dxl_max_pos_limit)) {
         std::cerr << joint_name << "のMax Position Limitの読み取りに失敗しました." << std::endl;
         return false;
       }
-      if (!read_double_word_data(joint_id, ADDR_MIN_POSITION_LIMIT, dxl_min_pos_limit)) {
+      if (!comm_->read_double_word_data(joint_id, ADDR_MIN_POSITION_LIMIT, dxl_min_pos_limit)) {
         std::cerr << joint_name << "のMin Position Limitの読み取りに失敗しました." << std::endl;
         return false;
       }
@@ -867,13 +795,13 @@ bool Hardware::write_operating_mode(const std::string& group_name) {
 
     auto id = joints_.joint(joint_name)->id();
     uint8_t present_ope_mode;
-    if (!read_byte_data(id, ADDR_OPERATING_MODE, present_ope_mode)) {
+    if (!comm_->read_byte_data(id, ADDR_OPERATING_MODE, present_ope_mode)) {
       std::cout << joint_name << "ジョイントのOperating Modeを読み取れません." << std::endl;
       return false;
     }
 
     if (target_ope_mode != present_ope_mode) {
-      if (!write_byte_data(id, ADDR_OPERATING_MODE, target_ope_mode)) {
+      if (!comm_->write_byte_data(id, ADDR_OPERATING_MODE, target_ope_mode)) {
         std::cout << joint_name << "ジョイントにOperating Modeを書き込めません." << std::endl;
         std::cout << "トルクがONになっている場合はOFFしてください." << std::endl;
         return false;
@@ -961,12 +889,11 @@ bool Hardware::create_sync_read_group(const std::string& group_name) {
     }
   }
 
-  sync_read_groups_[group_name] = std::make_shared<dynamixel::GroupSyncRead>(
-      port_handler_.get(), packet_handler_.get(), ADDR_INDIRECT_DATA_1, total_length);
+  comm_->append_sync_read_group(group_name, ADDR_INDIRECT_DATA_1, total_length);
 
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
-    if (!sync_read_groups_[group_name]->addParam(id)) {
+    if (!comm_->sync_read_group(group_name)->addParam(id)) {
       std::cerr << group_name << ":" << joint_name << "のgroupSyncRead.addParam に失敗しました."
                 << std::endl;
       return false;
@@ -1005,14 +932,13 @@ bool Hardware::create_sync_write_group(const std::string& group_name) {
     }
   }
 
-  sync_write_groups_[group_name] = std::make_shared<dynamixel::GroupSyncWrite>(
-      port_handler_.get(), packet_handler_.get(), ADDR_INDIRECT_DATA_29, total_length);
+  comm_->append_sync_write_group(group_name, ADDR_INDIRECT_DATA_29, total_length);
 
   std::vector<uint8_t> init_data(total_length, 0);
 
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
-    if (!sync_write_groups_[group_name]->addParam(id, init_data.data())) {
+    if (!comm_->sync_write_group(group_name)->addParam(id, init_data.data())) {
       std::cerr << group_name << ":" << joint_name << "のgroupSyncWrite.addParam に失敗しました."
                 << std::endl;
       return false;
@@ -1062,43 +988,6 @@ void Hardware::read_write_thread(const std::vector<std::string>& group_names,
 
     std::this_thread::sleep_until(next_start_time);
   }
-}
-
-bool Hardware::parse_dxl_error(const std::string& func_name, const uint8_t id,
-                               const uint16_t address, const int dxl_comm_result,
-                               const uint8_t dxl_packet_error) {
-  bool retval = true;
-
-  if (dxl_comm_result != COMM_SUCCESS) {
-    std::cerr << "Function:" << func_name;
-    std::cerr << ", ID:" << std::to_string(id);
-    std::cerr << ", Address:" << std::to_string(address);
-    std::cerr << ", CommError:" << std::string(packet_handler_->getTxRxResult(dxl_comm_result))
-              << std::endl;
-    retval = false;
-  }
-
-  if (dxl_packet_error != 0) {
-    std::cerr << "Function:" << func_name;
-    std::cerr << ", ID:" << std::to_string(id);
-    std::cerr << ", Address:" << std::to_string(address);
-    std::cerr << ", PacketError:"
-              << std::string(packet_handler_->getRxPacketError(dxl_packet_error)) << std::endl;
-    retval = false;
-  }
-
-  return retval;
-}
-
-bool Hardware::parse_dxl_error(const std::string& func_name, const int dxl_comm_result) {
-  if (dxl_comm_result != COMM_SUCCESS) {
-    std::cerr << "Function:" << func_name;
-    std::cerr << ", CommError:" << std::string(packet_handler_->getTxRxResult(dxl_comm_result));
-    std::cerr << std::endl;
-    return false;
-  }
-
-  return true;
 }
 
 double Hardware::dxl_pos_to_radian(const int32_t position) {
