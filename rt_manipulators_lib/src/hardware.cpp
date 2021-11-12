@@ -954,11 +954,9 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
       double min_position_limit = dxl_pos_to_radian(dxl_min_pos_limit);
 
       // 角度リミット値にマージンを加算する
-      if (config[joint_name]["max_pos_limit_margin"]) {
-        max_position_limit -= config[joint_name]["max_pos_limit_margin"].as<double>();
-      }
-      if (config[joint_name]["min_pos_limit_margin"]) {
-        min_position_limit += config[joint_name]["min_pos_limit_margin"].as<double>();
+      if (config[joint_name]["pos_limit_margin"]) {
+        max_position_limit -= config[joint_name]["pos_limit_margin"].as<double>();
+        min_position_limit += config[joint_name]["pos_limit_margin"].as<double>();
       }
 
       auto joint_ptr = std::make_shared<joint::Joint>(

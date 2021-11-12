@@ -17,7 +17,7 @@ joint_groups:
     sync_write:
       - velocity
 
-right_arm_joint6: { id : 7, operating_mode: 1, max_pos_limit_margin: 0.524, min_pos_limit_margin: 0.524}
-right_arm_joint7: { id : 8, operating_mode: 1, max_pos_limit_margin: 0.524, min_pos_limit_margin: 0.524}
-left_arm_joint6: { id : 15, operating_mode: 1, max_pos_limit_margin: 0.524, min_pos_limit_margin: 0.524}
-left_arm_joint7: { id : 16, operating_mode: 1, max_pos_limit_margin: 0.524, min_pos_limit_margin: 0.524}
+right_arm_joint6: { id : 7, operating_mode: 1, pos_limit_margin: 0.524}
+right_arm_joint7: { id : 8, operating_mode: 1, pos_limit_margin: 0.524}
+left_arm_joint6: { id : 15, operating_mode: 1, pos_limit_margin: 0.524}
+left_arm_joint7: { id : 16, operating_mode: 1, pos_limit_margin: 0.524}
