@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <iostream>
+
 #include "hardware_joints.hpp"
 
 
@@ -56,6 +58,237 @@ bool Joints::has_joint(const joint_name_t & name) {
 
 bool Joints::has_joint(const dxl_id_t & id) {
   return all_joints_ref_from_id_.find(id) != all_joints_ref_from_id_.end();
+}
+
+bool Joints::get_position(const dxl_id_t & id, position_t & position) {
+  if (!has_joint(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+  position = joint(id)->get_present_position();
+  return true;
+}
+
+bool Joints::get_position(const joint_name_t & joint_name, position_t & position) {
+  if (!has_joint(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+  position = joint(joint_name)->get_present_position();
+  return true;
+}
+
+bool Joints::get_positions(const group_name_t & group_name, std::vector<position_t> & positions) {
+  if (!has_group(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  for (const auto & joint_name : joint_groups_.at(group_name)->joint_names()) {
+    positions.push_back(joint(joint_name)->get_present_position());
+  }
+  return true;
+}
+
+bool Joints::get_velocity(const dxl_id_t & id, velocity_t & velocity) {
+  if (!has_joint(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+  velocity = joint(id)->get_present_velocity();
+  return true;
+}
+
+bool Joints::get_velocity(const joint_name_t & joint_name, velocity_t & velocity) {
+  if (!has_joint(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+  velocity = joint(joint_name)->get_present_velocity();
+  return true;
+}
+
+bool Joints::get_velocities(const group_name_t & group_name, std::vector<velocity_t> & velocities) {
+  if (!has_group(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  for (const auto & joint_name : joint_groups_.at(group_name)->joint_names()) {
+    velocities.push_back(joint(joint_name)->get_present_velocity());
+  }
+  return true;
+}
+
+bool Joints::get_current(const dxl_id_t & id, current_t & current) {
+  if (!has_joint(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+  current = joint(id)->get_present_current();
+  return true;
+}
+
+bool Joints::get_current(const joint_name_t & joint_name, current_t & current) {
+  if (!has_joint(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+  current = joint(joint_name)->get_present_current();
+  return true;
+}
+
+bool Joints::get_currents(const group_name_t & group_name, std::vector<current_t>& currents) {
+  if (!has_group(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  for (const auto & joint_name : joint_groups_.at(group_name)->joint_names()) {
+    currents.push_back(joint(joint_name)->get_present_current());
+  }
+  return true;
+}
+
+bool Joints::get_voltage(const dxl_id_t id, voltage_t & voltage) {
+  if (!has_joint(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+  voltage = joint(id)->get_present_voltage();
+  return true;
+}
+
+bool Joints::get_voltage(const joint_name_t & joint_name, voltage_t & voltage) {
+  if (!has_joint(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+  voltage = joint(joint_name)->get_present_voltage();
+  return true;
+}
+
+bool Joints::get_voltages(const group_name_t & group_name, std::vector<voltage_t>& voltages) {
+  if (!has_group(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  for (const auto & joint_name : joint_groups_.at(group_name)->joint_names()) {
+    voltages.push_back(joint(joint_name)->get_present_voltage());
+  }
+  return true;
+}
+
+bool Joints::get_temperature(const dxl_id_t & id, temperature_t & temperature) {
+  if (!has_joint(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+  temperature = joint(id)->get_present_temperature();
+  return true;
+}
+
+bool Joints::get_temperature(const joint_name_t & joint_name, temperature_t & temperature) {
+  if (!has_joint(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+  temperature = joint(joint_name)->get_present_temperature();
+  return true;
+}
+
+bool Joints::get_temperatures(
+  const group_name_t & group_name, std::vector<temperature_t>& temperatures) {
+  if (!has_group(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  for (const auto & joint_name : joint_groups_.at(group_name)->joint_names()) {
+    temperatures.push_back(joint(joint_name)->get_present_temperature());
+  }
+  return true;
+}
+
+bool Joints::set_position(const dxl_id_t & id, const position_t & position) {
+  if (!has_joint(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+  joint(id)->set_goal_position(position);
+  return true;
+}
+
+bool Joints::set_position(const joint_name_t & joint_name, const position_t & position) {
+  if (!has_joint(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+  joint(joint_name)->set_goal_position(position);
+  return true;
+}
+
+bool Joints::set_positions(
+  const group_name_t & group_name, const std::vector<position_t> & positions) {
+  if (!has_group(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  if (joint_groups_.at(group_name)->joint_names().size() != positions.size()) {
+    std::cerr << "目標値のサイズ:" << positions.size();
+    std::cerr << "がジョイント数:" << joint_groups_.at(group_name)->joint_names().size();
+    std::cerr << "と一致しません." << std::endl;
+    return false;
+  }
+
+  for (size_t i = 0; i < positions.size(); i++) {
+    auto joint_name = joint_groups_.at(group_name)->joint_names()[i];
+    joint(joint_name)->set_goal_position(positions[i]);
+  }
+  return true;
+}
+
+bool Joints::set_velocity(const dxl_id_t & id, const velocity_t & velocity) {
+  if (!has_joint(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+
+  joint(id)->set_goal_velocity(velocity);
+  return true;
+}
+
+bool Joints::set_velocity(const joint_name_t & joint_name, const velocity_t & velocity) {
+  if (!has_joint(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+
+  joint(joint_name)->set_goal_velocity(velocity);
+  return true;
+}
+
+bool Joints::set_velocities(
+  const group_name_t & group_name, const std::vector<velocity_t>& velocities) {
+  if (!has_group(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  if (joint_groups_.at(group_name)->joint_names().size() != velocities.size()) {
+    std::cerr << "目標値のサイズ:" << velocities.size();
+    std::cerr << "がジョイント数:" << joint_groups_.at(group_name)->joint_names().size();
+    std::cerr << "と一致しません." << std::endl;
+    return false;
+  }
+
+  for (size_t i = 0; i < velocities.size(); i++) {
+    auto joint_name = joint_groups_.at(group_name)->joint_names()[i];
+    joint(joint_name)->set_goal_velocity(velocities[i]);
+  }
+  return true;
 }
 
 }  // namespace hardware

@@ -29,6 +29,11 @@ using group_name_t = std::string;
 using joint_name_t = std::string;
 using group_map_t = std::map<group_name_t, std::shared_ptr<joint::JointGroup>>;
 using dxl_id_t = uint8_t;
+using position_t = double;
+using velocity_t = double;
+using current_t = double;
+using voltage_t = double;
+using temperature_t = int8_t;
 
 // ハードウェアのジョイント情報を持つクラス
 class Joints{
@@ -44,6 +49,27 @@ class Joints{
   bool has_group(const group_name_t & name);
   bool has_joint(const joint_name_t & name);
   bool has_joint(const dxl_id_t & id);
+  bool get_position(const dxl_id_t & id, position_t & position);
+  bool get_position(const joint_name_t & joint_name, position_t & position);
+  bool get_positions(const group_name_t & group_name, std::vector<position_t> & positions);
+  bool get_velocity(const dxl_id_t & id, velocity_t & velocity);
+  bool get_velocity(const joint_name_t & joint_name, velocity_t & velocity);
+  bool get_velocities(const group_name_t & group_name, std::vector<velocity_t> & velocities);
+  bool get_current(const dxl_id_t & id, current_t & current);
+  bool get_current(const joint_name_t & joint_name, current_t & current);
+  bool get_currents(const group_name_t & group_name, std::vector<current_t>& currents);
+  bool get_voltage(const dxl_id_t id, voltage_t & voltage);
+  bool get_voltage(const joint_name_t & joint_name, voltage_t & voltage);
+  bool get_voltages(const group_name_t & group_name, std::vector<voltage_t>& voltages);
+  bool get_temperature(const dxl_id_t & id, temperature_t & temperature);
+  bool get_temperature(const joint_name_t & joint_name, temperature_t & temperature);
+  bool get_temperatures(const group_name_t & group_name, std::vector<temperature_t>& temperatures);
+  bool set_position(const dxl_id_t & id, const position_t & position);
+  bool set_position(const joint_name_t & joint_name, const position_t & position);
+  bool set_positions(const group_name_t & group_name, const std::vector<position_t> & positions);
+  bool set_velocity(const dxl_id_t & id, const velocity_t & velocity);
+  bool set_velocity(const joint_name_t & joint_name, const velocity_t & velocity);
+  bool set_velocities(const group_name_t & group_name, const std::vector<velocity_t>& velocities);
 
  private:
   group_map_t joint_groups_;
