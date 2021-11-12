@@ -25,29 +25,30 @@
 
 namespace hardware {
 
-using JointGroupName = std::string;
-using JointName = std::string;
-using JointGroupMap = std::map<JointGroupName, std::shared_ptr<joint::JointGroup>>;
+using group_name_t = std::string;
+using joint_name_t = std::string;
+using group_map_t = std::map<group_name_t, std::shared_ptr<joint::JointGroup>>;
+using dxl_id_t = uint8_t;
 
 // ハードウェアのジョイント情報を持つクラス
 class Joints{
  public:
   Joints() {}
   ~Joints() {}
-  const JointGroupMap groups() const;
-  void append_group(const JointGroupName & group_name, const joint::JointGroup & group);
-  void append_joint(const JointName & joint_name, const joint::Joint & joint);
-  std::shared_ptr<joint::JointGroup> group(const JointGroupName & name);
-  std::shared_ptr<joint::Joint> joint(const JointName & name);
-  std::shared_ptr<joint::Joint> joint(const uint8_t & id);
-  bool has_group(const JointGroupName & name);
-  bool has_joint(const JointName & name);
-  bool has_joint(const uint8_t & id);
+  const group_map_t groups() const;
+  void append_group(const group_name_t & group_name, const joint::JointGroup & group);
+  void append_joint(const joint_name_t & joint_name, const joint::Joint & joint);
+  std::shared_ptr<joint::JointGroup> group(const group_name_t & name);
+  std::shared_ptr<joint::Joint> joint(const joint_name_t & name);
+  std::shared_ptr<joint::Joint> joint(const dxl_id_t & id);
+  bool has_group(const group_name_t & name);
+  bool has_joint(const joint_name_t & name);
+  bool has_joint(const dxl_id_t & id);
 
  private:
-  JointGroupMap joint_groups_;
-  std::map<JointName, std::shared_ptr<joint::Joint>> all_joints_;
-  std::map<uint8_t, std::shared_ptr<joint::Joint>> all_joints_ref_from_id_;
+  group_map_t joint_groups_;
+  std::map<joint_name_t, std::shared_ptr<joint::Joint>> all_joints_;
+  std::map<dxl_id_t, std::shared_ptr<joint::Joint>> all_joints_ref_from_id_;
 };
 
 }  // namespace hardware

@@ -18,43 +18,43 @@
 namespace hardware {
 
 
-const JointGroupMap Joints::groups() const {
+const group_map_t Joints::groups() const {
   return joint_groups_;
 }
 
-void Joints::append_group(const JointGroupName & group_name, const joint::JointGroup & group) {
+void Joints::append_group(const group_name_t & group_name, const joint::JointGroup & group) {
   auto joint_group_ptr = std::make_shared<joint::JointGroup>(group);
   joint_groups_.emplace(group_name, joint_group_ptr);
 }
 
-void Joints::append_joint(const JointName & joint_name, const joint::Joint & joint) {
+void Joints::append_joint(const joint_name_t & joint_name, const joint::Joint & joint) {
   auto joint_ptr = std::make_shared<joint::Joint>(joint);
   all_joints_.emplace(joint_name, joint_ptr);
   // IDからもJointにアクセスできる
   all_joints_ref_from_id_.emplace(joint.id(), joint_ptr);
 }
 
-std::shared_ptr<joint::JointGroup> Joints::group(const JointGroupName & name) {
+std::shared_ptr<joint::JointGroup> Joints::group(const group_name_t & name) {
   return joint_groups_.at(name);
 }
 
-std::shared_ptr<joint::Joint> Joints::joint(const JointName & name) {
+std::shared_ptr<joint::Joint> Joints::joint(const joint_name_t & name) {
   return all_joints_.at(name);
 }
 
-std::shared_ptr<joint::Joint> Joints::joint(const uint8_t & id) {
+std::shared_ptr<joint::Joint> Joints::joint(const dxl_id_t & id) {
   return all_joints_ref_from_id_.at(id);
 }
 
-bool Joints::has_group(const JointGroupName & name) {
+bool Joints::has_group(const group_name_t & name) {
   return joint_groups_.find(name) != joint_groups_.end();
 }
 
-bool Joints::has_joint(const JointName & name) {
+bool Joints::has_joint(const joint_name_t & name) {
   return all_joints_.find(name) != all_joints_.end();
 }
 
-bool Joints::has_joint(const uint8_t & id) {
+bool Joints::has_joint(const dxl_id_t & id) {
   return all_joints_ref_from_id_.find(id) != all_joints_ref_from_id_.end();
 }
 
