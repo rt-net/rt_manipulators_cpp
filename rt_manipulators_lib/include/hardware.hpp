@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "joint.hpp"
+#include "hardware_joints.hpp"
 
 namespace rt_manipulators_cpp {
 
@@ -94,9 +95,6 @@ class Hardware {
 
  private:
   bool parse_config_file(const std::string& config_yaml);
-  bool joint_groups_contain(const std::string& group_name);
-  bool all_joints_contain(const std::string& joint_name);
-  bool all_joints_contain_id(const uint8_t id);
   bool write_operating_mode(const std::string& group_name);
   bool limit_goal_velocity_by_present_position(const std::string& group_name);
   bool create_sync_read_group(const std::string& group_name);
@@ -119,9 +117,7 @@ class Hardware {
 
   std::shared_ptr<dynamixel::PortHandler> port_handler_;
   std::shared_ptr<dynamixel::PacketHandler> packet_handler_;
-  std::map<JointGroupName, std::shared_ptr<joint::JointGroup>> joint_groups_;
-  std::map<JointName, std::shared_ptr<joint::Joint>> all_joints_;
-  std::map<uint8_t, std::shared_ptr<joint::Joint>> all_joints_ref_from_id_;
+  hardware_joints::Joints joints_;
   std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncRead>> sync_read_groups_;
   std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncWrite>> sync_write_groups_;
   std::map<JointGroupName, uint16_t> addr_sync_read_position_;
