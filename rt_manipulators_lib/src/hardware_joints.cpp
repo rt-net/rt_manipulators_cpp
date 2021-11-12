@@ -17,7 +17,7 @@
 #include "hardware_joints.hpp"
 
 
-namespace hardware {
+namespace hardware_joints {
 
 
 const group_map_t Joints::groups() const {
@@ -291,4 +291,4 @@ bool Joints::set_velocities(
   return true;
 }
 
-}  // namespace hardware
+}  // namespace hardware_joints

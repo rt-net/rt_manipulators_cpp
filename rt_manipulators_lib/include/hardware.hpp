@@ -117,7 +117,7 @@ class Hardware {
 
   std::shared_ptr<dynamixel::PortHandler> port_handler_;
   std::shared_ptr<dynamixel::PacketHandler> packet_handler_;
-  hardware::Joints joints_;
+  hardware_joints::Joints joints_;
   std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncRead>> sync_read_groups_;
   std::map<JointGroupName, std::shared_ptr<dynamixel::GroupSyncWrite>> sync_write_groups_;
   std::map<JointGroupName, uint16_t> addr_sync_read_position_;

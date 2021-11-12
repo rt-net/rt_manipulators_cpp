@@ -23,7 +23,7 @@
 
 #include "joint.hpp"
 
-namespace hardware {
+namespace hardware_joints {
 
 using group_name_t = std::string;
 using joint_name_t = std::string;
@@ -77,6 +77,6 @@ class Joints{
   std::map<dxl_id_t, std::shared_ptr<joint::Joint>> all_joints_ref_from_id_;
 };
 
-}  // namespace hardware
+}  // namespace hardware_joints
 
 #endif  // RT_MANIPULATORS_LIB_INCLUDE_HARDWARE_JOINTS_HPP_
