@@ -612,10 +612,12 @@ forearmグループにはvelocityのsync_writeが設定されています.
 そのため、`Hardware`クラスのスレッド内部で、
 サーボモータの現在角度を観察し、可動範囲を超える場合は目標速度`0 radian / second`を書き込む処理を実施しています.
 
+安全のためサーボモータ内部の可動範囲パラメータ（`Max/Min Position Limit`）が適切に設定されているかご確認ください。
+
 サーボモータの現在角度が可動範囲の限界値付近にあるとき、
 目標速度`0 radian / second`を書き込んでも回転速度が下がりきらず、
 現在角度が可動範囲を超える場合があります.
-安全ため、`max_pos_limit_margin`と`min_pos_limit_margin`に0以上の数値を設定し、
+安全ため、コンフィグファイルの`max_pos_limit_margin`と`min_pos_limit_margin`に0以上の数値を設定し、
 可動範囲を狭くしてください.
 
 ```yaml
