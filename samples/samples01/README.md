@@ -14,6 +14,7 @@
   - [サーボモータの速度、電流、入力電圧、温度を読み取る](#サーボモータの速度電流入力電圧温度を読み取る)
     - [解説](#解説-4)
   - [サーボモータの目標速度を書き込む](#サーボモータの目標速度を書き込む)
+    - [解説](#解説-5)
   - [サーボモータの目標電流を書き込む](#サーボモータの目標電流を書き込む)
 
 ## サンプルのビルド
@@ -276,6 +277,10 @@ CRANE-X7との接続を解除します.
 サーボモータに目標角度を書き込むため、
 コンフィグファイルのジョイントグループに`sync_write:position`を追加します。
 
+ジョイントの`operating_mode`は`3`に設定します.
+コンフィグファイル読み込み時に、サーボモータ内部のパラメータである`Operating Mode`に
+`3 (位置制御モード)`が書き込まれます.
+
 ```yaml
 joint_groups:
   ジョイントグループ名(1):
@@ -291,17 +296,23 @@ joint_groups:
       - ジョイント名(5)
     sync_write:
       - position
+
+ジョイント名(1): { id : 0, operating_mode: 3 }
+ジョイント名(2): { id : 1, operating_mode: 3 }
+ジョイント名(3): { id : 2, operating_mode: 3 }
+ジョイント名(4): { id : 3, operating_mode: 3 }
+ジョイント名(5): { id : 4, operating_mode: 3 }
 ```
 
 サーボモータの最大動作加速度を設定するため、`Hardware.write_max_acceleration_to_group(group_name, acceleration)`を実行します。
-引数にはジョイントグループ名と、加速度(radian / s^2)を入力します。
+引数にはジョイントグループ名と、加速度(radian / second^2)を入力します。
 
 ```cpp
 hardware.write_max_acceleration_to_group("arm", 0.5 * M_PI);
 ```
 
 サーボモータの最大動作速度を設定するため、`Hardware.write_max_velocity_to_group(group_name, velocity)`を実行します。
-引数にはジョイントグループ名と、速度(radian / s)を入力します。
+引数にはジョイントグループ名と、速度(radian / second)を入力します。
 
 ```cpp
 hardware.write_max_velocity_to_group("arm", 0.5* M_PI);
@@ -491,7 +502,7 @@ hardware.sync_read("arm");
 ```
 
 サーボモータの速度を取得するため、`Hardware.get_velocity(id, velocity)`を実行します。
-引数にはサーボモータのIDと、速度(radian per second)の格納先を入力します。
+引数にはサーボモータのIDと、速度(radian / second)の格納先を入力します。
 
 ```cpp
 double velocity;
@@ -547,7 +558,142 @@ hardware.get_temperatures("arm", temperatures);
 
 ## サーボモータの目標速度を書き込む
 
-未実装です
+次のコマンドを実行します。
+CRANE-X7は前腕を回転させます。**前腕が浮くようにCRANE-X7の腕を持ち上げて下さい**
+
+Sciurus17は両腕の手首を回転させます。
+
+```sh
+# CRANE-X7の場合
+$ cd bin/
+$ ./x7_write_velocity
+# Sciurus17の場合
+$ ./s17_write_velocity
+```
+
+実行結果（CRANE-X7の場合）
+
+```sh
+...
+wristグループのサーボ最大加速度を5pi rad/s^2に設定します.
+wristグループのサーボ速度制御PIゲインに(100, 1920)を書き込みます.
+read/writeスレッドを起動します.
+5秒後に手先が動き出すため、手先の周りに物や人を近づけないで下さい.
+set velocity:0.314159 rad/s
+set velocity:-0.314159 rad/s
+...
+set velocity:2.82743 rad/s
+joint5ジョイントの現在角度が限界角度に到達しました、goal_velocityを0で上書きします.
+joint6ジョイントの現在角度が限界角度に到達しました、goal_velocityを0で上書きします.
+...
+スレッドを停止します.
+wristグループにはvelocityのsync_writeが設定されています.
+安全のため, stop_thread()関数内で目標速度 0 rad/sを書き込みます.
+CRANE-X7との接続を解除します.
+wristグループにはvelocityのsync_writeが設定されています.
+安全のため, disconnect()関数内で目標速度 0 rad/sを書き込みます.
+```
+
+### 解説
+
+サーボモータに目標速度を書き込むため、
+コンフィグファイルのジョイントグループに`sync_write:velocity`と`sync_read:position`を追加します.
+`sync_read:position`は可動範囲超過を検出するために必要です.
+
+ジョイントの`operating_mode`は`1`に設定します.
+コンフィグファイル読み込み時に、サーボモータ内部のパラメータである`Operating Mode`に
+`1 (速度制御モード)`が書き込まれます.
+
+ジョイントの`pos_limit_margin`は、
+サーボモータ内部に設定された可動範囲（`Max/Min Position Limit`）から、
+どれくらいの角度余裕(radian)を設けるかというパラメータです.
+
+**サーボモータが速度制御モードの時、サーボモータ内部の角度制限機能が動作しません。**
+そのため、`Hardware`クラスのスレッド内部で、
+サーボモータの現在角度を観察し、可動範囲を超える場合は目標速度`0 radian / second`を書き込む処理を実施しています.
+
+安全のためサーボモータ内部の可動範囲パラメータ（`Max/Min Position Limit`）が適切に設定されているかご確認ください。
+
+サーボモータの現在角度が可動範囲の限界値付近にあるとき、
+目標速度`0 radian / second`を書き込んでも回転速度が下がりきらず、
+現在角度が可動範囲を超える場合があります.
+安全ため、コンフィグファイルの`pos_limit_margin`に0以上の数値を設定し、
+可動範囲を狭くしてください.
+
+```yaml
+joint_groups:
+  ジョイントグループ名(1):
+    joints:
+      - ジョイント名(1)
+      - ジョイント名(2)
+      - ジョイント名(3)
+    sync_write:
+      - velocity
+    sync_read:
+      - position
+
+ジョイント名(1): { id : 0, operating_mode: 1, pos_limit_margin: 0.5}
+ジョイント名(2): { id : 1, operating_mode: 1, pos_limit_margin: 0.5}
+ジョイント名(3): { id : 2, operating_mode: 1, pos_limit_margin: 0.5}
+```
+
+サーボモータの速度制御PIゲインを設定するため、`Hardware.write_velocity_pi_gain_to_group(group_name, p, i)`を実行します。
+引数にはジョイントグループ名と、PIゲインを入力します。
+
+```cpp
+hardware.write_velocity_pi_gain_to_group("arm", 100, 1920);
+```
+
+指定したサーボモータにPIゲインを設定する場合は、`Hardware.write_velocity_pi_gain(id, p, i)`を実行します。
+
+```cpp
+hardware.write_velocity_pi_gain(2, 100, 1920);
+```
+
+ジョイント名で指定することも可能です。
+
+```cpp
+hardware.write_velocity_pi_gain("joint1", 100, 1920);
+```
+
+サーボモータに目標速度を書き込む準備として、
+`Hardware.start_thread(group_names, update_cycle_ms)`を実行し、スレッドを起動します。
+
+```cpp
+std::vector<std::string> group_names = {"arm", "hand"};
+hardware.start_thread(group_names, std::chrono::milliseconds(10));
+```
+
+サーボモータの目標速度を設定するため、`Hardware.set_velocity(id, velocity)`を実行します。
+引数にはサーボモータのIDと、目標速度(radian / second)を入力します。
+
+```cpp
+double velocity = 3.14;
+hardware.set_velocity(2, velocity);
+```
+
+ジョイント名で指定することも可能です。
+
+```cpp
+double velocity = 0.0;
+hardware.set_velocity("joint1", velocity);
+```
+
+ジョイントグループの目標速度を一括で設定する場合は、`Hardware.set_velocities(group_name, velocities)`を実行します。
+引数にはジョイントグループ名と、目標速度を入力します。
+
+```cpp
+std::vector<double> velocities(7, 3.14);
+hardware.get_velocities("arm", velocities);
+```
+
+速度制御時は、安全のため`Hardware.stop_thread()`と`Hardware.disconnect()`の内部で
+目標速度`0 radian / second`が書き込まれます。
+
+```cpp
+hardware.stop_thread();
+hardware.disconnect();
+```
 
 ## サーボモータの目標電流を書き込む
 

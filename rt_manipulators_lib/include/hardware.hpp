@@ -62,6 +62,9 @@ class Hardware {
   bool set_position(const uint8_t id, const double position);
   bool set_position(const std::string& joint_name, const double position);
   bool set_positions(const std::string& group_name, std::vector<double>& positions);
+  bool set_velocity(const uint8_t id, const double velocity);
+  bool set_velocity(const std::string& joint_name, const double velocity);
+  bool set_velocities(const std::string& group_name, std::vector<double>& velocities);
   bool write_max_acceleration_to_group(const std::string& group_name,
                                        const double acceleration_rpss);
   bool write_max_velocity_to_group(const std::string& group_name, const double velocity_rps);
@@ -71,6 +74,10 @@ class Hardware {
                                const uint16_t d);
   bool write_position_pid_gain_to_group(const std::string& group_name, const uint16_t p,
                                         const uint16_t i, const uint16_t d);
+  bool write_velocity_pi_gain(const uint8_t id, const uint16_t p, const uint16_t i);
+  bool write_velocity_pi_gain(const std::string& joint_name, const uint16_t p, const uint16_t i);
+  bool write_velocity_pi_gain_to_group(const std::string& group_name, const uint16_t p,
+                                       const uint16_t i);
 
  protected:
   bool write_byte_data(const uint8_t id, const uint16_t address, const uint8_t write_data);
@@ -82,12 +89,16 @@ class Hardware {
   bool write_double_word_data(const uint8_t id, const uint16_t address, const uint32_t write_data);
   bool write_double_word_data_to_group(const std::string& group_name, const uint16_t address,
                                        const uint32_t write_data);
+  bool read_byte_data(const uint8_t id, const uint16_t address, uint8_t& read_data);
+  bool read_double_word_data(const uint8_t id, const uint16_t address, uint32_t& read_data);
 
  private:
   bool parse_config_file(const std::string& config_yaml);
   bool joint_groups_contain(const std::string& group_name);
   bool all_joints_contain(const std::string& joint_name);
   bool all_joints_contain_id(const uint8_t id);
+  bool write_operating_mode(const std::string& group_name);
+  bool limit_goal_velocity_by_present_position(const std::string& group_name);
   bool create_sync_read_group(const std::string& group_name);
   bool create_sync_write_group(const std::string& group_name);
   bool set_indirect_address(const std::string& group_name, const uint16_t addr_indirect_start,
@@ -102,8 +113,9 @@ class Hardware {
   double dxl_current_to_ampere(const int16_t current) const;
   double dxl_voltage_to_volt(const int16_t voltage) const;
   uint32_t radian_to_dxl_pos(const double position);
-  uint32_t to_dxl_acceleration(const double acceleration_rpss);
   uint32_t to_dxl_velocity(const double velocity_rps);
+  uint32_t to_dxl_acceleration(const double acceleration_rpss);
+  uint32_t to_dxl_profile_velocity(const double velocity_rps);
 
   std::shared_ptr<dynamixel::PortHandler> port_handler_;
   std::shared_ptr<dynamixel::PacketHandler> packet_handler_;
@@ -117,7 +129,7 @@ class Hardware {
   std::map<JointGroupName, uint16_t> addr_sync_read_current_;
   std::map<JointGroupName, uint16_t> addr_sync_read_voltage_;
   std::map<JointGroupName, uint16_t> addr_sync_read_temperature_;
-  std::map<JointGroupName, uint16_t> address_indirect_goal_position_;
+  bool is_connected_;
   bool thread_enable_;
   std::shared_ptr<std::thread> read_write_thread_;
 };
