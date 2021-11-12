@@ -752,7 +752,7 @@ bool Hardware::read_double_word_data(const uint8_t id, const uint16_t address,
 }
 
 bool Hardware::parse_config_file(const std::string& config_yaml) {
-  // yamlファイルを読み取り、joint_groups_とall_joints_メンバ変数に格納する
+  // yamlファイルを読み取り、joints_に格納する
   std::ifstream fs(config_yaml);
   if (!fs.is_open()) {
     std::cerr << "コンフィグファイル:" << config_yaml << "が存在しません." << std::endl;
@@ -848,18 +848,6 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
   }
 
   return true;
-}
-
-bool Hardware::joint_groups_contain(const std::string& group_name) {
-  return joint_groups_.find(group_name) != joint_groups_.end();
-}
-
-bool Hardware::all_joints_contain(const std::string& joint_name) {
-  return all_joints_.find(joint_name) != all_joints_.end();
-}
-
-bool Hardware::all_joints_contain_id(const uint8_t id) {
-  return all_joints_ref_from_id_.find(id) != all_joints_ref_from_id_.end();
 }
 
 bool Hardware::write_operating_mode(const std::string& group_name) {
