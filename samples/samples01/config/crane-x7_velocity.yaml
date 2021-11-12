@@ -1,5 +1,5 @@
 joint_groups:
-  forearm:
+  wrist:
     joints:
       - joint5
       - joint6

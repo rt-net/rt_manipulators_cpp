@@ -37,17 +37,17 @@ int main() {
     return -1;
   }
 
-  std::cout << "forearmグループのサーボ最大加速度を5pi rad/s^2に設定します."
+  std::cout << "wristグループのサーボ最大加速度を5pi rad/s^2に設定します."
             << std::endl;
-  if (!hardware.write_max_acceleration_to_group("forearm", 5.0 * M_PI)) {
-    std::cerr << "forearmグループの最大加速度を設定できませんでした." << std::endl;
+  if (!hardware.write_max_acceleration_to_group("wrist", 5.0 * M_PI)) {
+    std::cerr << "wristグループの最大加速度を設定できませんでした." << std::endl;
     return -1;
   }
 
-  std::cout << "forearmグループのサーボ速度制御PIゲインに(100, 1920)を書き込みます."
+  std::cout << "wristグループのサーボ速度制御PIゲインに(100, 1920)を書き込みます."
             << std::endl;
-  if (!hardware.write_velocity_pi_gain_to_group("forearm", 100, 1920)) {
-    std::cerr << "forearmグループにPIゲインを書き込めませんでした." << std::endl;
+  if (!hardware.write_velocity_pi_gain_to_group("wrist", 100, 1920)) {
+    std::cerr << "wristグループにPIゲインを書き込めませんでした." << std::endl;
     return -1;
   }
   // PIゲインは指定したサーボモータにも設定できます.
@@ -60,13 +60,13 @@ int main() {
     return -1;
   }
 
-  if (!hardware.torque_on("forearm")) {
-    std::cerr << "forearmグループのトルクをONできませんでした." << std::endl;
+  if (!hardware.torque_on("wrist")) {
+    std::cerr << "wristグループのトルクをONできませんでした." << std::endl;
     return -1;
   }
 
   std::cout << "read/writeスレッドを起動します." << std::endl;
-  std::vector<std::string> group_names = {"forearm"};
+  std::vector<std::string> group_names = {"wrist"};
   if (!hardware.start_thread(group_names, std::chrono::milliseconds(10))) {
     std::cerr << "スレッドの起動に失敗しました." << std::endl;
     return -1;
@@ -94,14 +94,14 @@ int main() {
 
   std::cout << "set velocity: 0.0 rad/s" << std::endl;
   std::vector<double> goal_velocities = {0.0, 0.0, 0.0};
-  hardware.set_velocities("forearm", goal_velocities);
+  hardware.set_velocities("wrist", goal_velocities);
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
   std::cout << "スレッドを停止します." << std::endl;
   hardware.stop_thread();
 
-  if (!hardware.torque_off("forearm")) {
-    std::cerr << "forearmグループのトルクをOFFできませんでした." << std::endl;
+  if (!hardware.torque_off("wrist")) {
+    std::cerr << "wristグループのトルクをOFFできませんでした." << std::endl;
   }
 
   std::cout << "CRANE-X7との接続を解除します." << std::endl;
