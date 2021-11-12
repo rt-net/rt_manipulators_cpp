@@ -80,6 +80,44 @@ std::shared_ptr<GroupSyncWrite> Communicator::sync_write_group(const group_name_
   return sync_write_groups_.at(name);
 }
 
+bool Communicator::send_sync_read_packet(const group_name_t & name) {
+  if (!has_sync_read_group(name)) {
+    std::cerr << name << "にはsync_read_groupが設定されていません." << std::endl;
+    return false;
+  }
+
+  dxl_result_t dxl_result = sync_read_group(name)->txRxPacket();
+  if (!parse_dxl_error(std::string(__func__), dxl_result)) {
+    std::cerr << name << "のsync readに失敗しました." << std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool Communicator::send_sync_write_packet(const group_name_t & name) {
+  if (!has_sync_write_group(name)) {
+    std::cerr << name << "にはsync_write_groupが設定されていません." << std::endl;
+    return false;
+  }
+
+  dxl_result_t dxl_result = sync_write_group(name)->txPacket();
+  if (!parse_dxl_error(std::string(__func__), dxl_result)) {
+    std::cerr << name << "のsync writeに失敗しました." << std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool Communicator::set_sync_write_data(
+  const group_name_t & name, const dxl_id_t id, std::vector<dxl_byte_t> & write_data) {
+  if (!sync_write_group(name)->changeParam(id, write_data.data())) {
+    std::cerr << name << ":" << std::to_string(id)
+              << " のsyncWrite->changeParamに失敗しました." << std::endl;
+    return false;
+  }
+  return true;
+}
+
 bool Communicator::write_byte_data(
   const dxl_id_t & id, const dxl_address_t & address, const dxl_byte_t & write_data) {
   dxl_error_t dxl_error = 0;
@@ -180,6 +218,14 @@ bool Communicator::parse_dxl_error(
   }
 
   return true;
+}
+
+bool Communicator::has_sync_read_group(const group_name_t & name) {
+  return sync_read_groups_.find(name) != sync_read_groups_.end();
+}
+
+bool Communicator::has_sync_write_group(const group_name_t & name) {
+  return sync_write_groups_.find(name) != sync_write_groups_.end();
 }
 
 }  // namespace hardware_communicator

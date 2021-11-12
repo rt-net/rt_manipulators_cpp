@@ -174,14 +174,7 @@ bool Hardware::sync_read(const std::string& group_name) {
     return false;
   }
 
-  if (!comm_->sync_read_group(group_name)) {
-    std::cerr << group_name << "にはsync_readが設定されていません." << std::endl;
-    return false;
-  }
-
-  int dxl_result = comm_->sync_read_group(group_name)->txRxPacket();
-  if (!comm_->parse_dxl_error(std::string(__func__), dxl_result)) {
-    std::cerr << group_name << "のsync readに失敗しました." << std::endl;
+  if (!comm_->send_sync_read_packet(group_name)) {
     return false;
   }
 
@@ -276,11 +269,6 @@ bool Hardware::sync_write(const std::string& group_name) {
     return false;
   }
 
-  if (!comm_->sync_write_group(group_name)) {
-    std::cerr << group_name << "にはsync_writeが設定されていません." << std::endl;
-    return false;
-  }
-
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     std::vector<uint8_t> write_data;
     if (joints_.group(group_name)->sync_write_position_enabled()) {
@@ -300,16 +288,12 @@ bool Hardware::sync_write(const std::string& group_name) {
     }
 
     auto id = joints_.joint(joint_name)->id();
-    if (!comm_->sync_write_group(group_name)->changeParam(id, write_data.data())) {
-      std::cerr << group_name << ":" << std::to_string(id)
-                << " のsyncWrite->changeParamに失敗しました." << std::endl;
+    if (!comm_->set_sync_write_data(group_name, id, write_data)) {
       return false;
     }
   }
 
-  int dxl_result = comm_->sync_write_group(group_name)->txPacket();
-  if (!comm_->parse_dxl_error(std::string(__func__), dxl_result)) {
-    std::cerr << group_name << "のsync writeに失敗しました." << std::endl;
+  if (!comm_->send_sync_write_packet(group_name)) {
     return false;
   }
 
@@ -904,7 +888,7 @@ bool Hardware::create_sync_read_group(const std::string& group_name) {
 }
 
 bool Hardware::create_sync_write_group(const std::string& group_name) {
-  // sync_write_groups_に、指定されたデータを書き込むSyncWriteGroupを追加する
+  // comm_に、指定されたデータを書き込むSyncWriteGroupを追加する
   // できるだけ多くのデータをSyncWriteで書き込むため、インダイレクトアドレスを活用する
   uint16_t start_address = ADDR_INDIRECT_ADDRESS_29;
   uint16_t total_length = 0;

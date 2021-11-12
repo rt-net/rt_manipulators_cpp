@@ -19,6 +19,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <vector>
 
 namespace hardware_communicator {
 
@@ -48,6 +49,10 @@ class Communicator{
                                const dxl_data_length_t & data_length);
   std::shared_ptr<GroupSyncRead> sync_read_group(const group_name_t & name);
   std::shared_ptr<GroupSyncWrite> sync_write_group(const group_name_t & name);
+  bool send_sync_read_packet(const group_name_t & name);
+  bool send_sync_write_packet(const group_name_t & name);
+  bool set_sync_write_data(const group_name_t & name, const dxl_id_t id,
+                           std::vector<dxl_byte_t> & write_data);
   bool write_byte_data(const dxl_id_t & id, const dxl_address_t & address,
                        const dxl_byte_t & write_data);
   bool write_word_data(const dxl_id_t & id, const dxl_address_t & address,
@@ -61,8 +66,11 @@ class Communicator{
                        const dxl_address_t & address, const dxl_result_t & dxl_comm_result,
                        const dxl_error_t & dxl_packet_error);
   bool parse_dxl_error(const std::string & func_name, const dxl_result_t & dxl_comm_result);
+  bool has_sync_write_group(const group_name_t & name);
 
  private:
+  bool has_sync_read_group(const group_name_t & name);
+
   bool is_connected_;
   std::shared_ptr<dynamixel::PortHandler> port_handler_;
   std::shared_ptr<dynamixel::PacketHandler> packet_handler_;
