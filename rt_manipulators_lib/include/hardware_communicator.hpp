@@ -51,6 +51,9 @@ class Communicator{
   std::shared_ptr<GroupSyncWrite> sync_write_group(const group_name_t & name);
   bool send_sync_read_packet(const group_name_t & name);
   bool send_sync_write_packet(const group_name_t & name);
+  bool get_sync_read_data(const group_name_t & name, const dxl_id_t id,
+                          const dxl_address_t & address, const dxl_data_length_t & length,
+                          dxl_double_word_t & read_data);
   bool set_sync_write_data(const group_name_t & name, const dxl_id_t id,
                            std::vector<dxl_byte_t> & write_data);
   bool write_byte_data(const dxl_id_t & id, const dxl_address_t & address,

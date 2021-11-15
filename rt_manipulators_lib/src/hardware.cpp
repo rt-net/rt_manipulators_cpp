@@ -180,22 +180,13 @@ bool Hardware::sync_read(const std::string& group_name) {
 
   auto get_data = [this](auto group_name, auto joint_name, auto addr, auto len, auto & data){
     auto id = joints_.joint(joint_name)->id();
-    if (!comm_->sync_read_group(group_name)->isAvailable(id, addr, len)) {
-      std::cerr << "id: " << std::to_string(id);
-      std::cerr << ", addr: " << std::to_string(addr);
-      std::cerr << ", len: " << std::to_string(len);
-      std::cerr << " is not available." << std::endl;
-      return false;
-    } else {
-      data = comm_->sync_read_group(group_name)->getData(id, addr, len);
-      return true;
-    }
+    return comm_->get_sync_read_data(group_name, id, addr, len, data);
   };
 
   bool retval = true;
   if (joints_.group(group_name)->sync_read_position_enabled()) {
     for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-      int32_t data = 0;
+      uint32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_position_[group_name],
                   LEN_PRESENT_POSITION, data)) {
         joints_.joint(joint_name)->set_present_position(dxl_pos_to_radian(data));
@@ -208,7 +199,7 @@ bool Hardware::sync_read(const std::string& group_name) {
 
   if (joints_.group(group_name)->sync_read_velocity_enabled()) {
     for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-      int32_t data = 0;
+      uint32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_velocity_[group_name],
                   LEN_PRESENT_VELOCITY, data)) {
         joints_.joint(joint_name)->set_present_velocity(dxl_velocity_to_rps(data));
@@ -221,7 +212,7 @@ bool Hardware::sync_read(const std::string& group_name) {
 
   if (joints_.group(group_name)->sync_read_current_enabled()) {
     for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-      int16_t data = 0;
+      uint32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_current_[group_name],
                   LEN_PRESENT_CURRENT, data)) {
         joints_.joint(joint_name)->set_present_current(dxl_current_to_ampere(data));
@@ -234,7 +225,7 @@ bool Hardware::sync_read(const std::string& group_name) {
 
   if (joints_.group(group_name)->sync_read_voltage_enabled()) {
     for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-      int16_t data = 0;
+      uint32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_voltage_[group_name],
                   LEN_PRESENT_VOLTAGE, data)) {
         joints_.joint(joint_name)->set_present_voltage(dxl_voltage_to_volt(data));
@@ -247,7 +238,7 @@ bool Hardware::sync_read(const std::string& group_name) {
 
   if (joints_.group(group_name)->sync_read_temperature_enabled()) {
     for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-      int8_t data = 0;
+      uint32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_temperature_[group_name],
                   LEN_PRESENT_TEMPERATURE, data)) {
         joints_.joint(joint_name)->set_present_temperature(data);

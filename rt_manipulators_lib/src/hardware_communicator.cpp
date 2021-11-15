@@ -108,6 +108,20 @@ bool Communicator::send_sync_write_packet(const group_name_t & name) {
   return true;
 }
 
+bool Communicator::get_sync_read_data(
+  const group_name_t & name, const dxl_id_t id, const dxl_address_t & address,
+  const dxl_data_length_t & length, dxl_double_word_t & read_data) {
+  if (!sync_read_group(name)->isAvailable(id, address, length)) {
+    std::cerr << "id: " << std::to_string(id);
+    std::cerr << ", addr: " << std::to_string(address);
+    std::cerr << ", len: " << std::to_string(length);
+    std::cerr << " is not available." << std::endl;
+    return false;
+  }
+  read_data = sync_read_group(name)->getData(id, address, length);
+  return true;
+}
+
 bool Communicator::set_sync_write_data(
   const group_name_t & name, const dxl_id_t id, std::vector<dxl_byte_t> & write_data) {
   if (!sync_write_group(name)->changeParam(id, write_data.data())) {
