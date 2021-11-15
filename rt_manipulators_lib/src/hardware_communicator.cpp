@@ -82,6 +82,16 @@ bool Communicator::append_id_to_sync_read_group(
   return true;
 }
 
+bool Communicator::append_id_to_sync_write_group(
+  const group_name_t & group_name, const dxl_id_t & id, std::vector<dxl_byte_t> & init_data) {
+  if (!sync_write_group(group_name)->addParam(id, init_data.data())) {
+    std::cerr << group_name << "のsync_write_groupに, ";
+    std::cerr << "ID:" << std::to_string(id)<< "を追加できませんでした." << std::endl;
+    return false;
+  }
+  return true;
+}
+
 std::shared_ptr<GroupSyncRead> Communicator::sync_read_group(const group_name_t & name) {
   return sync_read_groups_.at(name);
 }

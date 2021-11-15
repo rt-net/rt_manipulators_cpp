@@ -912,12 +912,9 @@ bool Hardware::create_sync_write_group(const std::string& group_name) {
   comm_->append_sync_write_group(group_name, ADDR_INDIRECT_DATA_29, total_length);
 
   std::vector<uint8_t> init_data(total_length, 0);
-
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
-    if (!comm_->sync_write_group(group_name)->addParam(id, init_data.data())) {
-      std::cerr << group_name << ":" << joint_name << "のgroupSyncWrite.addParam に失敗しました."
-                << std::endl;
+    if (!comm_->append_id_to_sync_write_group(group_name, id, init_data)) {
       return false;
     }
   }
