@@ -50,14 +50,12 @@ class Communicator{
   bool append_id_to_sync_read_group(const group_name_t & group_name, const dxl_id_t & id);
   bool append_id_to_sync_write_group(const group_name_t & group_name, const dxl_id_t & id,
                                      std::vector<dxl_byte_t> & init_data);
-  std::shared_ptr<GroupSyncRead> sync_read_group(const group_name_t & name);
-  std::shared_ptr<GroupSyncWrite> sync_write_group(const group_name_t & name);
-  bool send_sync_read_packet(const group_name_t & name);
-  bool send_sync_write_packet(const group_name_t & name);
-  bool get_sync_read_data(const group_name_t & name, const dxl_id_t id,
+  bool send_sync_read_packet(const group_name_t & group_name);
+  bool send_sync_write_packet(const group_name_t & group_name);
+  bool get_sync_read_data(const group_name_t & group_name, const dxl_id_t id,
                           const dxl_address_t & address, const dxl_data_length_t & length,
                           dxl_double_word_t & read_data);
-  bool set_sync_write_data(const group_name_t & name, const dxl_id_t id,
+  bool set_sync_write_data(const group_name_t & group_name, const dxl_id_t id,
                            std::vector<dxl_byte_t> & write_data);
   bool write_byte_data(const dxl_id_t & id, const dxl_address_t & address,
                        const dxl_byte_t & write_data);
@@ -68,14 +66,16 @@ class Communicator{
   bool read_byte_data(const dxl_id_t & id, const dxl_address_t & address, dxl_byte_t & read_data);
   bool read_double_word_data(const dxl_id_t & id, const dxl_address_t & address,
                              dxl_double_word_t & read_data);
+
+ private:
+  std::shared_ptr<GroupSyncRead> sync_read_group(const group_name_t & name);
+  std::shared_ptr<GroupSyncWrite> sync_write_group(const group_name_t & name);
+  bool has_sync_read_group(const group_name_t & name);
+  bool has_sync_write_group(const group_name_t & name);
   bool parse_dxl_error(const std::string & func_name, const dxl_id_t & id,
                        const dxl_address_t & address, const dxl_result_t & dxl_comm_result,
                        const dxl_error_t & dxl_packet_error);
   bool parse_dxl_error(const std::string & func_name, const dxl_result_t & dxl_comm_result);
-  bool has_sync_write_group(const group_name_t & name);
-
- private:
-  bool has_sync_read_group(const group_name_t & name);
 
   bool is_connected_;
   std::shared_ptr<dynamixel::PortHandler> port_handler_;

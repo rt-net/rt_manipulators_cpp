@@ -816,7 +816,7 @@ bool Hardware::limit_goal_velocity_by_present_position(const std::string& group_
 }
 
 bool Hardware::create_sync_read_group(const std::string& group_name) {
-  // sync_read_groups_に、指定されたデータを読むSyncReadGroupを追加する
+  // HardwareCommunicatorに、指定されたデータを読むSyncReadGroupを追加する
   // できるだけ多くのデータをSyncReadで読み取るため、インダイレクトアドレスを活用する
   uint16_t start_address = ADDR_INDIRECT_ADDRESS_1;
   uint16_t total_length = 0;
@@ -881,7 +881,7 @@ bool Hardware::create_sync_read_group(const std::string& group_name) {
 }
 
 bool Hardware::create_sync_write_group(const std::string& group_name) {
-  // comm_に、指定されたデータを書き込むSyncWriteGroupを追加する
+  // HardwareCommunicatorに、指定されたデータを書き込むSyncWriteGroupを追加する
   // できるだけ多くのデータをSyncWriteで書き込むため、インダイレクトアドレスを活用する
   uint16_t start_address = ADDR_INDIRECT_ADDRESS_29;
   uint16_t total_length = 0;
