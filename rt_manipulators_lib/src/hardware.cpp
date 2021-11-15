@@ -872,9 +872,7 @@ bool Hardware::create_sync_read_group(const std::string& group_name) {
 
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
-    if (!comm_->sync_read_group(group_name)->addParam(id)) {
-      std::cerr << group_name << ":" << joint_name << "のgroupSyncRead.addParam に失敗しました."
-                << std::endl;
+    if (!comm_->append_id_to_sync_read_group(group_name, id)) {
       return false;
     }
   }

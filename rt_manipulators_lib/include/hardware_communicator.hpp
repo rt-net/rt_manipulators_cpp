@@ -47,6 +47,7 @@ class Communicator{
                               const dxl_data_length_t & data_length);
   void append_sync_write_group(const group_name_t & group_name, const dxl_address_t & start_address,
                                const dxl_data_length_t & data_length);
+  bool append_id_to_sync_read_group(const group_name_t & group_name, const dxl_id_t & id);
   std::shared_ptr<GroupSyncRead> sync_read_group(const group_name_t & name);
   std::shared_ptr<GroupSyncWrite> sync_write_group(const group_name_t & name);
   bool send_sync_read_packet(const group_name_t & name);
