@@ -88,6 +88,8 @@ class Hardware {
   bool write_double_word_data_to_group(const std::string& group_name, const uint16_t address,
                                        const uint32_t write_data);
 
+  std::shared_ptr<hardware_communicator::Communicator> comm_;
+
  private:
   bool parse_config_file(const std::string& config_yaml);
   bool write_operating_mode(const std::string& group_name);
@@ -108,7 +110,6 @@ class Hardware {
   uint32_t to_dxl_profile_velocity(const double velocity_rps);
 
   hardware_joints::Joints joints_;
-  std::shared_ptr<hardware_communicator::Communicator> comm_;
   std::map<JointGroupName, uint16_t> addr_sync_read_position_;
   std::map<JointGroupName, uint16_t> addr_sync_read_velocity_;
   std::map<JointGroupName, uint16_t> addr_sync_read_current_;
