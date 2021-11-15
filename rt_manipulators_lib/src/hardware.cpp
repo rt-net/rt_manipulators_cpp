@@ -189,7 +189,8 @@ bool Hardware::sync_read(const std::string& group_name) {
       uint32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_position_[group_name],
                   LEN_PRESENT_POSITION, data)) {
-        joints_.joint(joint_name)->set_present_position(dxl_pos_to_radian(data));
+        joints_.joint(joint_name)->set_present_position(
+          dxl_pos_to_radian(static_cast<int32_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_positionを取得できません." << std::endl;
         retval = false;
@@ -202,7 +203,8 @@ bool Hardware::sync_read(const std::string& group_name) {
       uint32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_velocity_[group_name],
                   LEN_PRESENT_VELOCITY, data)) {
-        joints_.joint(joint_name)->set_present_velocity(dxl_velocity_to_rps(data));
+        joints_.joint(joint_name)->set_present_velocity(
+          dxl_velocity_to_rps(static_cast<int32_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_velocityを取得できません." << std::endl;
         retval = false;
@@ -215,7 +217,8 @@ bool Hardware::sync_read(const std::string& group_name) {
       uint32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_current_[group_name],
                   LEN_PRESENT_CURRENT, data)) {
-        joints_.joint(joint_name)->set_present_current(dxl_current_to_ampere(data));
+        joints_.joint(joint_name)->set_present_current(
+          dxl_current_to_ampere(static_cast<int16_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_currentを取得できません." << std::endl;
         retval = false;
@@ -228,7 +231,8 @@ bool Hardware::sync_read(const std::string& group_name) {
       uint32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_voltage_[group_name],
                   LEN_PRESENT_VOLTAGE, data)) {
-        joints_.joint(joint_name)->set_present_voltage(dxl_voltage_to_volt(data));
+        joints_.joint(joint_name)->set_present_voltage(
+          dxl_voltage_to_volt(static_cast<int16_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_voltageを取得できません." << std::endl;
         retval = false;
@@ -241,7 +245,7 @@ bool Hardware::sync_read(const std::string& group_name) {
       uint32_t data = 0;
       if (get_data(group_name, joint_name, addr_sync_read_temperature_[group_name],
                   LEN_PRESENT_TEMPERATURE, data)) {
-        joints_.joint(joint_name)->set_present_temperature(data);
+        joints_.joint(joint_name)->set_present_temperature(static_cast<int8_t>(data));
       } else {
         std::cerr << joint_name << "のpresent_temperatureを取得できません." << std::endl;
         retval = false;
@@ -709,8 +713,8 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
       }
 
       // 角度リミット値をラジアンに変換
-      double max_position_limit = dxl_pos_to_radian(dxl_max_pos_limit);
-      double min_position_limit = dxl_pos_to_radian(dxl_min_pos_limit);
+      double max_position_limit = dxl_pos_to_radian(static_cast<int32_t>(dxl_max_pos_limit));
+      double min_position_limit = dxl_pos_to_radian(static_cast<int32_t>(dxl_min_pos_limit));
 
       // 角度リミット値にマージンを加算する
       if (config[joint_name]["pos_limit_margin"]) {
