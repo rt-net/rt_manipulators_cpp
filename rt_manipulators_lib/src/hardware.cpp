@@ -868,7 +868,7 @@ bool Hardware::create_sync_read_group(const std::string& group_name) {
     }
   }
 
-  comm_->append_sync_read_group(group_name, ADDR_INDIRECT_DATA_1, total_length);
+  comm_->make_sync_read_group(group_name, ADDR_INDIRECT_DATA_1, total_length);
 
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
@@ -909,7 +909,7 @@ bool Hardware::create_sync_write_group(const std::string& group_name) {
     }
   }
 
-  comm_->append_sync_write_group(group_name, ADDR_INDIRECT_DATA_29, total_length);
+  comm_->make_sync_write_group(group_name, ADDR_INDIRECT_DATA_29, total_length);
 
   std::vector<uint8_t> init_data(total_length, 0);
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {

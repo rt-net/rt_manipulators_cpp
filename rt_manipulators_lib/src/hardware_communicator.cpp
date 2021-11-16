@@ -56,7 +56,7 @@ void Communicator::disconnect() {
   is_connected_ = false;
 }
 
-void Communicator::append_sync_read_group(
+void Communicator::make_sync_read_group(
   const group_name_t & group_name, const dxl_address_t & start_address,
   const dxl_data_length_t & data_length) {
   auto group_ptr = std::make_shared<GroupSyncRead>(
@@ -64,7 +64,7 @@ void Communicator::append_sync_read_group(
   sync_read_groups_.emplace(group_name, group_ptr);
 }
 
-void Communicator::append_sync_write_group(
+void Communicator::make_sync_write_group(
   const group_name_t & group_name, const dxl_address_t & start_address,
   const dxl_data_length_t & data_length) {
   auto group_ptr = std::make_shared<GroupSyncWrite>(

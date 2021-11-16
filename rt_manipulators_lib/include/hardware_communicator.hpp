@@ -43,9 +43,9 @@ class Communicator{
   bool is_connected();
   bool connect(const int baudrate = 3000000);
   void disconnect();
-  void append_sync_read_group(const group_name_t & group_name, const dxl_address_t & start_address,
+  void make_sync_read_group(const group_name_t & group_name, const dxl_address_t & start_address,
                               const dxl_data_length_t & data_length);
-  void append_sync_write_group(const group_name_t & group_name, const dxl_address_t & start_address,
+  void make_sync_write_group(const group_name_t & group_name, const dxl_address_t & start_address,
                                const dxl_data_length_t & data_length);
   bool append_id_to_sync_read_group(const group_name_t & group_name, const dxl_id_t & id);
   bool append_id_to_sync_write_group(const group_name_t & group_name, const dxl_id_t & id,
