@@ -70,6 +70,9 @@ class Joints{
   bool set_velocity(const dxl_id_t & id, const velocity_t & velocity);
   bool set_velocity(const joint_name_t & joint_name, const velocity_t & velocity);
   bool set_velocities(const group_name_t & group_name, const std::vector<velocity_t>& velocities);
+  bool set_current(const dxl_id_t & id, const current_t & current);
+  bool set_current(const joint_name_t & joint_name, const current_t & current);
+  bool set_currents(const group_name_t & group_name, const std::vector<current_t>& currents);
 
  private:
   group_map_t joint_groups_;

@@ -39,6 +39,7 @@ const double TO_ACCELERATION_TO_RAD_PER_SS = TO_ACCELERATION_TO_RAD_PER_MM / 360
 const double DXL_ACCELERATION_FROM_RAD_PER_SS = 1.0 / TO_ACCELERATION_TO_RAD_PER_SS;
 const int DXL_MAX_ACCELERATION = 32767;
 const double TO_CURRENT_AMPERE = 0.00269;
+const double TO_DXL_CURRENT = 1.0 / TO_CURRENT_AMPERE;
 const double TO_VOLTAGE_VOLT = 0.1;
 
 // Dynamixel XM Series address table
@@ -282,6 +283,12 @@ bool Hardware::sync_write(const std::string& group_name) {
       write_data.push_back(DXL_HIBYTE(DXL_HIWORD(goal_velocity)));
     }
 
+    if (joints_.group(group_name)->sync_write_current_enabled()) {
+      uint16_t goal_current = to_dxl_current(joints_.joint(joint_name)->get_goal_current());
+      write_data.push_back(DXL_LOBYTE(goal_current));
+      write_data.push_back(DXL_HIBYTE(goal_current));
+    }
+
     auto id = joints_.joint(joint_name)->id();
     if (!comm_->set_sync_write_data(group_name, id, write_data)) {
       return false;
@@ -450,6 +457,36 @@ bool Hardware::set_velocities(const std::string& group_name, std::vector<double>
   }
 
   return joints_.set_velocities(group_name, velocities);
+}
+
+bool Hardware::set_current(const uint8_t id, const double current) {
+  if (!thread_enable_) {
+    std::cerr << "目標速度を書き込む場合は、";
+    std::cerr << "安全のためstart_thread()を実行してください." << std::endl;
+    return false;
+  }
+
+  return joints_.set_current(id, current);
+}
+
+bool Hardware::set_current(const std::string& joint_name, const double current) {
+  if (!thread_enable_) {
+    std::cerr << "目標速度を書き込む場合は、";
+    std::cerr << "安全のためstart_thread()を実行してください." << std::endl;
+    return false;
+  }
+
+  return joints_.set_current(joint_name, current);
+}
+
+bool Hardware::set_currents(const std::string& group_name, std::vector<double>& currents) {
+  if (!thread_enable_) {
+    std::cerr << "目標速度を書き込む場合は、";
+    std::cerr << "安全のためstart_thread()を実行してください." << std::endl;
+    return false;
+  }
+
+  return joints_.set_currents(group_name, currents);
 }
 
 bool Hardware::write_max_acceleration_to_group(const std::string& group_name,
@@ -909,6 +946,12 @@ bool Hardware::create_sync_write_group(const std::string& group_name) {
     }
   }
 
+  if (joints_.group(group_name)->sync_write_current_enabled()) {
+    if (!append(ADDR_GOAL_CURRENT, LEN_GOAL_CURRENT, "goal_current")) {
+      return false;
+    }
+  }
+
   comm_->make_sync_write_group(group_name, ADDR_INDIRECT_DATA_29, total_length);
 
   std::vector<uint8_t> init_data(total_length, 0);
@@ -986,6 +1029,10 @@ uint32_t Hardware::radian_to_dxl_pos(const double position) {
 
 uint32_t Hardware::to_dxl_velocity(const double velocity_rps) {
   return velocity_rps * DXL_VELOCITY_FROM_RAD_PER_SEC;
+}
+
+uint16_t Hardware::to_dxl_current(const double current_ampere) {
+  return current_ampere * TO_DXL_CURRENT;
 }
 
 uint32_t Hardware::to_dxl_acceleration(const double acceleration_rpss) {

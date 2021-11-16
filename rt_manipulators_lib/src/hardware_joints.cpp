@@ -291,4 +291,44 @@ bool Joints::set_velocities(
   return true;
 }
 
+bool Joints::set_current(const dxl_id_t & id, const current_t & current) {
+  if (!has_joint(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+
+  joint(id)->set_goal_current(current);
+  return true;
+}
+
+bool Joints::set_current(const joint_name_t & joint_name, const current_t & current) {
+  if (!has_joint(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+
+  joint(joint_name)->set_goal_current(current);
+  return true;
+}
+
+bool Joints::set_currents(const group_name_t & group_name, const std::vector<current_t>& currents) {
+  if (!has_group(group_name)) {
+    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
+    return false;
+  }
+
+  if (joint_groups_.at(group_name)->joint_names().size() != currents.size()) {
+    std::cerr << "目標値のサイズ:" << currents.size();
+    std::cerr << "がジョイント数:" << joint_groups_.at(group_name)->joint_names().size();
+    std::cerr << "と一致しません." << std::endl;
+    return false;
+  }
+
+  for (size_t i = 0; i < currents.size(); i++) {
+    auto joint_name = joint_groups_.at(group_name)->joint_names()[i];
+    joint(joint_name)->set_goal_velocity(currents[i]);
+  }
+  return true;
+}
+
 }  // namespace hardware_joints

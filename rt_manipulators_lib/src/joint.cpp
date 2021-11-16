@@ -21,7 +21,8 @@ Joint::Joint(const uint8_t id, const uint8_t operating_mode,
     : id_(id), operating_mode_(operating_mode),
       max_position_limit_(max_position_limit), min_position_limit_(min_position_limit),
       present_position_(0.0), present_velocity_(0.0), present_current_(0.0),
-      present_voltage_(0.0), present_temperature_(0), goal_position_(0.0) {}
+      present_voltage_(0.0), present_temperature_(0), goal_position_(0.0),
+      goal_velocity_(0.0), goal_current_(0.0) {}
 
 uint8_t Joint::id() const { return id_; }
 
@@ -63,13 +64,15 @@ int8_t Joint::get_present_temperature() const { return present_temperature_; }
 
 void Joint::set_goal_position(const double position_radian) { goal_position_ = position_radian; }
 
-void Joint::set_goal_velocity(const double velocity_rps) {
-  goal_velocity_ = velocity_rps;
-}
+void Joint::set_goal_velocity(const double velocity_rps) { goal_velocity_ = velocity_rps; }
+
+void Joint::set_goal_current(const double current_ampere) { goal_current_ = current_ampere; }
 
 double Joint::get_goal_position() const { return goal_position_; }
 
 double Joint::get_goal_velocity() const { return goal_velocity_; }
+
+double Joint::get_goal_current() const { return goal_current_; }
 
 JointGroup::JointGroup(const std::vector<std::string>& joint_names,
                        const std::vector<std::string>& sync_read_targets,
