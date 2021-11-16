@@ -8,6 +8,7 @@ add_library(${library_name}
     hardware.cpp
     joint.cpp
     hardware_joints.cpp
+    hardware_communicator.cpp
 )
 set_target_properties(${library_name} PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
