@@ -53,7 +53,7 @@ int main() {
   std::this_thread::sleep_for(std::chrono::seconds(5));
 
   // 目標速度を段階的に早くする
-  const double MAX_CURRENT = 0.5;  // Ampere
+  const double MAX_CURRENT = 0.05;  // Ampere
   const double STEPS = 10;
   for (int i=1; i <=STEPS; i++) {
     double goal_current = MAX_CURRENT * i / static_cast<double>(STEPS);
@@ -67,7 +67,6 @@ int main() {
     hardware.set_current("joint6", -goal_current);
     hardware.set_current("joint7", -goal_current);
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    break;
   }
 
   std::cout << "set current: 0.0 A" << std::endl;

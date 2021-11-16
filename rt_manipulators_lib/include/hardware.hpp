@@ -97,6 +97,7 @@ class Hardware {
   bool parse_config_file(const std::string& config_yaml);
   bool write_operating_mode(const std::string& group_name);
   bool limit_goal_velocity_by_present_position(const std::string& group_name);
+  bool limit_goal_current_by_present_position(const std::string& group_name);
   bool create_sync_read_group(const std::string& group_name);
   bool create_sync_write_group(const std::string& group_name);
   bool set_indirect_address(const std::string& group_name, const uint16_t addr_indirect_start,

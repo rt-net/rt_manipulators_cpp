@@ -44,6 +44,7 @@ const double TO_VOLTAGE_VOLT = 0.1;
 
 // Dynamixel XM Series address table
 const uint16_t ADDR_OPERATING_MODE = 11;
+const uint16_t ADDR_CURRENT_LIMIT = 38;
 const uint16_t ADDR_MAX_POSITION_LIMIT = 48;
 const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
 const uint16_t ADDR_TORQUE_ENABLE = 64;
@@ -130,13 +131,22 @@ void Hardware::disconnect() {
     return;
   }
 
-  // 速度指示モードの場合は、goal_velocityを0にする
   for (const auto& [group_name, group] : joints_.groups()) {
+    // 速度指示モードの場合は、goal_velocityを0にする
     if (group->sync_write_velocity_enabled()) {
       std::cout << group_name << "グループにはvelocityのsync_writeが設定されています." << std::endl;
       std::cout << "安全のため, disconnect()関数内で目標速度 0 rad/sを書き込みます." << std::endl;
       for (const auto & joint_name : group->joint_names()) {
           joints_.joint(joint_name)->set_goal_velocity(0);
+      }
+      sync_write(group_name);
+    }
+    // 電流指示モードの場合は、goal_currentを0にする
+    if (group->sync_write_current_enabled()) {
+      std::cout << group_name << "グループにはcurrentのsync_writeが設定されています." << std::endl;
+      std::cout << "安全のため, disconnect()関数内で目標速度 0 Aを書き込みます." << std::endl;
+      for (const auto & joint_name : group->joint_names()) {
+          joints_.joint(joint_name)->set_goal_current(0);
       }
       sync_write(group_name);
     }
@@ -342,13 +352,22 @@ bool Hardware::stop_thread() {
   // リソースを解放
   read_write_thread_.reset();
 
-  // 速度指示モードの場合は、goal_velocityを0にする
   for (const auto& [group_name, group] : joints_.groups()) {
+    // 速度指示モードの場合は、goal_velocityを0にする
     if (group->sync_write_velocity_enabled()) {
       std::cout << group_name << "グループにはvelocityのsync_writeが設定されています." << std::endl;
       std::cout << "安全のため, stop_thread()関数内で目標速度 0 rad/sを書き込みます." << std::endl;
       for (const auto & joint_name : group->joint_names()) {
           joints_.joint(joint_name)->set_goal_velocity(0);
+      }
+      sync_write(group_name);
+    }
+    // 電流指示モードの場合は、goal_currentを0にする
+    if (group->sync_write_current_enabled()) {
+      std::cout << group_name << "グループにはcurrentのsync_writeが設定されています." << std::endl;
+      std::cout << "安全のため, stop_thread()関数内で目標電流 0 Aを書き込みます." << std::endl;
+      for (const auto & joint_name : group->joint_names()) {
+          joints_.joint(joint_name)->set_goal_current(0);
       }
       sync_write(group_name);
     }
@@ -461,7 +480,7 @@ bool Hardware::set_velocities(const std::string& group_name, std::vector<double>
 
 bool Hardware::set_current(const uint8_t id, const double current) {
   if (!thread_enable_) {
-    std::cerr << "目標速度を書き込む場合は、";
+    std::cerr << "目標電流を書き込む場合は、";
     std::cerr << "安全のためstart_thread()を実行してください." << std::endl;
     return false;
   }
@@ -471,7 +490,7 @@ bool Hardware::set_current(const uint8_t id, const double current) {
 
 bool Hardware::set_current(const std::string& joint_name, const double current) {
   if (!thread_enable_) {
-    std::cerr << "目標速度を書き込む場合は、";
+    std::cerr << "目標電流を書き込む場合は、";
     std::cerr << "安全のためstart_thread()を実行してください." << std::endl;
     return false;
   }
@@ -481,7 +500,7 @@ bool Hardware::set_current(const std::string& joint_name, const double current) 
 
 bool Hardware::set_currents(const std::string& group_name, std::vector<double>& currents) {
   if (!thread_enable_) {
-    std::cerr << "目標速度を書き込む場合は、";
+    std::cerr << "目標電流を書き込む場合は、";
     std::cerr << "安全のためstart_thread()を実行してください." << std::endl;
     return false;
   }
@@ -740,12 +759,17 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
 
       uint32_t dxl_max_pos_limit = 0;
       uint32_t dxl_min_pos_limit = 0;
+      uint16_t dxl_current_limit = 0;
       if (!comm_->read_double_word_data(joint_id, ADDR_MAX_POSITION_LIMIT, dxl_max_pos_limit)) {
         std::cerr << joint_name << "のMax Position Limitの読み取りに失敗しました." << std::endl;
         return false;
       }
       if (!comm_->read_double_word_data(joint_id, ADDR_MIN_POSITION_LIMIT, dxl_min_pos_limit)) {
         std::cerr << joint_name << "のMin Position Limitの読み取りに失敗しました." << std::endl;
+        return false;
+      }
+      if (!comm_->read_word_data(joint_id, ADDR_CURRENT_LIMIT, dxl_current_limit)) {
+        std::cerr << joint_name << "のCurrent Limitの読み取りに失敗しました." << std::endl;
         return false;
       }
 
@@ -759,7 +783,15 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
         min_position_limit += config[joint_name]["pos_limit_margin"].as<double>();
       }
 
-      auto joint = joint::Joint(joint_id, ope_mode, max_position_limit, min_position_limit);
+      // 電流リミット値をアンペアに変換
+      double current_limit = dxl_current_to_ampere(dxl_current_limit);
+      // 電流リミット値にマージンを加算する
+      if (config[joint_name]["current_limit_margin"]) {
+        current_limit -= config[joint_name]["current_limit_margin"].as<double>();
+      }
+
+      auto joint = joint::Joint(
+        joint_id, ope_mode, max_position_limit, min_position_limit, current_limit);
       joints_.append_joint(joint_name, joint);
     }
     std::vector<std::string> sync_read_targets;
@@ -845,6 +877,33 @@ bool Hardware::limit_goal_velocity_by_present_position(const std::string& group_
       std::cout << joint_name << "ジョイントの現在角度が限界角度に到達しました、";
       std::cout << "goal_velocityを0で上書きします." << std::endl;
       joints_.joint(joint_name)->set_goal_velocity(0);
+      retval = false;
+    }
+  }
+
+  return retval;
+}
+
+bool Hardware::limit_goal_current_by_present_position(const std::string& group_name) {
+  // ジョイントの現在角度がmax/min position limit を超えた場合、
+  // goal_currentをcurrent limitに制限する
+  bool retval = true;
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    auto max_position_limit = joints_.joint(joint_name)->max_position_limit();
+    auto min_position_limit = joints_.joint(joint_name)->min_position_limit();
+    auto current_limit = joints_.joint(joint_name)->current_limit();
+    auto present_position = joints_.joint(joint_name)->get_present_position();
+    auto goal_current = joints_.joint(joint_name)->get_goal_current();
+    bool has_exceeded_max_pos_limit = present_position > max_position_limit &&
+      goal_current > current_limit;
+    bool has_exceeded_min_pos_limit = present_position < min_position_limit &&
+      goal_current < -current_limit;
+
+    if (has_exceeded_max_pos_limit || has_exceeded_min_pos_limit) {
+      std::cout << joint_name << "ジョイントの現在角度が限界角度に到達しました、";
+      std::cout << "goal_currentをcurrent_limitに制限します." << std::endl;
+      auto limited_current = std::clamp(goal_current, -current_limit, current_limit);
+      joints_.joint(joint_name)->set_goal_current(limited_current);
       retval = false;
     }
   }
@@ -999,6 +1058,9 @@ void Hardware::read_write_thread(const std::vector<std::string>& group_names,
       sync_read(group_name);
       if (joints_.group(group_name)->sync_write_velocity_enabled()) {
         limit_goal_velocity_by_present_position(group_name);
+      }
+      if (joints_.group(group_name)->sync_write_current_enabled()) {
+        limit_goal_current_by_present_position(group_name);
       }
       sync_write(group_name);
     }

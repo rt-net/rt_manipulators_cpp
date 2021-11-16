@@ -194,6 +194,20 @@ bool Communicator::read_byte_data(
   return true;
 }
 
+bool Communicator::read_word_data(
+  const dxl_id_t & id, const dxl_address_t & address, dxl_word_t & read_data) {
+  dxl_error_t dxl_error = 0;
+  dxl_word_t data = 0;
+  dxl_result_t dxl_result =
+      packet_handler_->read2ByteTxRx(port_handler_.get(), id, address, &data, &dxl_error);
+
+  if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
+    return false;
+  }
+  read_data = data;
+  return true;
+}
+
 bool Communicator::read_double_word_data(
   const dxl_id_t & id, const dxl_address_t & address, dxl_double_word_t & read_data) {
   dxl_error_t dxl_error = 0;

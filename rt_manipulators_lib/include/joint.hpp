@@ -24,11 +24,13 @@ namespace joint {
 class Joint {
  public:
   Joint(const uint8_t id, const uint8_t operating_mode,
-        const double max_position_limit, const double min_position_limit);
+        const double max_position_limit, const double min_position_limit,
+        const double current_limit);
   uint8_t id() const;
   uint8_t operating_mode() const;
   double max_position_limit() const;
   double min_position_limit() const;
+  double current_limit() const;
   void set_present_position(const double position_radian);
   void set_present_velocity(const double velocity_rps);
   void set_present_current(const double current_ampere);
@@ -51,6 +53,7 @@ class Joint {
   uint8_t operating_mode_;
   double max_position_limit_;
   double min_position_limit_;
+  double current_limit_;
   double present_position_;
   double present_velocity_;
   double present_current_;
