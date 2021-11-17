@@ -9,6 +9,6 @@ joint_groups:
     sync_write:
       - current
 
-joint5: { id : 6, operating_mode: 0, pos_limit_margin: 0.524, current_limit_margin: 3.17}
-joint6: { id : 7, operating_mode: 0, pos_limit_margin: 0.524, current_limit_margin: 3.17}
-joint7: { id : 8, operating_mode: 0, pos_limit_margin: 0.524, current_limit_margin: 3.17}
+joint5: { id : 6, operating_mode: 0, pos_limit_margin: 1.047, current_limit_margin: 3.18}
+joint6: { id : 7, operating_mode: 0, pos_limit_margin: 1.047, current_limit_margin: 3.18}
+joint7: { id : 8, operating_mode: 0, pos_limit_margin: 1.047, current_limit_margin: 3.18}
