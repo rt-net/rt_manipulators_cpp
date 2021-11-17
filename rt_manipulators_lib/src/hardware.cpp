@@ -102,6 +102,12 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
       std::cerr << "positionもsync_readするようにコンフィグファイルを修正して下さい." << std::endl;
       return false;
     }
+    if (group->sync_write_current_enabled() && !group->sync_read_position_enabled()) {
+      std::cerr << group_name << "グループはcurrentをsync_writeしますが, ";
+      std::cerr << "positionをsync_readしません." << std::endl;
+      std::cerr << "positionもsync_readするようにコンフィグファイルを修正して下さい." << std::endl;
+      return false;
+    }
   }
 
   std::cout << "Config file '" << config_yaml << "' loaded." << std::endl;
@@ -115,7 +121,8 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
         joints_.joint(joint_name)->max_position_limit());
       std::cout << ", modified min_position_limit:" << std::to_string(
         joints_.joint(joint_name)->min_position_limit());
-      std::cout << ", modified current_limit:" << std::to_string(joints_.joint(joint_name)->current_limit());
+      std::cout << ", modified current_limit:" << std::to_string(
+        joints_.joint(joint_name)->current_limit());
       std::cout << std::endl;
     }
   }
