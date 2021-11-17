@@ -16,6 +16,7 @@
   - [サーボモータの目標速度を書き込む](#サーボモータの目標速度を書き込む)
     - [解説](#解説-5)
   - [サーボモータの目標電流を書き込む](#サーボモータの目標電流を書き込む)
+    - [解説](#解説-6)
 
 ## サンプルのビルド
 
@@ -697,4 +698,132 @@ hardware.disconnect();
 
 ## サーボモータの目標電流を書き込む
 
-未実装です
+次のコマンドを実行します。
+CRANE-X7は前腕を回転させます。**前腕が浮くようにCRANE-X7の腕を持ち上げて下さい**
+
+Sciurus17は両腕の手首を回転させます。
+
+```sh
+# CRANE-X7の場合
+$ cd bin/
+$ ./x7_write_current
+# Sciurus17の場合
+$ ./s17_write_current
+```
+
+実行結果（CRANE-X7の場合）
+
+```sh
+...
+read/writeスレッドを起動します.
+5秒後に手先が動き出すため、手先の周りに物や人を近づけないで下さい.
+set current:0.005 A
+set current:-0.005 A
+set current:0.01 A
+set current:-0.01 A
+...
+set current:-0.035 A
+joint6ジョイントの現在角度が限界角度に到達しました、goal_currentをcurrent_limitに制限します.
+joint5ジョイントの現在角度が限界角度に到達しました、goal_currentをcurrent_limitに制限します.
+set current:0.04 A
+...
+スレッドを停止します.
+wristグループにはcurrentのsync_writeが設定されています.
+安全のため, stop_thread()関数内で目標電流 0 Aを書き込みます.
+CRANE-X7との接続を解除します.
+wristグループにはcurrentのsync_writeが設定されています.
+安全のため, disconnect()関数内で目標速度 0 Aを書き込みます.
+```
+
+### 解説
+
+サーボモータに目標電流を書き込むため、
+コンフィグファイルのジョイントグループに`sync_write:current`と`sync_read:position`を追加します.
+`sync_read:position`は可動範囲超過を検出するために必要です.
+
+ジョイントの`operating_mode`は`0`に設定します.
+コンフィグファイル読み込み時に、サーボモータ内部のパラメータである`Operating Mode`に
+`0 (電流制御モード)`が書き込まれます.
+
+ジョイントの`pos_limit_margin`は、
+サーボモータ内部に設定された可動範囲（`Max/Min Position Limit`）から、
+どれくらいの角度余裕(radian)を設けるかというパラメータです.
+
+**サーボモータが電流制御モードの時、サーボモータ内部の角度制限機能が動作しません。**
+そのため、`Hardware`クラスのスレッド内部で、
+サーボモータの現在角度を観察し、可動範囲を超える場合は目標電流値を制限する処理（制限値は後述の`current_limit_margin`で調整可能）を実施しています.
+
+安全のためサーボモータ内部の可動範囲パラメータ（`Max/Min Position Limit`）が適切に設定されているかご確認ください。
+
+サーボモータの現在角度が可動範囲の限界値付近にあるとき、
+目標電流`0 A`を書き込んでも回転速度が下がりきらず、
+現在角度が可動範囲を超える場合があります.
+安全ため、コンフィグファイルの`pos_limit_margin`に0以上の数値を設定し、
+可動範囲を狭くしてください.
+
+ジョイントの`current_limit_margin`は、
+サーボモータ内部に設定された電流制限（`Current Limit`）から、
+どれくらいの電流余裕(A)を設けるかというパラメータです.
+
+サーボモータの現在角度が可動範囲を超える場合、
+目標電流値が`Current Limit - current_limit_margin`に制限されます。
+
+```yaml
+joint_groups:
+  ジョイントグループ名(1):
+    joints:
+      - ジョイント名(1)
+      - ジョイント名(2)
+      - ジョイント名(3)
+    sync_write:
+      - current
+    sync_read:
+      - position
+
+ジョイント名(1): { id : 0, operating_mode: 1, pos_limit_margin: 0.5, current_limit_margin: 1.0}
+ジョイント名(2): { id : 1, operating_mode: 1, pos_limit_margin: 0.5, current_limit_margin: 1.0}
+ジョイント名(3): { id : 2, operating_mode: 1, pos_limit_margin: 0.5, current_limit_margin: 1.0}
+```
+
+サーボモータに目標電流を書き込む準備として、
+`Hardware.start_thread(group_names, update_cycle_ms)`を実行し、スレッドを起動します。
+
+```cpp
+std::vector<std::string> group_names = {"arm", "hand"};
+hardware.start_thread(group_names, std::chrono::milliseconds(10));
+```
+
+サーボモータの目標電流を設定するため、`Hardware.set_current(id, current)`を実行します。
+引数にはサーボモータのIDと、目標電流(A)を入力します。
+
+```cpp
+double current = 0.1;
+hardware.set_current(2, current);
+```
+
+ジョイント名で指定することも可能です。
+
+```cpp
+double current = -0.1;
+hardware.set_current("joint1", current);
+```
+
+ジョイントグループの目標電流を一括で設定する場合は、`Hardware.set_currents(group_name, currents)`を実行します。
+引数にはジョイントグループ名と、目標電流を入力します。
+
+```cpp
+std::vector<double> currents(7, 0.0);
+hardware.get_currents("arm", currents);
+```
+
+電流制御時は、安全のため`Hardware.stop_thread()`と`Hardware.disconnect()`の内部で
+目標電流`0 A`が書き込まれます。
+
+**目標電流値が`0 A`になると、ロボットが脱力します**
+
+脱力によってロボットが人や物にぶつからないように支えてください。
+
+```cpp
+hardware.stop_thread();
+hardware.disconnect();
+```
