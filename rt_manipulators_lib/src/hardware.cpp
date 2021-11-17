@@ -787,7 +787,10 @@ bool Hardware::parse_config_file(const std::string& config_yaml) {
       double current_limit = dxl_current_to_ampere(dxl_current_limit);
       // 電流リミット値にマージンを加算する
       if (config[joint_name]["current_limit_margin"]) {
-        current_limit -= config[joint_name]["current_limit_margin"].as<double>();
+        // current_limitは0以上の値にする
+        current_limit = std::max(
+          current_limit - config[joint_name]["current_limit_margin"].as<double>(),
+          0.0);
       }
 
       auto joint = joint::Joint(

@@ -326,7 +326,7 @@ bool Joints::set_currents(const group_name_t & group_name, const std::vector<cur
 
   for (size_t i = 0; i < currents.size(); i++) {
     auto joint_name = joint_groups_.at(group_name)->joint_names()[i];
-    joint(joint_name)->set_goal_velocity(currents[i]);
+    joint(joint_name)->set_goal_current(currents[i]);
   }
   return true;
 }
