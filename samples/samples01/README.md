@@ -813,7 +813,7 @@ hardware.get_currents("arm", currents);
 電流制御時は、安全のため`Hardware.stop_thread()`と`Hardware.disconnect()`の内部で
 目標電流`0 A`が書き込まれます。
 
-**目標電流値が`0 A`になると、ロボットが脱力します**
+**目標電流値が`0 A`になると、ロボットが脱力します。**
 
 脱力によってロボットが人や物にぶつからないように支えてください。
 
