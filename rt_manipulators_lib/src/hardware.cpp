@@ -111,6 +111,11 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
       std::cout << "\t" << joint_name;
       std::cout << ", id:" << std::to_string(joints_.joint(joint_name)->id());
       std::cout << ", mode:" << std::to_string(joints_.joint(joint_name)->operating_mode());
+      std::cout << ", modified max_position_limit:" << std::to_string(
+        joints_.joint(joint_name)->max_position_limit());
+      std::cout << ", modified min_position_limit:" << std::to_string(
+        joints_.joint(joint_name)->min_position_limit());
+      std::cout << ", modified current_limit:" << std::to_string(joints_.joint(joint_name)->current_limit());
       std::cout << std::endl;
     }
   }
