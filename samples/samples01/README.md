@@ -755,18 +755,12 @@ wristグループにはcurrentのsync_writeが設定されています.
 
 安全のためサーボモータ内部の可動範囲パラメータ（`Max/Min Position Limit`）が適切に設定されているかご確認ください。
 
-サーボモータの現在角度が可動範囲の限界値付近にあるとき、
-目標電流`0 A`を書き込んでも回転速度が下がりきらず、
-現在角度が可動範囲を超える場合があります.
-安全ため、コンフィグファイルの`pos_limit_margin`に0以上の数値を設定し、
-可動範囲を狭くしてください.
-
 ジョイントの`current_limit_margin`は、
 サーボモータ内部に設定された電流制限（`Current Limit`）から、
 どれくらいの電流余裕(A)を設けるかというパラメータです.
 
 サーボモータの現在角度が可動範囲を超える場合、
-目標電流値が`Current Limit - current_limit_margin`に制限されます。
+目標電流値が`[Current Limit] - [current_limit_margin]`に制限されます。
 
 ```yaml
 joint_groups:
