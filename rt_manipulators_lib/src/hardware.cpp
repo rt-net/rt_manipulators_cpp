@@ -916,7 +916,7 @@ bool Hardware::limit_goal_current_by_present_position(const std::string& group_n
 
     if (has_exceeded_max_pos_limit || has_exceeded_min_pos_limit) {
       std::cout << joint_name << "ジョイントの現在角度が限界角度に到達しました、";
-      std::cout << "goal_currentをcurrent_limitに制限します." << std::endl;
+      std::cout << "goal_currentを" << current_limit << " Aに制限します." << std::endl;
       auto limited_current = std::clamp(goal_current, -current_limit, current_limit);
       joints_.joint(joint_name)->set_goal_current(limited_current);
       retval = false;
