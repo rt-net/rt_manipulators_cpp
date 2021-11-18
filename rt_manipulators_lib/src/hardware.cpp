@@ -121,8 +121,8 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
         joints_.joint(joint_name)->max_position_limit());
       std::cout << ", modified min_position_limit:" << std::to_string(
         joints_.joint(joint_name)->min_position_limit());
-      std::cout << ", modified current_limit:" << std::to_string(
-        joints_.joint(joint_name)->current_limit());
+      std::cout << ", current_limit_when_position_exceeds_limit:" << std::to_string(
+        joints_.joint(joint_name)->current_limit_when_position_exceeds_limit());
       std::cout << std::endl;
     }
   }
@@ -906,7 +906,7 @@ bool Hardware::limit_goal_current_by_present_position(const std::string& group_n
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto max_position_limit = joints_.joint(joint_name)->max_position_limit();
     auto min_position_limit = joints_.joint(joint_name)->min_position_limit();
-    auto current_limit = joints_.joint(joint_name)->current_limit();
+    auto current_limit = joints_.joint(joint_name)->current_limit_when_position_exceeds_limit();
     auto present_position = joints_.joint(joint_name)->get_present_position();
     auto goal_current = joints_.joint(joint_name)->get_goal_current();
     bool has_exceeded_max_pos_limit = present_position > max_position_limit &&
