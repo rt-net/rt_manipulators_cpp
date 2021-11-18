@@ -723,8 +723,8 @@ set current:0.01 A
 set current:-0.01 A
 ...
 set current:-0.035 A
-joint6ジョイントの現在角度が限界角度に到達しました、goal_currentをcurrent_limitに制限します.
-joint5ジョイントの現在角度が限界角度に到達しました、goal_currentをcurrent_limitに制限します.
+joint6ジョイントの現在角度が限界角度に到達しました、goal_currentを0.02917 Aに制限します.
+joint5ジョイントの現在角度が限界角度に到達しました、goal_currentを0.02917 Aに制限します.
 set current:0.04 A
 ...
 スレッドを停止します.
