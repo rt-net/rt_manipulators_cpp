@@ -15,7 +15,7 @@
 #ifndef RT_MANIPULATORS_LIB_INCLUDE_LINK_HPP_
 #define RT_MANIPULATORS_LIB_INCLUDE_LINK_HPP_
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 
 namespace link {
 

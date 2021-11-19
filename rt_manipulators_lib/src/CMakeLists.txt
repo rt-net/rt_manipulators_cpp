@@ -1,6 +1,5 @@
 find_package(yaml-cpp REQUIRED)
 find_package(Threads REQUIRED)
-find_package(Eigen3 REQUIRED)
 
 set(library_name ${CMAKE_PROJECT_NAME})
 
@@ -23,7 +22,6 @@ target_link_libraries(${library_name} PUBLIC
     ${YAML_CPP_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     dxl_x64_cpp
-    Eigen3::Eigen
 )
 
 install(TARGETS ${library_name}
