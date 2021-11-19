@@ -18,22 +18,24 @@
 #include <vector>
 #include "rt_manipulators_cpp/hardware.hpp"
 #include "rt_manipulators_cpp/kinematics.hpp"
+#include "rt_manipulators_cpp/kinematics_utils.hpp"
 
 int main() {
   std::cout << "CRANE-X7のサーボモータ角度を読み取るサンプルです." << std::endl;
 
   std::string port_name = "/dev/ttyUSB0";
   int baudrate = 3000000;  // 3Mbps
-  std::string config_file = "../config/crane-x7.yaml";
+  std::string hardware_config_file = "../config/crane-x7.yaml";
+  std::string link_config_file = "../config/crane-x7_links.tsv";
 
+  auto links = kinematics_utils::parse_link_config_file(link_config_file);
   rt_manipulators_cpp::Hardware hardware(port_name);
-  rt_manipulators_cpp::forward_kinematics();
   if (!hardware.connect(baudrate)) {
     std::cerr << "ロボットとの接続に失敗しました." << std::endl;
     return -1;
   }
 
-  if (!hardware.load_config_file(config_file)) {
+  if (!hardware.load_config_file(hardware_config_file)) {
     std::cerr << "コンフィグファイルの読み込みに失敗しました." << std::endl;
     return -1;
   }
