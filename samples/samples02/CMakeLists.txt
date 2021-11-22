@@ -15,6 +15,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 # サンプルのビルド
 set(list_samples
     x7_forwared_kinematics
+    s17_forwared_kinematics
 )
 foreach(sample IN LISTS list_samples)
     message("${sample}")
