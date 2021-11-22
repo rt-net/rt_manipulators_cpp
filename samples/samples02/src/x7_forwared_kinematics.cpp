@@ -19,16 +19,34 @@
 #include "rt_manipulators_cpp/hardware.hpp"
 #include "rt_manipulators_cpp/kinematics.hpp"
 #include "rt_manipulators_cpp/kinematics_utils.hpp"
+#include "rt_manipulators_cpp/link.hpp"
+
+void set_arm_joint_positions(std::vector<link::Link> & links, std::vector<double> positions) {
+  // リンクにarmジョイントの現在角度をセットする
+  if (positions.size() != 7) {
+    std::cerr << "引数positionsには7個のジョイント角度をセットして下さい" << std::endl;
+    return;
+  }
+
+  int start_id = 2;  // Link1
+  for (int i=0; i < positions.size(); i++) {
+    links.at(start_id + i).q = positions.at(i);
+  }
+}
 
 int main() {
-  std::cout << "CRANE-X7のサーボモータ角度を読み取るサンプルです." << std::endl;
+  std::cout << "CRANE-X7のサーボモータ角度を読み取り、順運動学を解くサンプルです." << std::endl;
 
   std::string port_name = "/dev/ttyUSB0";
   int baudrate = 3000000;  // 3Mbps
   std::string hardware_config_file = "../config/crane-x7.yaml";
-  std::string link_config_file = "../config/crane-x7_links.tsv";
+  std::string x7_link_config_file = "../config/crane-x7_links.csv";
 
-  auto links = kinematics_utils::parse_link_config_file(link_config_file);
+  auto links = kinematics_utils::parse_link_config_file(x7_link_config_file);
+  kinematics::forward_kinematics(links, 1);
+  kinematics_utils::print_links(links, 1);
+  std::this_thread::sleep_for(std::chrono::seconds(3));
+
   rt_manipulators_cpp::Hardware hardware(port_name);
   if (!hardware.connect(baudrate)) {
     std::cerr << "ロボットとの接続に失敗しました." << std::endl;
@@ -40,40 +58,34 @@ int main() {
     return -1;
   }
 
-  for (int i = 0; i < 1000; i++) {
-    if (!hardware.sync_read("arm")) {
-      std::cerr << "armグループのsync readに失敗しました." << std::endl;
-      break;
-    }
+  std::cout << "read/writeスレッドを起動します." << std::endl;
+  std::vector<std::string> group_names = {"arm", "hand"};
+  if (!hardware.start_thread(group_names, std::chrono::milliseconds(10))) {
+    std::cerr << "スレッドの起動に失敗しました." << std::endl;
+    return -1;
+  }
 
-    if (!hardware.sync_read("hand")) {
-      std::cerr << "handグループのsync readに失敗しました." << std::endl;
-      break;
-    }
-
-    double position;
-    int dxl_id = 2;
-    if (hardware.get_position(dxl_id, position)) {
-      std::cout << "ID:" << std::to_string(dxl_id) << "のサーボ角度は" << std::to_string(position)
-                << "radです." << std::endl;
-    }
-
-    std::string joint_name = "joint_hand";
-    if (hardware.get_position(joint_name, position)) {
-      std::cout << joint_name << "のサーボ角度は" << std::to_string(position) << "radです."
-                << std::endl;
-    }
-
+  for (int i = 0; i < 4000; i++) {
     std::vector<double> positions;
     if (hardware.get_positions("arm", positions)) {
-      for (int i = 0; i < positions.size(); i++) {
-        std::cout << "armグループの" << std::to_string(i) << "番目のサーボ角度は"
-                  << std::to_string(positions[i]) << "radです." << std::endl;
-      }
+      set_arm_joint_positions(links, positions);
+      kinematics::forward_kinematics(links, 1);
+      int target_link = 8;
+      std::cout << "リンク名: " << links[target_link].name << std::endl;
+      auto pos_xyz = links[target_link].p;
+      std::cout << "位置 X: " <<  pos_xyz[0] << "\t[m]" << std::endl;
+      std::cout << "位置 Y: " <<  pos_xyz[1] << "\t[m]" << std::endl;
+      std::cout << "位置 Z: " <<  pos_xyz[2] << "\t[m]" << std::endl;
+      auto euler_zyx = kinematics_utils::rotation_to_euler_ZYX(links[target_link].R);
+      std::cout << "姿勢 Z:" << euler_zyx[0] * 180.0 / M_PI << "\t[deg]" << std::endl;
+      std::cout << "姿勢 Y:" << euler_zyx[1] * 180.0 / M_PI << "\t[deg]" << std::endl;
+      std::cout << "姿勢 X:" << euler_zyx[2] * 180.0 / M_PI << "\t[deg]" << std::endl;
     }
-
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
+
+  std::cout << "スレッドを停止します." << std::endl;
+  hardware.stop_thread();
 
   std::cout << "CRANE-X7との接続を解除します." << std::endl;
   hardware.disconnect();

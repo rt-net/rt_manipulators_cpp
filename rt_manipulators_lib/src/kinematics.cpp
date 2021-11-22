@@ -25,7 +25,6 @@ void forward_kinematics(std::vector<link::Link> & links, const int & start_id) {
   // 指定されたリンクIDからchild、siblingに向かって逐次的に順運動学を解き、
   // リンクの位置・姿勢を更新する
   if (start_id == 0) {
-    std::cerr << "引数start_idには1以上の数字を入力して下さい" << std::endl;
     return;
   }
 
