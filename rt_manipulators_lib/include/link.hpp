@@ -16,6 +16,7 @@
 #define RT_MANIPULATORS_LIB_INCLUDE_LINK_HPP_
 
 #include <eigen3/Eigen/Dense>
+#include <string>
 
 namespace link {
 
@@ -34,7 +35,7 @@ class Link{
     b.setZero();
     c.setZero();
     I.setIdentity();
-  };
+  }
   std::string name;  // リンク名
   int sibling;  // 姉妹兄弟リンクID
   int child;  // 子リンクID

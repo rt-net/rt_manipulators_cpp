@@ -26,7 +26,7 @@ std::vector<std::string> split(const std::string & input, const char & delimiter
   std::istringstream istream(input);
   std::string str;
   std::vector<std::string> result;
-  while(getline(istream, str, delimiter)){
+  while (getline(istream, str, delimiter)) {
       result.push_back(str);
   }
   return result;
@@ -69,7 +69,7 @@ std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
   std::string str_line;
 
   // tsvファイルを1行ずつ読み込む
-  while(getline(ifs, str_line)){
+  while (getline(ifs, str_line)) {
     // 行をコンマで区切り、vectorに格納する
     auto str_vec = split(str_line, ',');
 
@@ -85,17 +85,17 @@ std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
     link.name = str_vec[COL_LINK_NAME];
     try {
         link.sibling = std::stoi(str_vec[COL_SIBLING_LINK]);
-    } catch (...){
+    } catch (...) {
     }
 
     try {
         link.child = std::stoi(str_vec[COL_CHILD_LINK]);
-    } catch (...){
+    } catch (...) {
     }
 
     try {
         link.mother = std::stoi(str_vec[COL_MOTHER_LINK]);
-    } catch (...){
+    } catch (...) {
     }
 
     // 親リンクに対する相対位置
@@ -106,7 +106,7 @@ std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
     // 質量
     try {
       link.m = std::stod(str_vec[COL_MASS]) * G_TO_KG;
-    } catch (...){
+    } catch (...) {
     }
 
     // 自リンクに対する重心位置
@@ -114,7 +114,7 @@ std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
       link.c << std::stod(str_vec[COL_CENTER_OF_MASS_X]) * MM_TO_METERS,
                 std::stod(str_vec[COL_CENTER_OF_MASS_Y]) * MM_TO_METERS,
                 std::stod(str_vec[COL_CENTER_OF_MASS_Z]) * MM_TO_METERS;
-    } catch (...){
+    } catch (...) {
     }
 
     // 自リンクに対する慣性テンソル
@@ -128,38 +128,37 @@ std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
                 std::stod(str_vec[COL_INERTIA_XZ]) * MM2_TO_METERS2,
                 std::stod(str_vec[COL_INERTIA_YZ]) * MM2_TO_METERS2,
                 std::stod(str_vec[COL_INERTIA_ZZ]) * MM2_TO_METERS2;
-    } catch (...){
+    } catch (...) {
     }
 
     // 親リンクに対する関節軸ベクトル
     std::string axis = str_vec[COL_AXIS_OF_ROTATION];
-    if(axis == "X+"){
-        link.a << 1, 0, 0;
-    }else if(axis == "X-"){
-        link.a << -1, 0, 0;
-    }else if(axis == "Y+"){
-        link.a << 0, 1, 0;
-    }else if(axis == "Y-"){
-        link.a << 0, -1, 0;
-    }else if(axis == "Z+"){
-        link.a << 0, 0, 1;
-    }else if(axis == "Z-"){
-        link.a << 0, 0, -1;
+    if (axis == "X+") {
+      link.a << 1, 0, 0;
+    } else if (axis == "X-") {
+      link.a << -1, 0, 0;
+    } else if (axis == "Y+") {
+      link.a << 0, 1, 0;
+    } else if (axis == "Y-") {
+      link.a << 0, -1, 0;
+    } else if (axis == "Z+") {
+      link.a << 0, 0, 1;
+    } else if (axis == "Z-") {
+      link.a << 0, 0, -1;
     }
-
     links.push_back(link);
   }
 
   return links;
 }
 
-void print_links(const std::vector<link::Link> & links, const int & mother_id) {
-  // 指定された親リンクIDを基準に、リンク情報を標準出力する
-  auto link = links[mother_id];
+void print_links(const std::vector<link::Link> & links, const int & start_id) {
+  // 指定されたリンクIDからchild、siblingに向かって逐次的にリンク情報を出力する
+  auto link = links[start_id];
   int sibling_id = link.sibling;
   int child_id = link.child;
 
-  std::cout << "リンクID:" << mother_id << "リンク名:" << link.name << std::endl;
+  std::cout << "リンクID:" << start_id << "リンク名:" << link.name << std::endl;
   std::cout << "親:" << link.mother << ", 子:" << link.child;
   std::cout << ", 姉妹兄弟:" << link.sibling << std::endl;
   std::cout << "親リンクに対する関節軸ベクトル a:" << std::endl;
@@ -176,14 +175,32 @@ void print_links(const std::vector<link::Link> & links, const int & mother_id) {
   std::cout << link.c <<std::endl;
   std::cout << "自リンクに対する慣性テンソル" << std::endl;
   std::cout << link.I <<std::endl;
-  std::cout << "---------------------------"<<std::endl;
+  std::cout << "---------------------------" << std::endl;
 
-  if(sibling_id > 0){
-      print_links(links, sibling_id);
+  if (sibling_id > 0) {
+    print_links(links, sibling_id);
   }
-  if(child_id > 0){
-      print_links(links, child_id);
+  if (child_id > 0) {
+    print_links(links, child_id);
   }
+}
+
+Eigen::Matrix3d skew_symmetric_matrix(const Eigen::Vector3d & v) {
+  // 3次元ベクトルからひずみ対称行列をつくる
+  Eigen::Matrix3d m;
+  m <<     0, -v.z(),  v.y(),
+        v.z(),      0, -v.x(),
+      -v.y(),  v.x(),       0;
+  return m;
+}
+
+Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta) {
+  // ロドリゲスの公式
+  // 単位ベクトルa周りにthetaだけ回転する回転行列を返す
+  // E + [a×] * sin(theta) + [a×]^2 * (1 - cos(theta))
+  auto a_hat = skew_symmetric_matrix(a);
+  return Eigen::Matrix3d::Identity() + a_hat * std::sin(theta) +
+    a_hat * a_hat * (1 - std::cos(theta));
 }
 
 }  // namespace kinematics_utils

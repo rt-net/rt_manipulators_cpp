@@ -15,11 +15,34 @@
 #include <iostream>
 
 #include "kinematics.hpp"
+#include "kinematics_utils.hpp"
 
-namespace rt_manipulators_cpp {
+namespace kinematics {
 
-void forward_kinematics(void) {
-  std::cout <<"This is forward kinematics function." << std::endl;
+namespace utils = kinematics_utils;
+
+void forward_kinematics(std::vector<link::Link> & links, const int & start_id) {
+  // 指定されたリンクIDからchild、siblingに向かって逐次的に順運動学を解き、
+  // リンクの位置・姿勢を更新する
+  if (start_id == 0) {
+    std::cerr << "引数start_idには1以上の数字を入力して下さい" << std::endl;
+    return;
+  }
+
+  if (start_id >= links.size()) {
+    std::cerr << "引数start_idには引数linksの要素数より小さい数字を入力して下さい" << std::endl;
+    return;
+  }
+
+  if (start_id != 1) {
+      auto mother_id = links[start_id].mother;
+      links[start_id].p = links[mother_id].R * links[start_id].b + links[mother_id].p;
+      links[start_id].R = links[mother_id].R *
+        utils::rodrigues(links[start_id].a, links[start_id].q);
+  }
+
+  forward_kinematics(links, links[start_id].sibling);
+  forward_kinematics(links, links[start_id].child);
 }
 
-}  // namespace rt_manipulators_cpp
+}  // namespace kinematics

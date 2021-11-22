@@ -15,11 +15,14 @@
 #ifndef RT_MANIPULATORS_LIB_INCLUDE_KINEMATICS_HPP_
 #define RT_MANIPULATORS_LIB_INCLUDE_KINEMATICS_HPP_
 
+#include <vector>
 
-namespace rt_manipulators_cpp {
+#include "link.hpp"
 
-void forward_kinematics(void);
+namespace kinematics {
 
-}  // namespace rt_manipulators_cpp
+void forward_kinematics(std::vector<link::Link> & links, const int & start_id);
+
+}  // namespace kinematics
 
 #endif  // RT_MANIPULATORS_LIB_INCLUDE_KINEMATICS_HPP_

@@ -15,6 +15,8 @@
 #ifndef RT_MANIPULATORS_LIB_INCLUDE_KINEMATICS_UTILS_HPP_
 #define RT_MANIPULATORS_LIB_INCLUDE_KINEMATICS_UTILS_HPP_
 
+#include <eigen3/Eigen/Dense>
+#include <string>
 #include <vector>
 
 #include "link.hpp"
@@ -22,7 +24,9 @@
 namespace kinematics_utils {
 
 std::vector<link::Link> parse_link_config_file(const std::string & file_path);
-void print_links(const std::vector<link::Link> & links, const int & mother_id);
+void print_links(const std::vector<link::Link> & links, const int & start_id);
+Eigen::Matrix3d skew_symmetric_matrix(const Eigen::Vector3d & v);
+Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta);
 
 }  // namespace kinematics_utils
 
