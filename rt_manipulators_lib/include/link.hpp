@@ -23,8 +23,20 @@ namespace link {
 // 梶田秀司 編著, ヒューマノイドロボット 改訂２版, オーム社, 2020
 class Link{
  public:
-  Link(){}
-  int sister;  // 妹リンクID
+  Link():
+    name("ダミーリンク"), sibling(0), child(0), mother(0), q(0), dq(0), ddq(0), m(0) {
+    // 0ベクトル、単位行列で初期化
+    p.setZero();
+    R.setIdentity();
+    v.setZero();
+    w.setZero();
+    a.setZero();
+    b.setZero();
+    c.setZero();
+    I.setIdentity();
+  };
+  std::string name;  // リンク名
+  int sibling;  // 姉妹兄弟リンクID
   int child;  // 子リンクID
   int mother;  // 親リンクID
   Eigen::Vector3d p;  // ワールド座標系での位置

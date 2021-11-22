@@ -17,6 +17,7 @@
 #include <string>
 
 #include "kinematics_utils.hpp"
+#include "link.hpp"
 
 namespace kinematics_utils {
 
@@ -32,24 +33,157 @@ std::vector<std::string> split(const std::string & input, const char & delimiter
 }
 
 std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
+  // リンク情報リファレンスからダウンロードしたtscファイルを解析し
+  // リンククラスのvectorを返す
+  // CRANE-X7: https://docs.google.com/spreadsheets/d/1I268mnab4m-f6us0Au3AGd64-2iGkSwxaLrDplSjHY8/edit#gid=735472399
+  // Sciurus17: https://docs.google.com/spreadsheets/d/1Q4z3M3cS1pQOEn3iXKLiIQIOr6czvECxSXEPS2-PGvA/edit#gid=1687288769
+
+  const int COL_LINK_NAME = 0;
+  const int COL_MY_LINK = 1;
+  const int COL_SIBLING_LINK = 2;
+  const int COL_CHILD_LINK = 3;
+  const int COL_MOTHER_LINK = 4;
+  const int COL_RELATIVE_POS_X = 8;
+  const int COL_RELATIVE_POS_Y = 9;
+  const int COL_RELATIVE_POS_Z = 10;
+  const int COL_MASS = 14;
+  const int COL_CENTER_OF_MASS_X = 15;
+  const int COL_CENTER_OF_MASS_Y = 16;
+  const int COL_CENTER_OF_MASS_Z = 17;
+  const int COL_INERTIA_XX = 18;
+  const int COL_INERTIA_XY = 19;
+  const int COL_INERTIA_YY = 20;
+  const int COL_INERTIA_XZ = 21;
+  const int COL_INERTIA_YZ = 22;
+  const int COL_INERTIA_ZZ = 23;
+  const int COL_AXIS_OF_ROTATION = 29;
+  const double MM_TO_METERS = 1e-3;
+  const double MM2_TO_METERS2 = 1e-9;
+  const double G_TO_KG = 1e-3;
+
+  std::cout << "リンク情報ファイル:" << file_path << "を読み込みます" << std::endl;
+
   std::vector<link::Link> links;
+  links.push_back(link::Link());  // 0番目には空のリンクをセット
   std::ifstream ifs(file_path);
-  std::string str_buf;
+  std::string str_line;
 
-  // 1行ずつ読み込み、str_bufに格納する
-  int row_count=0;
-  while(getline(ifs, str_buf)){
-    row_count++;
+  // tsvファイルを1行ずつ読み込む
+  while(getline(ifs, str_line)){
+    // 行をコンマで区切り、vectorに格納する
+    auto str_vec = split(str_line, ',');
 
-    auto str_vec = split(str_buf, '\t');
-
-    for(auto str : str_vec){
-      std::cout<<str<<",";
+    // リンク番号を取得できなければスキップ
+    try {
+      auto link_number = std::stoi(str_vec[COL_MY_LINK]);
+      (link_number);  // コンパイラの警告を消すための処理
+    } catch (...) {
+      continue;
     }
-    std::cout<<std::endl;
+
+    link::Link link;
+    link.name = str_vec[COL_LINK_NAME];
+    try {
+        link.sibling = std::stoi(str_vec[COL_SIBLING_LINK]);
+    } catch (...){
+    }
+
+    try {
+        link.child = std::stoi(str_vec[COL_CHILD_LINK]);
+    } catch (...){
+    }
+
+    try {
+        link.mother = std::stoi(str_vec[COL_MOTHER_LINK]);
+    } catch (...){
+    }
+
+    // 親リンクに対する相対位置
+    link.b << std::stod(str_vec[COL_RELATIVE_POS_X]) * MM_TO_METERS,
+              std::stod(str_vec[COL_RELATIVE_POS_Y]) * MM_TO_METERS,
+              std::stod(str_vec[COL_RELATIVE_POS_Z]) * MM_TO_METERS;
+
+    // 質量
+    try {
+      link.m = std::stod(str_vec[COL_MASS]) * G_TO_KG;
+    } catch (...){
+    }
+
+    // 自リンクに対する重心位置
+    try {
+      link.c << std::stod(str_vec[COL_CENTER_OF_MASS_X]) * MM_TO_METERS,
+                std::stod(str_vec[COL_CENTER_OF_MASS_Y]) * MM_TO_METERS,
+                std::stod(str_vec[COL_CENTER_OF_MASS_Z]) * MM_TO_METERS;
+    } catch (...){
+    }
+
+    // 自リンクに対する慣性テンソル
+    try {
+      link.I << std::stod(str_vec[COL_INERTIA_XX]) * MM2_TO_METERS2,
+                std::stod(str_vec[COL_INERTIA_XY]) * MM2_TO_METERS2,
+                std::stod(str_vec[COL_INERTIA_XZ]) * MM2_TO_METERS2,
+                std::stod(str_vec[COL_INERTIA_XY]) * MM2_TO_METERS2,
+                std::stod(str_vec[COL_INERTIA_YY]) * MM2_TO_METERS2,
+                std::stod(str_vec[COL_INERTIA_YZ]) * MM2_TO_METERS2,
+                std::stod(str_vec[COL_INERTIA_XZ]) * MM2_TO_METERS2,
+                std::stod(str_vec[COL_INERTIA_YZ]) * MM2_TO_METERS2,
+                std::stod(str_vec[COL_INERTIA_ZZ]) * MM2_TO_METERS2;
+    } catch (...){
+    }
+
+    // 親リンクに対する関節軸ベクトル
+    std::string axis = str_vec[COL_AXIS_OF_ROTATION];
+    if(axis == "X+"){
+        link.a << 1, 0, 0;
+    }else if(axis == "X-"){
+        link.a << -1, 0, 0;
+    }else if(axis == "Y+"){
+        link.a << 0, 1, 0;
+    }else if(axis == "Y-"){
+        link.a << 0, -1, 0;
+    }else if(axis == "Z+"){
+        link.a << 0, 0, 1;
+    }else if(axis == "Z-"){
+        link.a << 0, 0, -1;
+    }
+
+    links.push_back(link);
   }
 
   return links;
+}
+
+void print_links(const std::vector<link::Link> & links, const int & mother_id) {
+  // 指定された親リンクIDを基準に、リンク情報を標準出力する
+  auto link = links[mother_id];
+  int sibling_id = link.sibling;
+  int child_id = link.child;
+
+  std::cout << "リンクID:" << mother_id << "リンク名:" << link.name << std::endl;
+  std::cout << "親:" << link.mother << ", 子:" << link.child;
+  std::cout << ", 姉妹兄弟:" << link.sibling << std::endl;
+  std::cout << "親リンクに対する関節軸ベクトル a:" << std::endl;
+  std::cout << link.a << std::endl;
+  std::cout << "親リンクに対する相対位置 b:" << std::endl;
+  std::cout << link.b << std::endl;
+  std::cout << "ワールド座標系での位置 p:" << std::endl;
+  std::cout << link.p <<std::endl;
+  std::cout << "ワールド座標系での姿勢 R:" << std::endl;
+  std::cout << link.R <<std::endl;
+  std::cout << "質量 m:" << std::endl;
+  std::cout << link.m <<std::endl;
+  std::cout << "自リンクに対する重心位置" << std::endl;
+  std::cout << link.c <<std::endl;
+  std::cout << "自リンクに対する慣性テンソル" << std::endl;
+  std::cout << link.I <<std::endl;
+  std::cout << "---------------------------"<<std::endl;
+
+  if(sibling_id > 0){
+      print_links(links, sibling_id);
+  }
+  if(child_id > 0){
+      print_links(links, child_id);
+  }
 }
 
 }  // namespace kinematics_utils

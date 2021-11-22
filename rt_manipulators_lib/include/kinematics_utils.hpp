@@ -22,6 +22,7 @@
 namespace kinematics_utils {
 
 std::vector<link::Link> parse_link_config_file(const std::string & file_path);
+void print_links(const std::vector<link::Link> & links, const int & mother_id);
 
 }  // namespace kinematics_utils
 
