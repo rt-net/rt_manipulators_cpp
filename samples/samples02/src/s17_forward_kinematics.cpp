@@ -21,31 +21,56 @@
 #include "rt_manipulators_cpp/kinematics_utils.hpp"
 #include "rt_manipulators_cpp/link.hpp"
 
-void set_arm_joint_positions(std::vector<link::Link> & links, std::vector<double> positions) {
-  // リンクにarmジョイントの現在角度をセットする
+void set_right_arm_joint_positions(std::vector<link::Link> & links, std::vector<double> positions) {
+  // リンクにright_armジョイントの現在角度をセットする
   if (positions.size() != 7) {
-    std::cerr << "引数positionsには7個のジョイント角度をセットして下さい" << std::endl;
+    std::cerr << "引数positionsには7個のジョイント角度をセットしてください" << std::endl;
     return;
   }
 
-  int start_id = 2;  // Link1
+  int start_id = 5;  // R_Link1
   for (int i=0; i < positions.size(); i++) {
-    links.at(start_id + i).q = positions.at(i);
+    links[start_id + i].q = positions[i];
+  }
+}
+
+void set_left_arm_joint_positions(std::vector<link::Link> & links, std::vector<double> positions) {
+  // リンクにleft_armジョイントの現在角度をセットする
+  if (positions.size() != 7) {
+    std::cerr << "引数positionsには7個のジョイント角度をセットしてください" << std::endl;
+    return;
+  }
+
+  int start_id = 14;  // L_Link1
+  for (int i=0; i < positions.size(); i++) {
+    links[start_id + i].q = positions[i];
+  }
+}
+
+void set_torso_joint_positions(std::vector<link::Link> & links, std::vector<double> positions) {
+  // リンクにtorsoジョイントの現在角度をセットする
+  if (positions.size() != 3) {
+    std::cerr << "引数positionsには3個のジョイント角度をセットしてください" << std::endl;
+    return;
+  }
+
+  int start_id = 2;  // Body
+  for (int i=0; i < positions.size(); i++) {
+    links[start_id + i].q = positions[i];
   }
 }
 
 int main() {
-  std::cout << "CRANE-X7のサーボモータ角度を読み取り、順運動学を解くサンプルです." << std::endl;
+  std::cout << "Sciurus17のサーボモータ角度を読み取り、順運動学を解くサンプルです." << std::endl;
 
   std::string port_name = "/dev/ttyUSB0";
   int baudrate = 3000000;  // 3Mbps
-  std::string hardware_config_file = "../config/crane-x7.yaml";
-  std::string link_config_file = "../config/crane-x7_links.csv";
+  std::string hardware_config_file = "../config/sciurus17.yaml";
+  std::string link_config_file = "../config/sciurus17_links.csv";
 
   auto links = kinematics_utils::parse_link_config_file(link_config_file);
   kinematics::forward_kinematics(links, 1);
   kinematics_utils::print_links(links, 1);
-  std::this_thread::sleep_for(std::chrono::seconds(3));
 
   rt_manipulators_cpp::Hardware hardware(port_name);
   if (!hardware.connect(baudrate)) {
@@ -59,18 +84,35 @@ int main() {
   }
 
   std::cout << "read/writeスレッドを起動します." << std::endl;
-  std::vector<std::string> group_names = {"arm", "hand"};
+  std::vector<std::string> group_names = {"right_arm", "right_hand", "left_arm",
+                                          "left_hand", "torso"};
   if (!hardware.start_thread(group_names, std::chrono::milliseconds(10))) {
     std::cerr << "スレッドの起動に失敗しました." << std::endl;
     return -1;
   }
 
+  std::this_thread::sleep_for(std::chrono::seconds(3));
+
   for (int i = 0; i < 4000; i++) {
     std::vector<double> positions;
-    if (hardware.get_positions("arm", positions)) {
-      set_arm_joint_positions(links, positions);
+    if (hardware.get_positions("right_arm", positions)) {
+      set_right_arm_joint_positions(links, positions);
       kinematics::forward_kinematics(links, 1);
-      int target_link = 8;
+      positions.clear();
+    }
+    if (hardware.get_positions("left_arm", positions)) {
+      set_left_arm_joint_positions(links, positions);
+      kinematics::forward_kinematics(links, 1);
+      positions.clear();
+    }
+    if (hardware.get_positions("torso", positions)) {
+      set_torso_joint_positions(links, positions);
+      kinematics::forward_kinematics(links, 1);
+      positions.clear();
+    }
+
+    std::vector<int> target_links = {11, 20};
+    for (auto target_link : target_links) {
       std::cout << "リンク名: " << links[target_link].name << std::endl;
       auto pos_xyz = links[target_link].p;
       std::cout << "位置 X: " <<  pos_xyz[0] << "\t[m]" << std::endl;
@@ -87,7 +129,7 @@ int main() {
   std::cout << "スレッドを停止します." << std::endl;
   hardware.stop_thread();
 
-  std::cout << "CRANE-X7との接続を解除します." << std::endl;
+  std::cout << "Sciurus17との接続を解除します." << std::endl;
   hardware.disconnect();
   return 0;
 }
