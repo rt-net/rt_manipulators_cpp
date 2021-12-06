@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: .tools/cpplint.bash
 
-  build:
+  build_and_test:
     needs: lint
     strategy:
       fail-fast: false # 他のjobが失敗してもキャンセルしない
@@ -26,6 +26,14 @@ jobs:
           cd DynamixelSDK/c++/build/linux64
           make
           sudo make install
+      - name: Install GoogleTest
+        run: |
+          cd ..
+          curl -OL https://github.com/google/googletest/archive/release-1.11.0.tar.gz
+          mkdir googletest-release-1.11.0/build
+          cd googletest-release-1.11.0/build
+          cmake ..
+          sudo make install
       - name: Install dependencies
         run: sudo apt install libyaml-cpp-dev
       - uses: actions/checkout@v2
@@ -34,3 +42,5 @@ jobs:
       - name: Build Samples
         run: |
           ./samples/samples01/build_samples.bash
+      - name: Test library
+        run: ./rt_manipulators_lib/run_test_library.bash
