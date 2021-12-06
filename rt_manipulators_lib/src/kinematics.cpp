@@ -21,7 +21,7 @@ namespace kinematics {
 
 namespace utils = kinematics_utils;
 
-void forward_kinematics(std::vector<link::Link> & links, const int & start_id) {
+void forward_kinematics(std::vector<manipulators_link::Link> & links, const int & start_id) {
   // 指定されたリンクIDからchild、siblingに向かって逐次的に順運動学を解き、
   // リンクの位置・姿勢を更新する
   if (start_id == 0) {

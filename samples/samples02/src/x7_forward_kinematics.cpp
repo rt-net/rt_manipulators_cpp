@@ -21,7 +21,7 @@
 #include "rt_manipulators_cpp/kinematics_utils.hpp"
 #include "rt_manipulators_cpp/link.hpp"
 
-void set_arm_joint_positions(std::vector<link::Link> & links, std::vector<double> positions) {
+void set_arm_joint_positions(std::vector<manipulators_link::Link> & links, std::vector<double> positions) {
   // リンクにarmジョイントの現在角度をセットする
   if (positions.size() != 7) {
     std::cerr << "引数positionsには7個のジョイント角度をセットしてください" << std::endl;

@@ -21,7 +21,7 @@
 #include "rt_manipulators_cpp/kinematics_utils.hpp"
 #include "rt_manipulators_cpp/link.hpp"
 
-void set_right_arm_joint_positions(std::vector<link::Link> & links, std::vector<double> positions) {
+void set_right_arm_joint_positions(std::vector<manipulators_link::Link> & links, std::vector<double> positions) {
   // リンクにright_armジョイントの現在角度をセットする
   if (positions.size() != 7) {
     std::cerr << "引数positionsには7個のジョイント角度をセットしてください" << std::endl;
@@ -34,7 +34,7 @@ void set_right_arm_joint_positions(std::vector<link::Link> & links, std::vector<
   }
 }
 
-void set_left_arm_joint_positions(std::vector<link::Link> & links, std::vector<double> positions) {
+void set_left_arm_joint_positions(std::vector<manipulators_link::Link> & links, std::vector<double> positions) {
   // リンクにleft_armジョイントの現在角度をセットする
   if (positions.size() != 7) {
     std::cerr << "引数positionsには7個のジョイント角度をセットしてください" << std::endl;
@@ -47,7 +47,7 @@ void set_left_arm_joint_positions(std::vector<link::Link> & links, std::vector<d
   }
 }
 
-void set_torso_joint_positions(std::vector<link::Link> & links, std::vector<double> positions) {
+void set_torso_joint_positions(std::vector<manipulators_link::Link> & links, std::vector<double> positions) {
   // リンクにtorsoジョイントの現在角度をセットする
   if (positions.size() != 3) {
     std::cerr << "引数positionsには3個のジョイント角度をセットしてください" << std::endl;

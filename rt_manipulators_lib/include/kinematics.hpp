@@ -21,7 +21,7 @@
 
 namespace kinematics {
 
-void forward_kinematics(std::vector<link::Link> & links, const int & start_id);
+void forward_kinematics(std::vector<manipulators_link::Link> & links, const int & start_id);
 
 }  // namespace kinematics
 

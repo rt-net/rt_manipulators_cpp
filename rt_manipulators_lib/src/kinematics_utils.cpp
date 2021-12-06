@@ -32,7 +32,7 @@ std::vector<std::string> split(const std::string & input, const char & delimiter
   return result;
 }
 
-std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
+std::vector<manipulators_link::Link> parse_link_config_file(const std::string & file_path) {
   // リンク情報リファレンスからダウンロードしたtscファイルを解析し
   // リンククラスのvectorを返す
   // CRANE-X7: https://docs.google.com/spreadsheets/d/1I268mnab4m-f6us0Au3AGd64-2iGkSwxaLrDplSjHY8/edit#gid=735472399
@@ -63,8 +63,8 @@ std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
 
   std::cout << "リンク情報ファイル:" << file_path << "を読み込みます" << std::endl;
 
-  std::vector<link::Link> links;
-  links.push_back(link::Link());  // 0番目には空のリンクをセット
+  std::vector<manipulators_link::Link> links;
+  links.push_back(manipulators_link::Link());  // 0番目には空のリンクをセット
   std::ifstream ifs(file_path);
   std::string str_line;
 
@@ -81,7 +81,7 @@ std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
       continue;
     }
 
-    link::Link link;
+    manipulators_link::Link link;
     link.name = str_vec[COL_LINK_NAME];
     try {
         link.sibling = std::stoi(str_vec[COL_SIBLING_LINK]);
@@ -152,7 +152,7 @@ std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
   return links;
 }
 
-void print_links(const std::vector<link::Link> & links, const int & start_id) {
+void print_links(const std::vector<manipulators_link::Link> & links, const int & start_id) {
   // 指定されたリンクIDからchild、siblingに向かって逐次的にリンク情報を出力する
   auto link = links[start_id];
   int sibling_id = link.sibling;

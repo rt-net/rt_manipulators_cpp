@@ -18,7 +18,7 @@
 #include <eigen3/Eigen/Dense>
 #include <string>
 
-namespace link {
+namespace manipulators_link {
 
 // Linkクラスの参考情報：
 // 梶田秀司 編著, ヒューマノイドロボット 改訂２版, オーム社, 2020
