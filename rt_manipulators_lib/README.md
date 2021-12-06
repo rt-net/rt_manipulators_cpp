@@ -68,6 +68,7 @@ $ ./uninstall_library.bash
 $ mkdir ~/gtest
 $ cd ~/gtest
 $ curl -OL https://github.com/google/googletest/archive/release-1.11.0.tar.gz
+$ tar -xvf release-1.11.0.tar.gz
 $ mkdir googletest-release-1.11.0/build
 $ cd googletest-release-1.11.0/build
 $ cmake ..
