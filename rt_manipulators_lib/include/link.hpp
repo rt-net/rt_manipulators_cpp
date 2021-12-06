@@ -25,7 +25,7 @@ namespace link {
 class Link{
  public:
   Link():
-    name("ダミーリンク"), sibling(0), child(0), mother(0), q(0), dq(0), ddq(0), m(0) {
+    name("ダミーリンク"), sibling(0), child(0), parent(0), q(0), dq(0), ddq(0), m(0) {
     // 0ベクトル、単位行列で初期化
     p.setZero();
     R.setIdentity();
@@ -39,7 +39,7 @@ class Link{
   std::string name;  // リンク名
   int sibling;  // 姉妹兄弟リンクID
   int child;  // 子リンクID
-  int mother;  // 親リンクID
+  int parent;  // 親リンクID
   Eigen::Vector3d p;  // ワールド座標系での位置
   Eigen::Matrix3d R;  // ワールド座標系での姿勢
   Eigen::Vector3d v;  // ワールド座標系での速度

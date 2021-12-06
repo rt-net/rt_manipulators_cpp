@@ -34,9 +34,9 @@ void forward_kinematics(std::vector<link::Link> & links, const int & start_id) {
   }
 
   if (start_id != 1) {
-      auto mother_id = links[start_id].mother;
-      links[start_id].p = links[mother_id].R * links[start_id].b + links[mother_id].p;
-      links[start_id].R = links[mother_id].R *
+      auto parent_id = links[start_id].parent;
+      links[start_id].p = links[parent_id].R * links[start_id].b + links[parent_id].p;
+      links[start_id].R = links[parent_id].R *
         utils::rodrigues(links[start_id].a, links[start_id].q);
   }
 

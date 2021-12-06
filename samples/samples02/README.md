@@ -90,7 +90,7 @@ class Link{
   std::string name;  // リンク名
   int sibling;  // 姉妹兄弟リンクID
   int child;  // 子リンクID
-  int mother;  // 親リンクID
+  int parent;  // 親リンクID
   Eigen::Vector3d p;  // ワールド座標系での位置
   Eigen::Matrix3d R;  // ワールド座標系での姿勢
   Eigen::Vector3d v;  // ワールド座標系での速度

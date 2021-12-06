@@ -42,7 +42,7 @@ std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
   const int COL_MY_LINK = 1;
   const int COL_SIBLING_LINK = 2;
   const int COL_CHILD_LINK = 3;
-  const int COL_MOTHER_LINK = 4;
+  const int COL_PARENT_LINK = 4;
   const int COL_RELATIVE_POS_X = 8;
   const int COL_RELATIVE_POS_Y = 9;
   const int COL_RELATIVE_POS_Z = 10;
@@ -94,7 +94,7 @@ std::vector<link::Link> parse_link_config_file(const std::string & file_path) {
     }
 
     try {
-        link.mother = std::stoi(str_vec[COL_MOTHER_LINK]);
+        link.parent = std::stoi(str_vec[COL_PARENT_LINK]);
     } catch (...) {
     }
 
@@ -159,7 +159,7 @@ void print_links(const std::vector<link::Link> & links, const int & start_id) {
   int child_id = link.child;
 
   std::cout << "リンクID:" << start_id << "リンク名:" << link.name << std::endl;
-  std::cout << "親:" << link.mother << ", 子:" << link.child;
+  std::cout << "親:" << link.parent << ", 子:" << link.child;
   std::cout << ", 姉妹兄弟:" << link.sibling << std::endl;
   std::cout << "親リンクに対する関節軸ベクトル a:" << std::endl;
   std::cout << link.a << std::endl;
