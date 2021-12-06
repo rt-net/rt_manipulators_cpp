@@ -64,6 +64,7 @@ class Communicator{
   bool write_double_word_data(const dxl_id_t & id, const dxl_address_t & address,
                               const dxl_double_word_t & write_data);
   bool read_byte_data(const dxl_id_t & id, const dxl_address_t & address, dxl_byte_t & read_data);
+  bool read_word_data(const dxl_id_t & id, const dxl_address_t & address, dxl_word_t & read_data);
   bool read_double_word_data(const dxl_id_t & id, const dxl_address_t & address,
                              dxl_double_word_t & read_data);
 

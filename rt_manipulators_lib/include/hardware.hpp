@@ -66,6 +66,9 @@ class Hardware {
   bool set_velocity(const uint8_t id, const double velocity);
   bool set_velocity(const std::string& joint_name, const double velocity);
   bool set_velocities(const std::string& group_name, std::vector<double>& velocities);
+  bool set_current(const uint8_t id, const double current);
+  bool set_current(const std::string& joint_name, const double current);
+  bool set_currents(const std::string& group_name, std::vector<double>& currents);
   bool write_max_acceleration_to_group(const std::string& group_name,
                                        const double acceleration_rpss);
   bool write_max_velocity_to_group(const std::string& group_name, const double velocity_rps);
@@ -94,6 +97,7 @@ class Hardware {
   bool parse_config_file(const std::string& config_yaml);
   bool write_operating_mode(const std::string& group_name);
   bool limit_goal_velocity_by_present_position(const std::string& group_name);
+  bool limit_goal_current_by_present_position(const std::string& group_name);
   bool create_sync_read_group(const std::string& group_name);
   bool create_sync_write_group(const std::string& group_name);
   bool set_indirect_address(const std::string& group_name, const uint16_t addr_indirect_start,
@@ -106,6 +110,7 @@ class Hardware {
   double dxl_voltage_to_volt(const int16_t voltage) const;
   uint32_t radian_to_dxl_pos(const double position);
   uint32_t to_dxl_velocity(const double velocity_rps);
+  uint16_t to_dxl_current(const double current_ampere);
   uint32_t to_dxl_acceleration(const double acceleration_rpss);
   uint32_t to_dxl_profile_velocity(const double velocity_rps);
 
