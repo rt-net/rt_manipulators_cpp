@@ -18,7 +18,7 @@
 #include "rt_manipulators_cpp/joint.hpp"
 
 class JointTestFixture : public ::testing::Test {
-protected:
+ protected:
   virtual void SetUp() {
     uint8_t id = 0;
     uint8_t operating_mode = 1;
@@ -28,10 +28,11 @@ protected:
     test_joint = std::make_shared<joint::Joint>(
       id, operating_mode, max_position_limit, min_position_limit,
       current_limit_when_position_exceeds_limit);
-  };
+  }
+
   virtual void TearDown() {
     test_joint.reset();
-  };
+  }
 
   std::shared_ptr<joint::Joint> test_joint;
 };
