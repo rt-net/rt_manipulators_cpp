@@ -186,7 +186,7 @@ void print_links(const std::vector<link::Link> & links, const int & start_id) {
 }
 
 Eigen::Matrix3d skew_symmetric_matrix(const Eigen::Vector3d & v) {
-  // 3次元ベクトルからひずみ対称行列をつくる
+  // 3次元ベクトルから歪対称行列をつくる
   Eigen::Matrix3d m;
   m <<     0, -v.z(),  v.y(),
         v.z(),      0, -v.x(),
