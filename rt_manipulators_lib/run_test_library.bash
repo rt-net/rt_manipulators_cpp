@@ -14,6 +14,6 @@ fi
 cd $BUILD_DIR
 cmake ..
 make
-ctest
+CTEST_OUTPUT_ON_FAILURE=1 ctest
 
 echo "ライブラリをテストしました"
