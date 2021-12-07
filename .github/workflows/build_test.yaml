@@ -36,7 +36,7 @@ jobs:
           cmake ..
           sudo make install
       - name: Install dependencies
-        run: sudo apt install libyaml-cpp-dev
+        run: sudo apt install libyaml-cpp-dev libeigen3-dev
       - uses: actions/checkout@v2
       - name: Build and insall library
         run: ./rt_manipulators_lib/build_install_library.bash
