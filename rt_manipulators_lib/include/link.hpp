@@ -54,6 +54,6 @@ class Link{
   Eigen::Matrix3d I;  // 自リンクに対する慣性テンソル
 };
 
-}  // namespace link
+}  // namespace manipulators_link
 
 #endif  // RT_MANIPULATORS_LIB_INCLUDE_LINK_HPP_
