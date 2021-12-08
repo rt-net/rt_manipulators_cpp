@@ -219,6 +219,41 @@ TEST(KinematicsUtilsFunctions, skew_symmetric_matrix) {
   expect_matrix_approximation(actual, expected);
 }
 
+TEST(KinematicsUtilsFunctions, rodrigues) {
+  Eigen::Vector3d vec;
+  vec << 1, 0, 0;
+  Eigen::Matrix3d actual = kinematics_utils::rodrigues(vec, 0.0);
+  Eigen::Matrix3d expected;
+  expected << 1, 0, 0,
+              0, 1, 0,
+              0, 0, 1;
+  expect_matrix_approximation(actual, expected);
+
+  // X軸回りの回転
+  vec << 1, 0, 0;
+  actual = kinematics_utils::rodrigues(vec, M_PI_2);
+  expected << 1, 0, 0,
+              0, std::cos(M_PI_2), -std::sin(M_PI_2),
+              0, std::sin(M_PI_2), std::cos(M_PI_2);
+  expect_matrix_approximation(actual, expected);
+
+  // Y軸回りの回転
+  vec << 0, 1, 0;
+  actual = kinematics_utils::rodrigues(vec, M_PI_2);
+  expected << std::cos(M_PI_2), 0, std::sin(M_PI_2),
+              0, 1, 0,
+              -std::sin(M_PI_2), 0, std::cos(M_PI_2);
+  expect_matrix_approximation(actual, expected);
+
+  // Z軸回りの回転
+  vec << 0, 0, 1;
+  actual = kinematics_utils::rodrigues(vec, M_PI_2);
+  expected << std::cos(M_PI_2), -std::sin(M_PI_2), 0,
+              std::sin(M_PI_2), std::cos(M_PI_2), 0,
+              0, 0, 1;
+  expect_matrix_approximation(actual, expected);
+}
+
 TEST(KinematicsUtilsFunctions, rotation_from_euler) {
   Eigen::Matrix3d actual = kinematics_utils::rotation_from_euler(0, 0, 0);
   Eigen::Matrix3d expected;
