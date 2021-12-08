@@ -116,6 +116,8 @@ std::vector<manipulators_link::Link> links;
 リンク構成を表現したCSVファイルを`kinematics_utils::parse_link_config_file(file_path)`で読み込むことで、
 リンク構成を取得できます。
 
+**※重心位置、慣性テンソルの読み込みは未実装です**
+
 ```cpp
 // CSVファイルを解析してリンク構成を取得する
 std::vector<manipulators_link::Link> links = kinematics_utils::parse_link_config_file("../config/crane-x7_links.csv");
