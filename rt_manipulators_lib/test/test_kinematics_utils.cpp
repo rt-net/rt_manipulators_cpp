@@ -83,4 +83,70 @@ TEST_F(KinematicsUtilsFixture, load_link_m) {
   EXPECT_DOUBLE_EQ(links[10].m, 0.8);
 }
 
+// TEST_F(KinematicsUtilsFixture, load_link_c) {
+//   EXPECT_DOUBLE_EQ(links[1].c[0], 0.001) << "回転軸方向:-";
+//   EXPECT_DOUBLE_EQ(links[1].c[1], 0.002) << "回転軸方向:-";
+//   EXPECT_DOUBLE_EQ(links[1].c[2], 0.003) << "回転軸方向:-";
 
+//   EXPECT_DOUBLE_EQ(links[2].c[0], 0.001) << "回転軸方向:Z+";
+//   EXPECT_DOUBLE_EQ(links[2].c[1], 0.002) << "回転軸方向:Z+";
+//   EXPECT_DOUBLE_EQ(links[2].c[2], 0.003) << "回転軸方向:Z+";
+
+//   // Z-はX軸回りに180 deg回転して表現する
+//   EXPECT_DOUBLE_EQ(links[3].c[0], 0.001) << "回転軸方向:Z-";
+//   EXPECT_DOUBLE_EQ(links[3].c[1], -0.002) << "回転軸方向:Z-";
+//   EXPECT_DOUBLE_EQ(links[3].c[2], -0.003) << "回転軸方向:Z-";
+
+//   EXPECT_DOUBLE_EQ(links[4].c[0], 0.001) << "回転軸方向:Y+";
+//   EXPECT_DOUBLE_EQ(links[4].c[1], 0.003) << "回転軸方向:Y+";
+//   EXPECT_DOUBLE_EQ(links[4].c[2], -0.002) << "回転軸方向:Y+";
+
+//   EXPECT_DOUBLE_EQ(links[5].c[0], 0.001) << "回転軸方向:Y-";
+//   EXPECT_DOUBLE_EQ(links[5].c[1], -0.003) << "回転軸方向:Y-";
+//   EXPECT_DOUBLE_EQ(links[5].c[2], 0.002) << "回転軸方向:Y-";
+
+//   EXPECT_DOUBLE_EQ(links[6].c[0], 0.003) << "回転軸方向:X+";
+//   EXPECT_DOUBLE_EQ(links[6].c[1], 0.002) << "回転軸方向:X+";
+//   EXPECT_DOUBLE_EQ(links[6].c[2], -0.001) << "回転軸方向:X+";
+
+//   EXPECT_DOUBLE_EQ(links[7].c[0], -0.003) << "回転軸方向:X-";
+//   EXPECT_DOUBLE_EQ(links[7].c[1], 0.002) << "回転軸方向:X-";
+//   EXPECT_DOUBLE_EQ(links[7].c[2], 0.001) << "回転軸方向:X-";
+// }
+
+void expect_matrix_approximation(
+  const Eigen::Matrix3d & actual, const Eigen::Matrix3d & expected) {
+  EXPECT_TRUE(actual.isApprox(expected))
+    << "actual:" << std::endl << actual << std::endl
+    << "expected:" << std::endl << expected;
+}
+
+TEST(KinematicsUtilsFunctions, rotation_from_euler) {
+  Eigen::Matrix3d actual = kinematics_utils::rotation_from_euler(0, 0, 0);
+  Eigen::Matrix3d expected;
+  expected << 1, 0, 0,
+              0, 1, 0,
+              0, 0, 1;
+  expect_matrix_approximation(actual, expected);
+
+  // X軸回りの回転
+  actual = kinematics_utils::rotation_from_euler(M_PI_2, 0, 0);
+  expected << 1, 0, 0,
+              0, std::cos(M_PI_2), -std::sin(M_PI_2),
+              0, std::sin(M_PI_2), std::cos(M_PI_2);
+  expect_matrix_approximation(actual, expected);
+
+  // Y軸回りの回転
+  actual = kinematics_utils::rotation_from_euler(0, M_PI_2, 0);
+  expected << std::cos(M_PI_2), 0, std::sin(M_PI_2),
+              0, 1, 0,
+              -std::sin(M_PI_2), 0, std::cos(M_PI_2);
+  expect_matrix_approximation(actual, expected);
+
+  // Z軸回りの回転
+  actual = kinematics_utils::rotation_from_euler(0, 0, M_PI_2);
+  expected << std::cos(M_PI_2), -std::sin(M_PI_2), 0,
+              std::sin(M_PI_2), std::cos(M_PI_2), 0,
+              0, 0, 1;
+  expect_matrix_approximation(actual, expected);
+}

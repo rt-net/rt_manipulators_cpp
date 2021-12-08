@@ -132,6 +132,8 @@ std::vector<manipulators_link::Link> parse_link_config_file(const std::string & 
     }
 
     // 親リンクに対する関節軸ベクトル
+    // q=0のとき、ローカル座標系の姿勢をワールド座標系の姿勢に一致させるため、
+    // 関節軸ベクトルに合わせて重心位置と慣性テンソルを座標変換させる
     std::string axis = str_vec[COL_AXIS_OF_ROTATION];
     if (axis == "X+") {
       link.a << 1, 0, 0;
@@ -206,6 +208,14 @@ Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta) {
 Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat) {
   // 回転行列をZ軸、Y軸、X軸回りに回転したオイラー角に変換する
   return mat.eulerAngles(2, 1, 0);
+}
+
+Eigen::Matrix3d rotation_from_euler(const double & roll, const double & pitch, const double & yaw) {
+  // ロール、ピッチ、ヨー角から、回転行列を生成する
+ Eigen::Quaterniond q = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()) 
+    * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
+  return q.matrix();
 }
 
 }  // namespace kinematics_utils

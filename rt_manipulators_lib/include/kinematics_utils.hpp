@@ -28,6 +28,7 @@ void print_links(const std::vector<manipulators_link::Link> & links, const int &
 Eigen::Matrix3d skew_symmetric_matrix(const Eigen::Vector3d & v);
 Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta);
 Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat);
+Eigen::Matrix3d rotation_from_euler(const double & roll, const double & pitch, const double & yaw);
 
 }  // namespace kinematics_utils
 
