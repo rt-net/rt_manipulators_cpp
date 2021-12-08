@@ -72,7 +72,7 @@ RTマニピュレータc++ライブラリの運動学機能を使用する場合
 
 `kinematics.hpp`には運動学を計算する関数が定義されています。
 `kinematics_utils.hpp`には運動学計算を補助する関数が定義されています。
-`link.hpp`にはリンク情報を持つ`link::Link`クラスが定義されています。
+`link.hpp`にはリンク情報を持つ`manipulators_link::Link`クラスが定義されています。
 
 ```cpp
 #include "rt_manipulators_cpp/kinematics.hpp"
@@ -80,7 +80,7 @@ RTマニピュレータc++ライブラリの運動学機能を使用する場合
 #include "rt_manipulators_cpp/link.hpp"
 ```
 
-`link::Link`クラスは次のようなパラメータを保持します。
+`manipulators_link::Link`クラスは次のようなパラメータを保持します。
 3次元空間のベクトルや行列は[Eigenライブラリ](https://eigen.tuxfamily.org/index.php?title=Main_Page)
 を使用して表現しています。
 
@@ -106,11 +106,11 @@ class Link{
 };
 ```
 
-ロボットのリンク構成は`link::Link`クラスを`std::vector`に格納して表現します。
+ロボットのリンク構成は`manipulators_link::Link`クラスを`std::vector`に格納して表現します。
 
 ```cpp
 // ロボットのリンク構成を表現
-std::vector<link::Link> links;
+std::vector<manipulators_link::Link> links;
 ```
 
 リンク構成を表現したCSVファイルを`kinematics_utils::parse_link_config_file(file_path)`で読み込むことで、
@@ -118,7 +118,7 @@ std::vector<link::Link> links;
 
 ```cpp
 // CSVファイルを解析してリンク構成を取得する
-std::vector<link::Link> links = kinematics_utils::parse_link_config_file("../config/crane-x7_links.csv");
+std::vector<manipulators_link::Link> links = kinematics_utils::parse_link_config_file("../config/crane-x7_links.csv");
 ```
 
 `config`ディレクトリに用意されているCSVファイルは、
@@ -127,7 +127,10 @@ std::vector<link::Link> links = kinematics_utils::parse_link_config_file("../con
 - [CRANE-X7リンク情報リファレンス](https://docs.google.com/spreadsheets/d/1I268mnab4m-f6us0Au3AGd64-2iGkSwxaLrDplSjHY8/edit#gid=735472399)
 - [Sciurus17リンク情報リファレンス](https://docs.google.com/spreadsheets/d/1Q4z3M3cS1pQOEn3iXKLiIQIOr6czvECxSXEPS2-PGvA/edit#gid=1687288769)
 
-リンク番号とリンク構成(`std::vector<link::Link>`)のインデックスは一致するため、次のようにリンク情報へアクセスできます。
+各リンクのローカル座標系の姿勢は、ジョイント角度(q)が0 degのとき、
+ワールド座標系の姿勢([正面がX軸正方向、鉛直上向きがZ軸正方向となる右手系](https://ja.wikipedia.org/wiki/%E5%8F%B3%E6%89%8B%E7%B3%BB))と一致します。
+
+リンク番号とリンク構成(`std::vector<manipulators_link::Link>`)のインデックスは一致するため、次のようにリンク情報へアクセスできます。
 
 ```cpp
 // ダミーリンクの情報を取得
