@@ -201,6 +201,24 @@ TEST_F(KinematicsUtilsFixture, load_link_a) {
   expect_vector_approximation(links[7].a, expected, "回転軸方向:X-");
 }
 
+TEST(KinematicsUtilsFunctions, skew_symmetric_matrix) {
+  Eigen::Vector3d vec;
+  vec << 0, 0, 0;
+  Eigen::Matrix3d actual = kinematics_utils::skew_symmetric_matrix(vec);
+  Eigen::Matrix3d expected;
+  expected << 0, 0, 0,
+              0, 0, 0,
+              0, 0, 0;
+  expect_matrix_approximation(actual, expected);
+
+  vec << 1, 2, 3;
+  actual = kinematics_utils::skew_symmetric_matrix(vec);
+  expected << 0, -3, 2,
+              3, 0, -1,
+              -2, 1, 0;
+  expect_matrix_approximation(actual, expected);
+}
+
 TEST(KinematicsUtilsFunctions, rotation_from_euler) {
   Eigen::Matrix3d actual = kinematics_utils::rotation_from_euler(0, 0, 0);
   Eigen::Matrix3d expected;
