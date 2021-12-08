@@ -135,19 +135,27 @@ std::vector<manipulators_link::Link> parse_link_config_file(const std::string & 
     // q=0のとき、ローカル座標系の姿勢をワールド座標系の姿勢に一致させるため、
     // 関節軸ベクトルに合わせて重心位置と慣性テンソルを座標変換させる
     std::string axis = str_vec[COL_AXIS_OF_ROTATION];
+    auto rot = rotation_from_euler(0, 0, 0);
     if (axis == "X+") {
+      rot = rotation_from_euler(0, M_PI_2, 0);
       link.a << 1, 0, 0;
     } else if (axis == "X-") {
+      rot = rotation_from_euler(0, -M_PI_2, 0);
       link.a << -1, 0, 0;
     } else if (axis == "Y+") {
+      rot = rotation_from_euler(-M_PI_2, 0, 0);
       link.a << 0, 1, 0;
     } else if (axis == "Y-") {
+      rot = rotation_from_euler(M_PI_2, 0, 0);
       link.a << 0, -1, 0;
     } else if (axis == "Z+") {
       link.a << 0, 0, 1;
     } else if (axis == "Z-") {
+      rot = rotation_from_euler(M_PI, 0, 0);
       link.a << 0, 0, -1;
     }
+    link.c = rot * link.c;
+
     links.push_back(link);
   }
 
@@ -212,7 +220,7 @@ Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat) {
 
 Eigen::Matrix3d rotation_from_euler(const double & roll, const double & pitch, const double & yaw) {
   // ロール、ピッチ、ヨー角から、回転行列を生成する
- Eigen::Quaterniond q = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()) 
+  Eigen::Quaterniond q = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX())
     * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
     * Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
   return q.matrix();
