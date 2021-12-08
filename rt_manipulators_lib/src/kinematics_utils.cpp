@@ -109,53 +109,53 @@ std::vector<manipulators_link::Link> parse_link_config_file(const std::string & 
     } catch (...) {
     }
 
-    // 自リンクに対する重心位置
-    try {
-      link.c << std::stod(str_vec[COL_CENTER_OF_MASS_X]) * MM_TO_METERS,
-                std::stod(str_vec[COL_CENTER_OF_MASS_Y]) * MM_TO_METERS,
-                std::stod(str_vec[COL_CENTER_OF_MASS_Z]) * MM_TO_METERS;
-    } catch (...) {
-    }
+    // TODO(ShotaAk) 自リンクに対する重心位置の読み込みを実装する
+    // try {
+    //   link.c << std::stod(str_vec[COL_CENTER_OF_MASS_X]) * MM_TO_METERS,
+    //             std::stod(str_vec[COL_CENTER_OF_MASS_Y]) * MM_TO_METERS,
+    //             std::stod(str_vec[COL_CENTER_OF_MASS_Z]) * MM_TO_METERS;
+    // } catch (...) {
+    // }
 
-    // 自リンクに対する慣性テンソル
-    try {
-      link.I << std::stod(str_vec[COL_INERTIA_XX]) * MM2_TO_METERS2,
-                std::stod(str_vec[COL_INERTIA_XY]) * MM2_TO_METERS2,
-                std::stod(str_vec[COL_INERTIA_XZ]) * MM2_TO_METERS2,
-                std::stod(str_vec[COL_INERTIA_XY]) * MM2_TO_METERS2,
-                std::stod(str_vec[COL_INERTIA_YY]) * MM2_TO_METERS2,
-                std::stod(str_vec[COL_INERTIA_YZ]) * MM2_TO_METERS2,
-                std::stod(str_vec[COL_INERTIA_XZ]) * MM2_TO_METERS2,
-                std::stod(str_vec[COL_INERTIA_YZ]) * MM2_TO_METERS2,
-                std::stod(str_vec[COL_INERTIA_ZZ]) * MM2_TO_METERS2;
-    } catch (...) {
-    }
+    // TODO(ShotaAk) 自リンクに対する慣性テンソルの読み込みを実装する
+    // try {
+    //   link.I << std::stod(str_vec[COL_INERTIA_XX]) * MM2_TO_METERS2,
+    //             std::stod(str_vec[COL_INERTIA_XY]) * MM2_TO_METERS2,
+    //             std::stod(str_vec[COL_INERTIA_XZ]) * MM2_TO_METERS2,
+    //             std::stod(str_vec[COL_INERTIA_XY]) * MM2_TO_METERS2,
+    //             std::stod(str_vec[COL_INERTIA_YY]) * MM2_TO_METERS2,
+    //             std::stod(str_vec[COL_INERTIA_YZ]) * MM2_TO_METERS2,
+    //             std::stod(str_vec[COL_INERTIA_XZ]) * MM2_TO_METERS2,
+    //             std::stod(str_vec[COL_INERTIA_YZ]) * MM2_TO_METERS2,
+    //             std::stod(str_vec[COL_INERTIA_ZZ]) * MM2_TO_METERS2;
+    // } catch (...) {
+    // }
 
     // 親リンクに対する関節軸ベクトル
     // q=0のとき、ローカル座標系の姿勢をワールド座標系の姿勢に一致させるため、
     // 関節軸ベクトルに合わせて重心位置と慣性テンソルを座標変換させる
     std::string axis = str_vec[COL_AXIS_OF_ROTATION];
-    auto rot = rotation_from_euler(0, 0, 0);
+    // auto rot = rotation_from_euler(0, 0, 0);
     if (axis == "X+") {
-      rot = rotation_from_euler(0, M_PI_2, 0);
+      // rot = rotation_from_euler(0, M_PI_2, 0);
       link.a << 1, 0, 0;
     } else if (axis == "X-") {
-      rot = rotation_from_euler(0, -M_PI_2, 0);
+      // rot = rotation_from_euler(0, -M_PI_2, 0);
       link.a << -1, 0, 0;
     } else if (axis == "Y+") {
-      rot = rotation_from_euler(-M_PI_2, 0, 0);
+      // rot = rotation_from_euler(-M_PI_2, 0, 0);
       link.a << 0, 1, 0;
     } else if (axis == "Y-") {
-      rot = rotation_from_euler(M_PI_2, 0, 0);
+      // rot = rotation_from_euler(M_PI_2, 0, 0);
       link.a << 0, -1, 0;
     } else if (axis == "Z+") {
       link.a << 0, 0, 1;
     } else if (axis == "Z-") {
-      rot = rotation_from_euler(M_PI, 0, 0);
+      // rot = rotation_from_euler(M_PI, 0, 0);
       link.a << 0, 0, -1;
     }
-    link.c = rot * link.c;
-    link.I = rot * link.I * rot.transpose();
+    // link.c = rot * link.c;
+    // link.I = rot * link.I * rot.transpose();
 
     links.push_back(link);
   }
@@ -182,10 +182,10 @@ void print_links(const std::vector<manipulators_link::Link> & links, const int &
   std::cout << link.R <<std::endl;
   std::cout << "質量 m:" << std::endl;
   std::cout << link.m <<std::endl;
-  std::cout << "自リンクに対する重心位置" << std::endl;
-  std::cout << link.c <<std::endl;
-  std::cout << "自リンクに対する慣性テンソル" << std::endl;
-  std::cout << link.I <<std::endl;
+  // std::cout << "自リンクに対する重心位置" << std::endl;
+  // std::cout << link.c <<std::endl;
+  // std::cout << "自リンクに対する慣性テンソル" << std::endl;
+  // std::cout << link.I <<std::endl;
   std::cout << "---------------------------" << std::endl;
 
   if (sibling_id > 0) {
