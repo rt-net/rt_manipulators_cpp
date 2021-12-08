@@ -59,3 +59,38 @@ $ ./uninstall_library.bash
 ## ライブラリの使い方
 
 ライブラリの使い方は[サンプル集のREADME.md](../samples/README.md)を参照してください。
+
+## ライブラリのテスト
+
+### googletestのインストール
+
+```sh
+$ mkdir ~/gtest
+$ cd ~/gtest
+$ curl -OL https://github.com/google/googletest/archive/release-1.11.0.tar.gz
+$ tar -xvf release-1.11.0.tar.gz
+$ mkdir googletest-release-1.11.0/build
+$ cd googletest-release-1.11.0/build
+$ cmake ..
+$ sudo make install
+```
+
+### テストの実行
+
+```sh
+$ ./run_test_library.bash
+ライブラリをテストします
+-- The C compiler identification is GNU 7.5.0
+-- The CXX compiler identification is GNU 7.5.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+...
+    Start 1: JointTest.initialize_id
+1/1 Test #1: JointTest.initialize_id ..........   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.00 sec
+ライブラリをテストしました
+```
