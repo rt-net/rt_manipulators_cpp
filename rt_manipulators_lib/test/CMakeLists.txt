@@ -13,7 +13,6 @@ find_package(GTest REQUIRED)
 
 include(GoogleTest)
 
-<<<<<<< HEAD
 # サンプルのビルド
 set(list_tests
     test_joint
@@ -31,13 +30,3 @@ foreach(test_executable IN LISTS list_tests)
     )
     gtest_discover_tests(${test_executable})
 endforeach()
-=======
-add_executable(test_joint test_joint.cpp)
-target_link_libraries(test_joint
-    GTest::GTest
-    GTest::Main
-    rt_manipulators_cpp
-)
-
-gtest_discover_tests(test_joint)
->>>>>>> origin/main
