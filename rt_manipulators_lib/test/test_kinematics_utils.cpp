@@ -29,6 +29,15 @@ void expect_matrix_approximation(
     << "expected:" << std::endl << expected;
 }
 
+void expect_vector_approximation(
+  const Eigen::Vector3d & actual, const Eigen::Vector3d & expected,
+  const std::string & message = "") {
+  EXPECT_TRUE(actual.isApprox(expected))
+    << message << std::endl
+    << "actual:" << std::endl << actual << std::endl
+    << "expected:" << std::endl << expected;
+}
+
 class KinematicsUtilsFixture: public ::testing::Test {
  protected:
   virtual void SetUp() {
@@ -166,6 +175,30 @@ TEST_F(KinematicsUtilsFixture, load_link_I) {
               -5, 3, 2,
               -4, 2, 1;
   expect_matrix_approximation(links[7].I, expected, "回転軸方向:X-");
+}
+
+TEST_F(KinematicsUtilsFixture, load_link_a) {
+  Eigen::Vector3d expected;
+  expected << 0, 0, 0;
+  expect_vector_approximation(links[1].a, expected, "回転軸方向:-");
+
+  expected << 0, 0, 1;
+  expect_vector_approximation(links[2].a, expected, "回転軸方向:Z+");
+
+  expected << 0, 0, -1;
+  expect_vector_approximation(links[3].a, expected, "回転軸方向:Z-");
+
+  expected << 0, 1, 0;
+  expect_vector_approximation(links[4].a, expected, "回転軸方向:Y+");
+
+  expected << 0, -1, 0;
+  expect_vector_approximation(links[5].a, expected, "回転軸方向:Y-");
+
+  expected << 1, 0, 0;
+  expect_vector_approximation(links[6].a, expected, "回転軸方向:X+");
+
+  expected << -1, 0, 0;
+  expect_vector_approximation(links[7].a, expected, "回転軸方向:X-");
 }
 
 TEST(KinematicsUtilsFunctions, rotation_from_euler) {
