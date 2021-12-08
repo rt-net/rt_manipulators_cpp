@@ -155,6 +155,7 @@ std::vector<manipulators_link::Link> parse_link_config_file(const std::string & 
       link.a << 0, 0, -1;
     }
     link.c = rot * link.c;
+    link.I = rot * link.I * rot.transpose();
 
     links.push_back(link);
   }

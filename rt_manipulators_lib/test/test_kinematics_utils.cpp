@@ -12,11 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
 #include <vector>
 
 #include "gtest/gtest.h"
 #include "rt_manipulators_cpp/kinematics_utils.hpp"
 #include "rt_manipulators_cpp/link.hpp"
+
+
+void expect_matrix_approximation(
+  const Eigen::Matrix3d & actual, const Eigen::Matrix3d & expected,
+  const std::string & message = "") {
+  EXPECT_TRUE(actual.isApprox(expected))
+    << message << std::endl
+    << "actual:" << std::endl << actual << std::endl
+    << "expected:" << std::endl << expected;
+}
 
 class KinematicsUtilsFixture: public ::testing::Test {
  protected:
@@ -118,11 +129,43 @@ TEST_F(KinematicsUtilsFixture, load_link_c) {
   EXPECT_DOUBLE_EQ(links[7].c[2], x) << "回転軸方向:X-";
 }
 
-void expect_matrix_approximation(
-  const Eigen::Matrix3d & actual, const Eigen::Matrix3d & expected) {
-  EXPECT_TRUE(actual.isApprox(expected))
-    << "actual:" << std::endl << actual << std::endl
-    << "expected:" << std::endl << expected;
+TEST_F(KinematicsUtilsFixture, load_link_I) {
+  Eigen::Matrix3d expected;
+  expected << 1, 2, 4,
+              2, 3, 5,
+              4, 5, 6;
+  expect_matrix_approximation(links[1].I, expected, "回転軸方向:-");
+
+  expected << 1, 2, 4,
+              2, 3, 5,
+              4, 5, 6;
+  expect_matrix_approximation(links[2].I, expected, "回転軸方向:Z+");
+
+  // Z-は座標系をX軸回りに180 deg回転して表現する
+  expected << 1, -2, -4,
+              -2, 3, 5,
+              -4, 5, 6;
+  expect_matrix_approximation(links[3].I, expected, "回転軸方向:Z-");
+
+  expected << 1, 4, -2,
+              4, 6, -5,
+              -2, -5, 3;
+  expect_matrix_approximation(links[4].I, expected, "回転軸方向:Y+");
+
+  expected << 1, -4, 2,
+              -4, 6, -5,
+              2, -5, 3;
+  expect_matrix_approximation(links[5].I, expected, "回転軸方向:Y-");
+
+  expected << 6, 5, -4,
+              5, 3, -2,
+              -4, -2, 1;
+  expect_matrix_approximation(links[6].I, expected, "回転軸方向:X+");
+
+  expected << 6, -5, -4,
+              -5, 3, 2,
+              -4, 2, 1;
+  expect_matrix_approximation(links[7].I, expected, "回転軸方向:X-");
 }
 
 TEST(KinematicsUtilsFunctions, rotation_from_euler) {
