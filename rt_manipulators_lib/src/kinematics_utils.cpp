@@ -196,7 +196,7 @@ void print_links(const std::vector<manipulators_link::Link> & links, const int &
   }
 }
 
-Eigen::Matrix3d skew_symmetric_matrix(const Eigen::Vector3d & v) {
+Eigen::Matrix3d skew_symmetric_matrix_for_cross_product(const Eigen::Vector3d & v) {
   // 3次元ベクトルから歪対称行列をつくる
   Eigen::Matrix3d m;
   m <<     0, -v.z(),  v.y(),
@@ -209,7 +209,7 @@ Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta) {
   // ロドリゲスの公式
   // 単位ベクトルa周りにthetaだけ回転する回転行列を返す
   // E + [a×] * sin(theta) + [a×]^2 * (1 - cos(theta))
-  auto a_hat = skew_symmetric_matrix(a);
+  auto a_hat = skew_symmetric_matrix_for_cross_product(a);
   return Eigen::Matrix3d::Identity() + a_hat * std::sin(theta) +
     a_hat * a_hat * (1 - std::cos(theta));
 }
