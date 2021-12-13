@@ -27,7 +27,7 @@ std::vector<manipulators_link::Link> parse_link_config_file(const std::string & 
 void print_links(const std::vector<manipulators_link::Link> & links, const int & start_id);
 Eigen::Matrix3d skew_symmetric_matrix_for_cross_product(const Eigen::Vector3d & v);
 Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta);
-Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat);
+Eigen::Vector3d rotation_to_euler_XYZ(const Eigen::Matrix3d & mat);
 Eigen::Matrix3d rotation_from_euler(const double & roll, const double & pitch, const double & yaw);
 
 }  // namespace kinematics_utils

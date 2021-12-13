@@ -254,12 +254,12 @@ TEST(KinematicsUtilsFunctions, rodrigues) {
   expect_matrix_approximation(actual, expected);
 }
 
-TEST(KinematicsUtilsFunctions, rotation_to_euler_ZYX) {
+TEST(KinematicsUtilsFunctions, rotation_to_euler_XYZ) {
   Eigen::Matrix3d rot;
   rot << 1, 0, 0,
          0, 1, 0,
          0, 0, 1;
-  Eigen::Vector3d actual = kinematics_utils::rotation_to_euler_ZYX(rot);
+  Eigen::Vector3d actual = kinematics_utils::rotation_to_euler_XYZ(rot);
   Eigen::Vector3d expected;
   expected << 0, 0, 0;
   expect_vector_approximation(actual, expected);
@@ -268,15 +268,15 @@ TEST(KinematicsUtilsFunctions, rotation_to_euler_ZYX) {
   rot << 1, 0, 0,
          0, std::cos(M_PI_2), -std::sin(M_PI_2),
          0, std::sin(M_PI_2), std::cos(M_PI_2);
-  actual = kinematics_utils::rotation_to_euler_ZYX(rot);
-  expected << 0, 0, M_PI_2;
+  actual = kinematics_utils::rotation_to_euler_XYZ(rot);
+  expected << M_PI_2, 0, 0;
   expect_vector_approximation(actual, expected);
 
   // Y軸回りの回転
   rot << std::cos(M_PI_2), 0, std::sin(M_PI_2),
          0, 1, 0,
          -std::sin(M_PI_2), 0, std::cos(M_PI_2);
-  actual = kinematics_utils::rotation_to_euler_ZYX(rot);
+  actual = kinematics_utils::rotation_to_euler_XYZ(rot);
   expected << 0, M_PI_2, 0;
   expect_vector_approximation(actual, expected);
 
@@ -284,8 +284,8 @@ TEST(KinematicsUtilsFunctions, rotation_to_euler_ZYX) {
   rot << std::cos(M_PI_2), -std::sin(M_PI_2), 0,
          std::sin(M_PI_2), std::cos(M_PI_2), 0,
          0, 0, 1;
-  actual = kinematics_utils::rotation_to_euler_ZYX(rot);
-  expected <<  M_PI_2, 0, 0;
+  actual = kinematics_utils::rotation_to_euler_XYZ(rot);
+  expected << 0, 0, M_PI_2;
   expect_vector_approximation(actual, expected);
 }
 
