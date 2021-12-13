@@ -130,7 +130,7 @@ std::vector<manipulators_link::Link> links = kinematics_utils::parse_link_config
 - [Sciurus17リンク情報リファレンス](https://docs.google.com/spreadsheets/d/1Q4z3M3cS1pQOEn3iXKLiIQIOr6czvECxSXEPS2-PGvA/edit#gid=1687288769)
 
 各リンクのローカル座標系の姿勢は、ジョイント角度(q)が0 degのとき、
-ワールド座標系の姿勢([正面がX軸正方向、鉛直上向きがZ軸正方向となる右手系](https://ja.wikipedia.org/wiki/%E5%8F%B3%E6%89%8B%E7%B3%BB))と一致します。
+ワールド座標系の姿勢(正面がX軸正方向、鉛直上向きがZ軸正方向となる[右手系](https://ja.wikipedia.org/wiki/%E5%8F%B3%E6%89%8B%E7%B3%BB))と一致します。
 
 リンク番号とリンク構成(`std::vector<manipulators_link::Link>`)のインデックスは一致するため、次のようにリンク情報へアクセスできます。
 
