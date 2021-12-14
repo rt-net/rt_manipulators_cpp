@@ -290,8 +290,8 @@ TEST(KinematicsUtilsFunctions, rotation_to_euler_XYZ) {
 }
 
 
-TEST(KinematicsUtilsFunctions, rotation_from_euler_XYZ) {
-  Eigen::Matrix3d actual = kinematics_utils::rotation_from_euler_XYZ(0, 0, 0);
+TEST(KinematicsUtilsFunctions, rotation_from_euler_ZYX) {
+  Eigen::Matrix3d actual = kinematics_utils::rotation_from_euler_ZYX(0, 0, 0);
   Eigen::Matrix3d expected;
   expected << 1, 0, 0,
               0, 1, 0,
@@ -299,23 +299,40 @@ TEST(KinematicsUtilsFunctions, rotation_from_euler_XYZ) {
   expect_matrix_approximation(actual, expected);
 
   // X軸回りの回転
-  actual = kinematics_utils::rotation_from_euler_XYZ(M_PI_2, 0, 0);
+  actual = kinematics_utils::rotation_from_euler_ZYX(0, 0, M_PI_2);
   expected << 1, 0, 0,
               0, std::cos(M_PI_2), -std::sin(M_PI_2),
               0, std::sin(M_PI_2), std::cos(M_PI_2);
-  expect_matrix_approximation(actual, expected);
+  expect_matrix_approximation(actual, expected, "X軸周り");
 
   // Y軸回りの回転
-  actual = kinematics_utils::rotation_from_euler_XYZ(0, M_PI_2, 0);
+  actual = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
   expected << std::cos(M_PI_2), 0, std::sin(M_PI_2),
               0, 1, 0,
               -std::sin(M_PI_2), 0, std::cos(M_PI_2);
-  expect_matrix_approximation(actual, expected);
+  expect_matrix_approximation(actual, expected, "Y軸周り");
 
   // Z軸回りの回転
-  actual = kinematics_utils::rotation_from_euler_XYZ(0, 0, M_PI_2);
+  actual = kinematics_utils::rotation_from_euler_ZYX(M_PI_2, 0, 0);
   expected << std::cos(M_PI_2), -std::sin(M_PI_2), 0,
               std::sin(M_PI_2), std::cos(M_PI_2), 0,
               0, 0, 1;
+  expect_matrix_approximation(actual, expected, "Z軸周り");
+
+  // Z軸、Y軸周りの回転
+  double z = M_PI_2;
+  double y = M_PI;
+  actual = kinematics_utils::rotation_from_euler_ZYX(z, y, 0);
+  expected << std::cos(z) * std::cos(y), -std::sin(z), std::cos(z) * std::sin(y),
+              std::sin(z) * std::cos(y), std::cos(z), std::sin(z) * std::sin(y),
+              -std::sin(y), 0, std::cos(y);
+  expect_matrix_approximation(actual, expected, "Z軸、Y軸周り");
+
+  // Y軸、X軸周りの回転
+  double x = M_PI_4;
+  actual = kinematics_utils::rotation_from_euler_ZYX(0, y, x);
+  expected << std::cos(y), std::sin(y) * std::sin(x), std::sin(y) * std::cos(x),
+              0, std::cos(x), -std::sin(x),
+              -std::sin(y), std::cos(y) * std::sin(x), std::cos(y) * std::cos(x);
   expect_matrix_approximation(actual, expected);
 }

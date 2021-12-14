@@ -219,12 +219,12 @@ Eigen::Vector3d rotation_to_euler_XYZ(const Eigen::Matrix3d & mat) {
   return mat.eulerAngles(0, 1, 2);
 }
 
-Eigen::Matrix3d rotation_from_euler_XYZ(
-  const double & roll, const double & pitch, const double & yaw) {
-  // ロール、ピッチ、ヨー角から、回転行列を生成する
-  Eigen::Quaterniond q = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX())
+Eigen::Matrix3d rotation_from_euler_ZYX(
+  const double & yaw, const double & pitch, const double & roll) {
+  // ヨー、ピッチ、ロール角から、回転行列を生成する
+  Eigen::Quaterniond q = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())
     * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
-    * Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
+    * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
   return q.matrix();
 }
 
