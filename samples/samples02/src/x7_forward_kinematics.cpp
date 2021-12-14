@@ -78,10 +78,10 @@ int main() {
       std::cout << "位置 X: " <<  pos_xyz[0] << "\t[m]" << std::endl;
       std::cout << "位置 Y: " <<  pos_xyz[1] << "\t[m]" << std::endl;
       std::cout << "位置 Z: " <<  pos_xyz[2] << "\t[m]" << std::endl;
-      auto euler_xyz = kinematics_utils::rotation_to_euler_XYZ(links[target_link].R);
-      std::cout << "姿勢 X(Roll):" << euler_xyz[0] * 180.0 / M_PI << "\t[deg]" << std::endl;
+      auto euler_xyz = kinematics_utils::rotation_to_euler_ZYX(links[target_link].R);
+      std::cout << "姿勢 Z(Yaw):" << euler_xyz[0] * 180.0 / M_PI << "\t[deg]" << std::endl;
       std::cout << "姿勢 Y(Pitch):" << euler_xyz[1] * 180.0 / M_PI << "\t[deg]" << std::endl;
-      std::cout << "姿勢 Z(Yaw):" << euler_xyz[2] * 180.0 / M_PI << "\t[deg]" << std::endl;
+      std::cout << "姿勢 X(Roll):" << euler_xyz[2] * 180.0 / M_PI << "\t[deg]" << std::endl;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }

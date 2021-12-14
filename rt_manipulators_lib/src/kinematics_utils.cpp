@@ -214,9 +214,9 @@ Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta) {
     a_hat * a_hat * (1 - std::cos(theta));
 }
 
-Eigen::Vector3d rotation_to_euler_XYZ(const Eigen::Matrix3d & mat) {
-  // 回転行列をX軸、Y軸、Z軸回りに回転したオイラー角に変換する
-  return mat.eulerAngles(0, 1, 2);
+Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat) {
+  // 回転行列をZ軸、Y軸、X軸回りに回転したオイラー角に変換する
+  return mat.eulerAngles(2, 1, 0);
 }
 
 Eigen::Matrix3d rotation_from_euler_ZYX(
