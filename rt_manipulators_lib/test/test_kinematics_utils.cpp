@@ -287,6 +287,30 @@ TEST(KinematicsUtilsFunctions, rotation_to_euler_ZYX) {
   actual = kinematics_utils::rotation_to_euler_ZYX(rot);
   expected << M_PI_2, 0, 0;
   expect_vector_approximation(actual, expected);
+
+  // Z軸、Y軸周りの回転
+  // オイラー角が一意に定まらないため、回転行列に戻し、もとの回転行列と一致するかを判定する
+  double z = M_PI_2;
+  double y = M_PI;
+  Eigen::Matrix3d actual_rot;
+  actual_rot << std::cos(z) * std::cos(y), -std::sin(z), std::cos(z) * std::sin(y),
+                std::sin(z) * std::cos(y), std::cos(z), std::sin(z) * std::sin(y),
+                -std::sin(y), 0, std::cos(y);
+  auto euler_zyx = kinematics_utils::rotation_to_euler_ZYX(actual_rot);
+  auto expected_R = kinematics_utils::rotation_from_euler_ZYX(
+    euler_zyx[0], euler_zyx[1], euler_zyx[2]);
+  expect_matrix_approximation(actual_rot, expected_R, "Z軸 Y軸周りの回転");
+
+  // Y軸、X軸周りの回転
+  // オイラー角が一意に定まらないため、回転行列に戻し、もとの回転行列と一致するかを判定する
+  double x = M_PI_4;
+  actual_rot << std::cos(y), std::sin(y) * std::sin(x), std::sin(y) * std::cos(x),
+                0, std::cos(x), -std::sin(x),
+                -std::sin(y), std::cos(y) * std::sin(x), std::cos(y) * std::cos(x);
+  euler_zyx = kinematics_utils::rotation_to_euler_ZYX(actual_rot);
+  expected_R = kinematics_utils::rotation_from_euler_ZYX(
+    euler_zyx[0], euler_zyx[1], euler_zyx[2]);
+  expect_matrix_approximation(actual_rot, expected_R, "Y軸, X軸周りの回転");
 }
 
 TEST(KinematicsUtilsFunctions, rotation_from_euler_ZYX) {
