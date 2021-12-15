@@ -279,4 +279,20 @@ Eigen::Vector3d calc_error(const Eigen::Matrix3d & target, const Eigen::Matrix3d
   return (std::atan2(l_norm, Rerr.trace() -1) / l_norm) * l;
 }
 
+Eigen::MatrixXd calc_basic_jacobian(const links_t & links, const link_id_t & target_id) {
+  // 基礎ヤコビ行列を求める(各軸は回転関節)
+  auto route = find_route(links, target_id);
+  auto target_p = links[target_id].p;
+  Eigen::MatrixXd J(6, route.size());
+  J.setZero();
+
+  for (int i=0; i < route.size(); i++) {
+    auto link_id = route[i];
+    auto a = links[link_id].R * links[link_id].a;
+    J.col(i) << a.cross(target_p - links[link_id].p), a;
+  }
+
+  return J;
+}
+
 }  // namespace kinematics_utils
