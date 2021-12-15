@@ -236,7 +236,7 @@ std::vector<link_id_t> find_route(const links_t & links, const link_id_t & targe
   std::vector<link_id_t> id_list;
 
   if (target_id <= 1 || target_id >= links.size()) {
-    std::cerr << "目標リンクIDには1より大きく、"
+    std::cerr << __func__ << ": 目標リンクIDには1より大きく、"
               << "linksのサイズより小さい数値をセットしてください" << std::endl;
     return id_list;
   }
@@ -256,13 +256,30 @@ std::vector<link_id_t> find_route(const links_t & links, const link_id_t & targe
 }
 
 q_list_t get_q_list(const links_t & links, const std::vector<link_id_t> & id_list) {
+  // リンク構成から指定されたIDの関節位置qを抽出する
   q_list_t q_list;
-  for (auto id : id_list) {
-    if (id < links.size()) {
-      q_list[id] = links[id].q;
+  for (auto target_id : id_list) {
+    if (target_id < links.size()) {
+      q_list[target_id] = links[target_id].q;
+    } else {
+      std::cerr << __func__ << ": 無効なIDです:" << target_id << std::endl;
     }
   }
   return q_list;
+}
+
+bool set_q_list(links_t & links, const q_list_t & q_list) {
+  // リンク構成の指定されたIDに関節位置qを書き込む
+  bool result = true;
+  for (const auto & [target_id, q_value] : q_list) {
+    if (target_id < links.size()) {
+      links[target_id].q = q_value;
+    } else {
+      std::cerr << __func__ << ": 無効なIDです:" << target_id << std::endl;
+      result = false;
+    }
+  }
+  return result;
 }
 
 Eigen::Vector3d calc_error(const Eigen::Matrix3d & target, const Eigen::Matrix3d & current) {

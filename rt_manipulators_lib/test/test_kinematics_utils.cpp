@@ -407,6 +407,33 @@ TEST_F(KinematicsUtilsFixture, get_q_list) {
   EXPECT_DOUBLE_EQ(5.0, q_list[5]);
   EXPECT_DOUBLE_EQ(6.0, q_list[6]);
   EXPECT_EQ(4, q_list.size());
+
+  // 例外処理
+  q_list = kinematics_utils::get_q_list(links, {11});
+  EXPECT_EQ(0, q_list.size());
+}
+
+TEST_F(KinematicsUtilsFixture, set_q_list) {
+  kinematics_utils::q_list_t q_list;
+  q_list[2] = 2.0;
+  EXPECT_TRUE(kinematics_utils::set_q_list(links, q_list));
+  EXPECT_DOUBLE_EQ(2.0, links[2].q);
+
+  q_list.clear();
+  q_list[3] = 3.0;
+  q_list[4] = 4.0;
+  q_list[5] = 5.0;
+  q_list[6] = 6.0;
+  EXPECT_TRUE(kinematics_utils::set_q_list(links, q_list));
+  EXPECT_DOUBLE_EQ(3.0, links[3].q);
+  EXPECT_DOUBLE_EQ(4.0, links[4].q);
+  EXPECT_DOUBLE_EQ(5.0, links[5].q);
+  EXPECT_DOUBLE_EQ(6.0, links[6].q);
+
+  // 例外処理
+  q_list.clear();
+  q_list[11] = 3.0;
+  EXPECT_FALSE(kinematics_utils::set_q_list(links, q_list));
 }
 
 TEST_F(KinematicsUtilsFixture, calc_error) {
