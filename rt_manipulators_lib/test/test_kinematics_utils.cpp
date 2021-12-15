@@ -361,8 +361,8 @@ TEST(KinematicsUtilsFunctions, rotation_from_euler_ZYX) {
 }
 
 TEST_F(KinematicsUtilsFixture, find_route) {
-  std::vector<int> actual = kinematics_utils::find_route(links, 2);
-  std::vector<int> expected = {2};
+  std::vector<unsigned int> actual = kinematics_utils::find_route(links, 2);
+  std::vector<unsigned int> expected = {2};
   EXPECT_TRUE(actual == expected);
 
   actual = kinematics_utils::find_route(links, 3);
@@ -375,5 +375,18 @@ TEST_F(KinematicsUtilsFixture, find_route) {
 
   actual = kinematics_utils::find_route(links, 10);
   expected = {2, 3, 4, 5, 6, 7, 8, 10};
+  EXPECT_TRUE(actual == expected);
+
+  // 例外処理
+  actual = kinematics_utils::find_route(links, 0);
+  expected = {};
+  EXPECT_TRUE(actual == expected);
+
+  actual = kinematics_utils::find_route(links, 1);
+  expected = {};
+  EXPECT_TRUE(actual == expected);
+
+  actual = kinematics_utils::find_route(links, 11);
+  expected = {};
   EXPECT_TRUE(actual == expected);
 }

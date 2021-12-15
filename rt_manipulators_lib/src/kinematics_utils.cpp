@@ -229,21 +229,28 @@ Eigen::Matrix3d rotation_from_euler_ZYX(
   return q.matrix();
 }
 
-std::vector<int> find_route(const std::vector<manipulators_link::Link> & links, const int & to) {
-  // 目標リンク(to)までの経路を抽出する
-  // 返り値のベクトルの末尾がtoになる
+std::vector<unsigned int> find_route(const std::vector<manipulators_link::Link> & links,
+  const unsigned int & target_id) {
+  // 目標リンク(target_id)までの経路を抽出する
+  // 返り値のベクトルの末尾がtarget_idになる
+  std::vector<unsigned int> id_list;
 
-  std::vector<int> id_list;
-  id_list.push_back(to);
+  if (target_id <= 1 || target_id >= links.size()) {
+    std::cerr << "目標リンクIDには1より大きく、"
+              << "linksのサイズより小さい数値をセットしてください" << std::endl;
+    return id_list;
+  }
 
-  auto parent_id = links[to].parent;
+  id_list.push_back(target_id);
+
+  auto parent_id = links[target_id].parent;
   // ベースリンク(ID = 1)は含めない
   while (parent_id != 1) {
     id_list.push_back(parent_id);
     parent_id = links[parent_id].parent;
   }
 
-  // 末尾をtoにするため、ベクトルの並びを逆順にする
+  // 末尾をtarget_idにするため、ベクトルの並びを逆順にする
   std::reverse(id_list.begin(), id_list.end());
   return id_list;
 }
