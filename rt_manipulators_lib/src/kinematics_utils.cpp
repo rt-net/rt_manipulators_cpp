@@ -254,4 +254,15 @@ std::vector<link_id_t> find_route(const links_t & links, const link_id_t & targe
   return id_list;
 }
 
+q_list_t get_q_list(const links_t & links, const std::vector<link_id_t> & id_list) {
+  q_list_t q_list;
+  for (auto id : id_list) {
+    if (id < links.size()) {
+      q_list[id] = links[id].q;
+    }
+  }
+  return q_list;
+}
+
+
 }  // namespace kinematics_utils

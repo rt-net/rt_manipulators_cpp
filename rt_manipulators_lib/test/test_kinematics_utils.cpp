@@ -390,3 +390,21 @@ TEST_F(KinematicsUtilsFixture, find_route) {
   expected = {};
   EXPECT_TRUE(actual == expected);
 }
+
+TEST_F(KinematicsUtilsFixture, get_q_list) {
+  links[2].q = 2.0;
+  auto q_list = kinematics_utils::get_q_list(links, {2});
+  EXPECT_DOUBLE_EQ(2.0, q_list[2]);
+  EXPECT_EQ(1, q_list.size());
+
+  links[3].q = 3.0;
+  links[4].q = 4.0;
+  links[5].q = 5.0;
+  links[6].q = 6.0;
+  q_list = kinematics_utils::get_q_list(links, {3, 4, 5, 6});
+  EXPECT_DOUBLE_EQ(3.0, q_list[3]);
+  EXPECT_DOUBLE_EQ(4.0, q_list[4]);
+  EXPECT_DOUBLE_EQ(5.0, q_list[5]);
+  EXPECT_DOUBLE_EQ(6.0, q_list[6]);
+  EXPECT_EQ(4, q_list.size());
+}

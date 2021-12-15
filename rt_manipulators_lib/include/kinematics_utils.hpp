@@ -16,6 +16,7 @@
 #define RT_MANIPULATORS_LIB_INCLUDE_KINEMATICS_UTILS_HPP_
 
 #include <eigen3/Eigen/Dense>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,7 @@ namespace kinematics_utils {
 
 using links_t = std::vector<manipulators_link::Link>;
 using link_id_t = unsigned int;
+using q_list_t = std::map<link_id_t, double>;
 
 std::vector<manipulators_link::Link> parse_link_config_file(const std::string & file_path);
 void print_links(const std::vector<manipulators_link::Link> & links, const int & start_id);
@@ -34,6 +36,7 @@ Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat);
 Eigen::Matrix3d rotation_from_euler_ZYX(
   const double & z, const double & y, const double & x);
 std::vector<link_id_t> find_route(const links_t & links, const link_id_t & target_id);
+q_list_t get_q_list(const links_t & links, const std::vector<link_id_t> & id_list);
 
 }  // namespace kinematics_utils
 
