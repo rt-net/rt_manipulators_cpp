@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -226,6 +227,25 @@ Eigen::Matrix3d rotation_from_euler_ZYX(
     * Eigen::AngleAxisd(y, Eigen::Vector3d::UnitY())
     * Eigen::AngleAxisd(x, Eigen::Vector3d::UnitX());
   return q.matrix();
+}
+
+std::vector<int> find_route(const std::vector<manipulators_link::Link> & links, const int & to) {
+  // 目標リンク(to)までの経路を抽出する
+  // 返り値のベクトルの末尾がtoになる
+
+  std::vector<int> id_list;
+  id_list.push_back(to);
+
+  auto parent_id = links[to].parent;
+  // ベースリンク(ID = 1)は含めない
+  while (parent_id != 1) {
+    id_list.push_back(parent_id);
+    parent_id = links[parent_id].parent;
+  }
+
+  // 末尾をtoにするため、ベクトルの並びを逆順にする
+  std::reverse(id_list.begin(), id_list.end());
+  return id_list;
 }
 
 }  // namespace kinematics_utils

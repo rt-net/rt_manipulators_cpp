@@ -30,6 +30,7 @@ Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta);
 Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat);
 Eigen::Matrix3d rotation_from_euler_ZYX(
   const double & z, const double & y, const double & x);
+std::vector<int> find_route(const std::vector<manipulators_link::Link> & links, const int & to);
 
 }  // namespace kinematics_utils
 

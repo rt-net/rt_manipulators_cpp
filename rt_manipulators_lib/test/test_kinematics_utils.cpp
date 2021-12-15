@@ -359,3 +359,21 @@ TEST(KinematicsUtilsFunctions, rotation_from_euler_ZYX) {
               -std::sin(y), std::cos(y) * std::sin(x), std::cos(y) * std::cos(x);
   expect_matrix_approximation(actual, expected);
 }
+
+TEST_F(KinematicsUtilsFixture, find_route) {
+  std::vector<int> actual = kinematics_utils::find_route(links, 2);
+  std::vector<int> expected = {2};
+  EXPECT_TRUE(actual == expected);
+
+  actual = kinematics_utils::find_route(links, 3);
+  expected = {2, 3};
+  EXPECT_TRUE(actual == expected);
+
+  actual = kinematics_utils::find_route(links, 9);
+  expected = {2, 3, 4, 5, 6, 7, 8, 9};
+  EXPECT_TRUE(actual == expected);
+
+  actual = kinematics_utils::find_route(links, 10);
+  expected = {2, 3, 4, 5, 6, 7, 8, 10};
+  EXPECT_TRUE(actual == expected);
+}
