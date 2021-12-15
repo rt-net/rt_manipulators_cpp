@@ -408,3 +408,95 @@ TEST_F(KinematicsUtilsFixture, get_q_list) {
   EXPECT_DOUBLE_EQ(6.0, q_list[6]);
   EXPECT_EQ(4, q_list.size());
 }
+
+TEST_F(KinematicsUtilsFixture, calc_error) {
+  Eigen::Matrix3d targetR;
+  targetR << 1, 0, 0,
+             0, 1, 0,
+             0, 0, 1;
+  Eigen::Matrix3d currentR;
+  currentR << 1, 0, 0,
+              0, 1, 0,
+              0, 0, 1;
+  Eigen::Vector3d actual = kinematics_utils::calc_error(targetR, currentR);
+  Eigen::Vector3d expected(0, 0, 0);
+  expect_vector_approximation(actual, expected);
+
+  // X軸回りの回転
+  currentR << 1, 0, 0,
+              0, std::cos(-M_PI_2), -std::sin(-M_PI_2),
+              0, std::sin(-M_PI_2), std::cos(-M_PI_2);
+  targetR << 1, 0, 0,
+             0, std::cos(M_PI_2), -std::sin(M_PI_2),
+             0, std::sin(M_PI_2), std::cos(M_PI_2);
+  actual = kinematics_utils::calc_error(targetR, currentR);
+  expected << M_PI, 0, 0;
+  expect_vector_approximation(actual, expected);
+  // 反対方向
+  actual = kinematics_utils::calc_error(currentR, targetR);
+  expected << -M_PI, 0, 0;
+  expect_vector_approximation(actual, expected);
+
+  // Y軸回りの回転
+  currentR << std::cos(-M_PI_2), 0, std::sin(-M_PI_2),
+              0, 1, 0,
+              -std::sin(-M_PI_2), 0, std::cos(-M_PI_2);
+  targetR << std::cos(M_PI_2), 0, std::sin(M_PI_2),
+              0, 1, 0,
+              -std::sin(M_PI_2), 0, std::cos(M_PI_2);
+  actual = kinematics_utils::calc_error(targetR, currentR);
+  expected << 0, M_PI, 0;
+  expect_vector_approximation(actual, expected);
+  // 反対方向
+  actual = kinematics_utils::calc_error(currentR, targetR);
+  expected << 0, -M_PI, 0;
+  expect_vector_approximation(actual, expected);
+
+  // Z軸回りの回転
+  currentR << std::cos(-M_PI_2), -std::sin(-M_PI_2), 0,
+             std::sin(-M_PI_2), std::cos(-M_PI_2), 0,
+             0, 0, 1;
+  targetR << std::cos(M_PI_2), -std::sin(M_PI_2), 0,
+             std::sin(M_PI_2), std::cos(M_PI_2), 0,
+             0, 0, 1;
+  actual = kinematics_utils::calc_error(targetR, currentR);
+  expected << 0, 0, M_PI;
+  expect_vector_approximation(actual, expected);
+  // 反対方向
+  actual = kinematics_utils::calc_error(currentR, targetR);
+  expected << 0, 0, -M_PI;
+  expect_vector_approximation(actual, expected);
+
+  // Z軸回りの回転と、Z軸、Y軸周りの回転
+  double z = M_PI_2;
+  double y = M_PI;
+  currentR << std::cos(z), -std::sin(z), 0,
+              std::sin(z), std::cos(z), 0,
+              0, 0, 1;
+  targetR << std::cos(z) * std::cos(y), -std::sin(z), std::cos(z) * std::sin(y),
+             std::sin(z) * std::cos(y), std::cos(z), std::sin(z) * std::sin(y),
+             -std::sin(y), 0, std::cos(y);
+  actual = kinematics_utils::calc_error(targetR, currentR);
+  expected << 0, y, 0;
+  expect_vector_approximation(actual, expected);
+  // 反対方向
+  actual = kinematics_utils::calc_error(currentR, targetR);
+  expected << 0, -y, 0;
+  expect_vector_approximation(actual, expected);
+
+  // Y軸周りの回転と、Y軸、X軸周りの回転
+  double x = M_PI_4;
+  currentR << std::cos(y), 0, std::sin(y),
+              0, 1, 0,
+              -std::sin(y), 0, std::cos(y);
+  targetR << std::cos(y), std::sin(y) * std::sin(x), std::sin(y) * std::cos(x),
+             0, std::cos(x), -std::sin(x),
+             -std::sin(y), std::cos(y) * std::sin(x), std::cos(y) * std::cos(x);
+  actual = kinematics_utils::calc_error(targetR, currentR);
+  expected << x, 0, 0;
+  expect_vector_approximation(actual, expected);
+  // 反対方向
+  actual = kinematics_utils::calc_error(currentR, targetR);
+  expected << -x, 0, 0;
+  expect_vector_approximation(actual, expected);
+}

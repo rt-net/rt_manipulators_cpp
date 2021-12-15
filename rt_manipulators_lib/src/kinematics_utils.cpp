@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <string>
 
 #include "kinematics_utils.hpp"
@@ -264,5 +265,18 @@ q_list_t get_q_list(const links_t & links, const std::vector<link_id_t> & id_lis
   return q_list;
 }
 
+Eigen::Vector3d calc_error(const Eigen::Matrix3d & target, const Eigen::Matrix3d & current) {
+  // 回転行列の差を求める
+  auto Rerr = current.transpose() * target;
+  auto l = Eigen::Vector3d(
+    Rerr(2, 1) - Rerr(1, 2),
+    Rerr(0, 2) - Rerr(2, 0),
+    Rerr(1, 0) - Rerr(0, 1));
+  auto l_norm = l.norm();
+  if (l_norm < std::numeric_limits<double>::epsilon()) {
+    return Eigen::Vector3d(0, 0, 0);
+  }
+  return (std::atan2(l_norm, Rerr.trace() -1) / l_norm) * l;
+}
 
 }  // namespace kinematics_utils
