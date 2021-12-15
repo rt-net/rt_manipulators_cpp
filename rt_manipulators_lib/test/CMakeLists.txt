@@ -13,11 +13,20 @@ find_package(GTest REQUIRED)
 
 include(GoogleTest)
 
-add_executable(test_joint test_joint.cpp)
-target_link_libraries(test_joint
-    GTest::GTest
-    GTest::Main
-    rt_manipulators_cpp
+# サンプルのビルド
+set(list_tests
+    test_joint
+    test_kinematics_utils
 )
-
-gtest_discover_tests(test_joint)
+foreach(test_executable IN LISTS list_tests)
+    message("${test_executable}")
+    add_executable(${test_executable}
+        ${test_executable}.cpp
+    )
+    target_link_libraries(${test_executable}
+        GTest::GTest
+        GTest::Main
+        rt_manipulators_cpp
+    )
+    gtest_discover_tests(${test_executable})
+endforeach()

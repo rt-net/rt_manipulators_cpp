@@ -14,6 +14,7 @@
 - g++ (>= 7.5.0)
 - [DYNAMIXEL SDK](https://github.com/ROBOTIS-GIT/DynamixelSDK) (linux64向けにビルド&インストール)
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
+- Eigen (>= 3.3.4)
 - Linux OS
     - Ubuntu 18.04
     - Ubuntu 20.04
@@ -42,7 +43,7 @@ $ sudo make install
 次のコマンドを実行します。
 
 ```sh
-$ sudo apt install libyaml-cpp-dev 
+$ sudo apt install libyaml-cpp-dev libeigen3-dev
 ```
 
 ### RTマニピュレータC++ライブラリのビルド&インストール
