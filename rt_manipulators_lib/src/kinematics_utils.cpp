@@ -229,11 +229,10 @@ Eigen::Matrix3d rotation_from_euler_ZYX(
   return q.matrix();
 }
 
-std::vector<unsigned int> find_route(const std::vector<manipulators_link::Link> & links,
-  const unsigned int & target_id) {
+std::vector<link_id_t> find_route(const links_t & links, const link_id_t & target_id) {
   // 目標リンク(target_id)までの経路を抽出する
   // 返り値のベクトルの末尾がtarget_idになる
-  std::vector<unsigned int> id_list;
+  std::vector<link_id_t> id_list;
 
   if (target_id <= 1 || target_id >= links.size()) {
     std::cerr << "目標リンクIDには1より大きく、"

@@ -23,6 +23,9 @@
 
 namespace kinematics_utils {
 
+using links_t = std::vector<manipulators_link::Link>;
+using link_id_t = unsigned int;
+
 std::vector<manipulators_link::Link> parse_link_config_file(const std::string & file_path);
 void print_links(const std::vector<manipulators_link::Link> & links, const int & start_id);
 Eigen::Matrix3d skew_symmetric_matrix_for_cross_product(const Eigen::Vector3d & v);
@@ -30,8 +33,7 @@ Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta);
 Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat);
 Eigen::Matrix3d rotation_from_euler_ZYX(
   const double & z, const double & y, const double & x);
-std::vector<unsigned int> find_route(const std::vector<manipulators_link::Link> & links,
-  const unsigned int & to);
+std::vector<link_id_t> find_route(const links_t & links, const link_id_t & target_id);
 
 }  // namespace kinematics_utils
 
