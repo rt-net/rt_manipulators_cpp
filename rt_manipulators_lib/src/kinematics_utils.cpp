@@ -221,7 +221,7 @@ Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat) {
 
 Eigen::Matrix3d rotation_from_euler_ZYX(
   const double & yaw, const double & pitch, const double & roll) {
-  // ヨー、ピッチ、ロール角から、回転行列を生成する
+  // Z-Y-Xオイラー角から、回転行列を生成する
   Eigen::Quaterniond q = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())
     * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
     * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
