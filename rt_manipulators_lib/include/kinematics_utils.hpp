@@ -29,7 +29,7 @@ Eigen::Matrix3d skew_symmetric_matrix_for_cross_product(const Eigen::Vector3d & 
 Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta);
 Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat);
 Eigen::Matrix3d rotation_from_euler_ZYX(
-  const double & yaw, const double & pitch, const double & roll);
+  const double & z, const double & y, const double & x);
 
 }  // namespace kinematics_utils
 
