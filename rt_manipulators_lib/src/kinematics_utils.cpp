@@ -59,6 +59,7 @@ std::vector<manipulators_link::Link> parse_link_config_file(const std::string & 
   const int COL_INERTIA_YZ = 22;
   const int COL_INERTIA_ZZ = 23;
   const int COL_AXIS_OF_ROTATION = 29;
+  const int COL_DXL_ID = 32;
   const double MM_TO_METERS = 1e-3;
   const double MM2_TO_METERS2 = 1e-9;
   const double G_TO_KG = 1e-3;
@@ -158,6 +159,11 @@ std::vector<manipulators_link::Link> parse_link_config_file(const std::string & 
     }
     // link.c = rot * link.c;
     // link.I = rot * link.I * rot.transpose();
+
+    try {
+      link.dxl_id = std::stoi(str_vec[COL_DXL_ID]);
+    } catch (...) {
+    }
 
     links.push_back(link);
   }

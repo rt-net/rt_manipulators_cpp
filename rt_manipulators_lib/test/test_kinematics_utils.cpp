@@ -201,6 +201,14 @@ TEST_F(KinematicsUtilsFixture, load_link_a) {
   expect_vector_approximation(links[7].a, expected, "回転軸方向:X-");
 }
 
+TEST_F(KinematicsUtilsFixture, load_link_dxl_id) {
+  EXPECT_EQ(links[1].dxl_id, 0);
+  EXPECT_EQ(links[2].dxl_id, 2);
+  EXPECT_EQ(links[3].dxl_id, 3);
+  EXPECT_EQ(links[9].dxl_id, 9);
+  EXPECT_EQ(links[10].dxl_id, 0);
+}
+
 TEST(KinematicsUtilsFunctions, skew_symmetric_matrix_for_cross_product) {
   Eigen::Vector3d vec;
   vec << 0, 0, 0;

@@ -25,7 +25,7 @@ namespace manipulators_link {
 class Link{
  public:
   Link():
-    name("ダミーリンク"), sibling(0), child(0), parent(0), q(0), dq(0), ddq(0), m(0) {
+    name("ダミーリンク"), sibling(0), child(0), parent(0), q(0), dq(0), ddq(0), m(0), dxl_id(0) {
     // 0ベクトル、単位行列で初期化
     p.setZero();
     R.setIdentity();
@@ -52,6 +52,7 @@ class Link{
   double m;  // 質量
   Eigen::Vector3d c;  // 自リンクに対する重心位置
   Eigen::Matrix3d I;  // 自リンクに対する慣性テンソル
+  int dxl_id;  // 対応するDynamixelのID
 };
 
 }  // namespace manipulators_link
