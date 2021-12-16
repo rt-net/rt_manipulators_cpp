@@ -44,4 +44,75 @@ void forward_kinematics(std::vector<manipulators_link::Link> & links, const int 
   forward_kinematics(links, links[start_id].child);
 }
 
+bool inverse_kinematics_LM(
+  const kinematics_utils::links_t & links, const kinematics_utils::link_id_t & target_id,
+  const Eigen::Vector3d & target_p, const Eigen::Matrix3d & target_R,
+  kinematics_utils::q_list_t & result_q_list) {
+  // 参考: https://www.jstage.jst.go.jp/article/jrsj/29/3/29_3_269/_pdf/-char/ja
+  auto calc_links = links;
+  auto route = kinematics_utils::find_route(links, target_id);
+  auto q_list = kinematics_utils::get_q_list(links, route);
+
+  // We : 拘束条件に対する重み行列
+  double we_pos = 10 * 1/0.1;
+  double we_ang = 1/(2*M_PI);
+  auto We_vec = Eigen::VectorXd(6);
+  We_vec << we_pos, we_pos, we_pos, we_ang, we_ang, we_ang;
+  Eigen::MatrixXd We = We_vec.asDiagonal();
+
+  // qを0にリセットする
+  for (auto q_i = q_list.begin(); q_i != q_list.end(); ++q_i) {
+    q_i->second = 0;
+  }
+
+  // qをセットしてリンク情報を更新する
+  kinematics_utils::set_q_list(calc_links, q_list);
+  forward_kinematics(calc_links, 1);
+
+  auto error = kinematics_utils::calc_error(target_p, target_R, calc_links[target_id]);
+
+  for (int n=0; n < 100; n++) {
+    // 基礎ヤコビ行列を計算
+    auto J = kinematics_utils::calc_basic_jacobian(calc_links, target_id);
+
+      // 位置・姿勢の誤差を計算
+    error = kinematics_utils::calc_error(target_p, target_R, calc_links[target_id]);
+
+    // 誤差が小さければ終了
+    if (error.norm() < 1.0E-6) {
+      // std::cout<<"IK成功しました"<<std::endl;
+      // std::cout << "error: " << error.norm() << std::endl;
+      result_q_list = q_list;
+      return true;
+    }
+
+    // 減衰因子の計算
+    auto E = 0.5 * error.transpose() * We * error;
+    double omega = 0.01;
+    auto Wn_ = omega * Eigen::MatrixXd::Identity(q_list.size(), q_list.size());
+    auto Wn = E * Eigen::MatrixXd::Identity(q_list.size(), q_list.size()) + Wn_;
+
+    // LM法の更新則
+    auto H = J.transpose() * We * J + Wn;
+    auto dq = H.inverse() * J.transpose() * We * error;  // H-1 * g
+
+    // dqをqに加算
+    int dq_i = 0;
+    for (auto q_i = q_list.begin(); q_i != q_list.end(); ++q_i) {
+      q_i->second += dq(dq_i);
+      dq_i++;
+    }
+
+    // qをセットしてリンク情報を更新する
+    kinematics_utils::set_q_list(calc_links, q_list);
+    forward_kinematics(calc_links, 1);
+  }
+
+  std::cerr << "逆運動学の計算に失敗しました" << std::endl;
+  std::cerr << "誤差ベクトル:" << std::endl << error << std::endl;
+  std::cerr << "誤差ノルム:" << error.norm() << std::endl;
+  result_q_list = q_list;
+  return false;
+}
+
 }  // namespace kinematics

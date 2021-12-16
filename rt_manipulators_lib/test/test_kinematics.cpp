@@ -44,7 +44,6 @@ void expect_FK(
   const int & target_link, const double & target_q,
   const Eigen::Vector3d & expected_p, const Eigen::Matrix3d & expected_R,
   const std::string & message = "", const int & expect_link = 8) {
-
   links[target_link].q = target_q;
   kinematics::forward_kinematics(links, 1);
   expect_vector_approximation(links[expect_link].p, expected_p, message);
@@ -118,4 +117,71 @@ TEST_F(KinematicsFixture, forward_kinematics) {
                 1, 0, 0,
                 0, 0, 1;
   expect_FK(links, 8, M_PI_2, expected_p, expected_R, "link7 回転軸方向:Z+");
+}
+
+TEST_F(KinematicsFixture, inverse_kinematics_LM) {
+  // 手先リンクの位置・姿勢を検査する
+  kinematics::forward_kinematics(links, 1);
+  Eigen::Vector3d target_p;
+  Eigen::Matrix3d target_R;
+  target_p << 0.0, -0.028, 0.28;
+  target_R << 1, 0, 0,
+                0, 1, 0,
+                0, 0, 1;
+  kinematics_utils::q_list_t q_list;
+  EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
+  // // 目標角度をセットしFKを実行したあと、目標位置・姿勢に到達したかを求める
+  // kinematics_utils::set_q_list(links, q_list);
+  // kinematics::forward_kinematics(links, 1);
+  // expect_matrix_approximation(links[8].R, target_R);
+  // expect_vector_approximation(links[8].p, target_p);
+
+  // link2の90 deg回転
+  // target_p << 0.027, -0.001, 0.28;
+  // target_R << 0, -1, 0,
+  //             1, 0, 0,
+  //             0, 0, 1;
+  // EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
+  // kinematics_utils::set_q_list(links, q_list);
+  // kinematics::forward_kinematics(links, 1);
+  // kinematics_utils::calc_error_p(links[8].p, target_p);
+
+  // expect_matrix_approximation(links[8].R, target_R);
+  // expect_vector_approximation(links[8].p, target_p);
+
+  // expected_p << -0.025, -0.003, 0.28;
+  // expected_R << 0, 1, 0,
+  //               -1, 0, 0,
+  //               0, 0, 1;
+  // expect_FK(links, 3, M_PI_2, expected_p, expected_R, "link2 回転軸方向:Z-");
+
+  // expected_p << 0.22, -0.028, 0.06;
+  // expected_R << 0, 0, 1,
+  //               0, 1, 0,
+  //               -1, 0, 0;
+  // expect_FK(links, 4, M_PI_2, expected_p, expected_R, "link3 回転軸方向:Y+");
+
+  // expected_p << -0.18, -0.028, 0.10;
+  // expected_R << 0, 0, -1,
+  //               0, 1, 0,
+  //               1, 0, 0;
+  // expect_FK(links, 5, M_PI_2, expected_p, expected_R, "link4 回転軸方向:Y-");
+
+  // expected_p << 0.0, -0.145, 0.137;
+  // expected_R << 1, 0, 0,
+  //               0, 0, -1,
+  //               0, 1, 0;
+  // expect_FK(links, 6, M_PI_2, expected_p, expected_R, "link5 回転軸方向:X+");
+
+  // expected_p << 0.0, 0.049, 0.217;
+  // expected_R << 1, 0, 0,
+  //               0, 0, 1,
+  //               0, -1, 0;
+  // expect_FK(links, 7, M_PI_2, expected_p, expected_R, "link6 回転軸方向:X-");
+
+  // expected_p << 0.0, -0.028, 0.28;
+  // expected_R << 0, -1, 0,
+  //               1, 0, 0,
+  //               0, 0, 1;
+  // expect_FK(links, 8, M_PI_2, expected_p, expected_R, "link7 回転軸方向:Z+");
 }
