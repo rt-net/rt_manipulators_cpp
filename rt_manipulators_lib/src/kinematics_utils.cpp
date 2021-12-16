@@ -274,12 +274,16 @@ q_list_t get_q_list(const links_t & links, const std::vector<link_id_t> & id_lis
   return q_list;
 }
 
-bool set_q_list(links_t & links, const q_list_t & q_list) {
+bool set_q_list(links_t & links, const q_list_t & q_list, const bool & within_limit) {
   // リンク構成の指定されたIDに関節位置qを書き込む
   bool result = true;
   for (const auto & [target_id, q_value] : q_list) {
     if (target_id < links.size()) {
-      links[target_id].q = q_value;
+      if (within_limit) {
+        links[target_id].set_q_within_limit(q_value);
+      } else {
+        links[target_id].q = q_value;
+      }
     } else {
       std::cerr << __func__ << ": 無効なIDです:" << target_id << std::endl;
       result = false;
