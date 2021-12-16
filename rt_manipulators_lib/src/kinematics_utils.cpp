@@ -301,6 +301,18 @@ Eigen::Vector3d calc_error_p(const Eigen::Vector3d & target, const Eigen::Vector
   return target - current;
 }
 
+Eigen::VectorXd calc_error(
+  const Eigen::Vector3d & target_p, const Eigen::Matrix3d & target_R,
+  const manipulators_link::Link & current_link) {
+  // 目標位置・姿勢と、リンクの現在位置・姿勢との差を求める
+  auto error_p = calc_error_p(target_p, current_link.p);
+  auto error_omega = calc_error_R(target_R, current_link.R);
+
+  Eigen::VectorXd error(6);
+  error << error_p, error_omega;
+  return error;
+}
+
 Eigen::MatrixXd calc_basic_jacobian(const links_t & links, const link_id_t & target_id) {
   // 基礎ヤコビ行列を求める(各軸は回転関節)
   auto route = find_route(links, target_id);
