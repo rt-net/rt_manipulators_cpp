@@ -66,7 +66,8 @@ bool inverse_kinematics_LM(
   }
 
   // qをセットしてリンク情報を更新する
-  kinematics_utils::set_q_list(calc_links, q_list);
+  bool set_q_within_limit = true;
+  kinematics_utils::set_q_list(calc_links, q_list, set_q_within_limit);
   forward_kinematics(calc_links, 1);
 
   auto error = kinematics_utils::calc_error(target_p, target_R, calc_links[target_id]);
@@ -104,7 +105,7 @@ bool inverse_kinematics_LM(
     }
 
     // qをセットしてリンク情報を更新する
-    kinematics_utils::set_q_list(calc_links, q_list);
+    kinematics_utils::set_q_list(calc_links, q_list, set_q_within_limit);
     forward_kinematics(calc_links, 1);
   }
 

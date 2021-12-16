@@ -134,6 +134,21 @@ TEST_F(KinematicsFixture, forward_kinematics) {
 TEST_F(X7KinematicsFixture, inverse_kinematics_LM) {
   // 手先リンクの位置・姿勢を検査する
   kinematics::forward_kinematics(links, 1);
+  links[2].min_q = -150 * M_PI / 180.0;
+  links[2].max_q = 150 * M_PI / 180.0;
+  links[3].min_q = -90 * M_PI / 180.0;
+  links[3].max_q = 90 * M_PI / 180.0;
+  links[4].min_q = -150 * M_PI / 180.0;
+  links[4].max_q = 150 * M_PI / 180.0;
+  links[5].min_q = -160 * M_PI / 180.0;
+  links[5].max_q = 0 * M_PI / 180.0;
+  links[6].min_q = -150 * M_PI / 180.0;
+  links[6].max_q = 150 * M_PI / 180.0;
+  links[7].min_q = -90 * M_PI / 180.0;
+  links[7].max_q = 90 * M_PI / 180.0;
+  links[8].min_q = -160 * M_PI / 180.0;
+  links[8].max_q = 160 * M_PI / 180.0;
+
   Eigen::Vector3d target_p;
   Eigen::Matrix3d target_R;
   kinematics_utils::q_list_t q_list;
@@ -141,12 +156,12 @@ TEST_F(X7KinematicsFixture, inverse_kinematics_LM) {
   target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
   EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
 
-  // target_p << 0.2, -0.1, 0.2;
-  // target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
-  // EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
-  // for (const auto & [target_id, q_value] : q_list) {
-  //   std::cout << target_id << ":" << q_value << std::endl;
-  // }
+  target_p << 0.2, -0.1, 0.2;
+  target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
+  EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
+  for (const auto & [target_id, q_value] : q_list) {
+    std::cout << target_id << ":" << q_value << std::endl;
+  }
   // // 目標角度をセットしFKを実行したあと、目標位置・姿勢に到達したかを求める
   // kinematics_utils::set_q_list(links, q_list);
   // kinematics::forward_kinematics(links, 1);
