@@ -436,7 +436,7 @@ TEST_F(KinematicsUtilsFixture, set_q_list) {
   EXPECT_FALSE(kinematics_utils::set_q_list(links, q_list));
 }
 
-TEST_F(KinematicsUtilsFixture, calc_error_R) {
+TEST(KinematicsUtilsFunctions, calc_error_R) {
   Eigen::Matrix3d targetR;
   targetR << 1, 0, 0,
              0, 1, 0,
@@ -525,5 +525,23 @@ TEST_F(KinematicsUtilsFixture, calc_error_R) {
   // 反対方向
   actual = kinematics_utils::calc_error_R(currentR, targetR);
   expected << -x, 0, 0;
+  expect_vector_approximation(actual, expected);
+}
+
+TEST(KinematicsUtilsFunctions, calc_error_p) {
+  Eigen::Vector3d target_p(0, 0, 0);
+  Eigen::Vector3d current_p(0, 0, 0);
+  Eigen::Vector3d actual = kinematics_utils::calc_error_p(target_p, current_p);
+  Eigen::Vector3d expected(0, 0, 0);
+  expect_vector_approximation(actual, expected);
+
+  target_p << 1, 2, 3;
+  current_p << -1, -2, -3;
+  actual = kinematics_utils::calc_error_p(target_p, current_p);
+  expected << 2, 4, 6;
+  expect_vector_approximation(actual, expected);
+  // 反対方向
+  actual = kinematics_utils::calc_error_p(current_p, target_p);
+  expected << -2, -4, -6;
   expect_vector_approximation(actual, expected);
 }

@@ -39,6 +39,7 @@ std::vector<link_id_t> find_route(const links_t & links, const link_id_t & targe
 q_list_t get_q_list(const links_t & links, const std::vector<link_id_t> & id_list);
 bool set_q_list(links_t & links, const q_list_t & q_list);
 Eigen::Vector3d calc_error_R(const Eigen::Matrix3d & target, const Eigen::Matrix3d & current);
+Eigen::Vector3d calc_error_p(const Eigen::Vector3d & target, const Eigen::Vector3d & current);
 Eigen::MatrixXd calc_basic_jacobian(const links_t & links, const link_id_t & target_id);
 
 }  // namespace kinematics_utils

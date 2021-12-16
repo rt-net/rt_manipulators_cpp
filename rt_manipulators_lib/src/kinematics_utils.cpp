@@ -296,6 +296,11 @@ Eigen::Vector3d calc_error_R(const Eigen::Matrix3d & target, const Eigen::Matrix
   return (std::atan2(l_norm, Rerr.trace() -1) / l_norm) * l;
 }
 
+Eigen::Vector3d calc_error_p(const Eigen::Vector3d & target, const Eigen::Vector3d & current) {
+  // 位置の差を求める
+  return target - current;
+}
+
 Eigen::MatrixXd calc_basic_jacobian(const links_t & links, const link_id_t & target_id) {
   // 基礎ヤコビ行列を求める(各軸は回転関節)
   auto route = find_route(links, target_id);
