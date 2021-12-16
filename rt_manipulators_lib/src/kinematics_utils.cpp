@@ -282,7 +282,7 @@ bool set_q_list(links_t & links, const q_list_t & q_list) {
   return result;
 }
 
-Eigen::Vector3d calc_error(const Eigen::Matrix3d & target, const Eigen::Matrix3d & current) {
+Eigen::Vector3d calc_error_R(const Eigen::Matrix3d & target, const Eigen::Matrix3d & current) {
   // 回転行列の差を求める
   auto Rerr = current.transpose() * target;
   auto l = Eigen::Vector3d(
