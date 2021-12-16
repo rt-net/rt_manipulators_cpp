@@ -63,6 +63,18 @@ class KinematicsFixture: public ::testing::Test {
   std::vector<manipulators_link::Link> links;
 };
 
+class X7KinematicsFixture: public ::testing::Test {
+ protected:
+  virtual void SetUp() {
+    links = kinematics_utils::parse_link_config_file("../config/crane-x7_links.csv");
+  }
+
+  virtual void TearDown() {
+  }
+
+  std::vector<manipulators_link::Link> links;
+};
+
 TEST_F(KinematicsFixture, forward_kinematics) {
   // 手先リンクの位置・姿勢を検査する
   kinematics::forward_kinematics(links, 1);
@@ -119,17 +131,22 @@ TEST_F(KinematicsFixture, forward_kinematics) {
   expect_FK(links, 8, M_PI_2, expected_p, expected_R, "link7 回転軸方向:Z+");
 }
 
-TEST_F(KinematicsFixture, inverse_kinematics_LM) {
+TEST_F(X7KinematicsFixture, inverse_kinematics_LM) {
   // 手先リンクの位置・姿勢を検査する
   kinematics::forward_kinematics(links, 1);
   Eigen::Vector3d target_p;
   Eigen::Matrix3d target_R;
-  target_p << 0.0, -0.028, 0.28;
-  target_R << 1, 0, 0,
-                0, 1, 0,
-                0, 0, 1;
   kinematics_utils::q_list_t q_list;
+  target_p << 0.2, 0.0, 0.2;
+  target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
   EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
+
+  target_p << 0.2, -0.1, 0.2;
+  target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
+  EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
+  for (const auto & [target_id, q_value] : q_list) {
+    std::cout << target_id << ":" << q_value << std::endl;
+  }
   // // 目標角度をセットしFKを実行したあと、目標位置・姿勢に到達したかを求める
   // kinematics_utils::set_q_list(links, q_list);
   // kinematics::forward_kinematics(links, 1);
