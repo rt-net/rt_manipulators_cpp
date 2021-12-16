@@ -209,6 +209,29 @@ TEST_F(KinematicsUtilsFixture, load_link_dxl_id) {
   EXPECT_EQ(links[10].dxl_id, 0);
 }
 
+TEST_F(KinematicsUtilsFixture, links_set_q_within_limit) {
+  links[2].set_q_within_limit(0.0);
+  EXPECT_DOUBLE_EQ(links[2].q, 0.0);
+  links[2].set_q_within_limit(1.0);
+  EXPECT_DOUBLE_EQ(links[2].q, 0.0);
+  links[2].set_q_within_limit(-1.0);
+  EXPECT_DOUBLE_EQ(links[2].q, 0.0);
+
+  links[2].max_q = 5.0;
+  links[2].min_q = -5.0;
+  links[2].set_q_within_limit(0.0);
+  EXPECT_DOUBLE_EQ(links[2].q, 0.0);
+  links[2].set_q_within_limit(1.0);
+  EXPECT_DOUBLE_EQ(links[2].q, 1.0);
+  links[2].set_q_within_limit(-1.0);
+  EXPECT_DOUBLE_EQ(links[2].q, -1.0);
+
+  links[2].set_q_within_limit(10.0);
+  EXPECT_DOUBLE_EQ(links[2].q, 5.0);
+  links[2].set_q_within_limit(-10.0);
+  EXPECT_DOUBLE_EQ(links[2].q, -5.0);
+}
+
 TEST(KinematicsUtilsFunctions, skew_symmetric_matrix_for_cross_product) {
   Eigen::Vector3d vec;
   vec << 0, 0, 0;
