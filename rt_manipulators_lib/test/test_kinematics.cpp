@@ -141,12 +141,12 @@ TEST_F(X7KinematicsFixture, inverse_kinematics_LM) {
   target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
   EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
 
-  target_p << 0.2, -0.1, 0.2;
-  target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
-  EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
-  for (const auto & [target_id, q_value] : q_list) {
-    std::cout << target_id << ":" << q_value << std::endl;
-  }
+  // target_p << 0.2, -0.1, 0.2;
+  // target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
+  // EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
+  // for (const auto & [target_id, q_value] : q_list) {
+  //   std::cout << target_id << ":" << q_value << std::endl;
+  // }
   // // 目標角度をセットしFKを実行したあと、目標位置・姿勢に到達したかを求める
   // kinematics_utils::set_q_list(links, q_list);
   // kinematics::forward_kinematics(links, 1);
