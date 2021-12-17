@@ -588,12 +588,14 @@ TEST(KinematicsUtilsFunctions, calc_error_R) {
              std::sin(z) * std::cos(y), std::cos(z), std::sin(z) * std::sin(y),
              -std::sin(y), 0, std::cos(y);
   actual = kinematics_utils::calc_error_R(targetR, currentR);
-  expected << 0, y, 0;
-  expect_vector_approximation(actual, expected);
+  expected << -M_PI, 0, 0;
+  expect_vector_approximation(actual, expected,
+    "Current:Z軸周りにpi/2回転、Target:CurrentからY軸周りにpi回転");
   // 反対方向
   actual = kinematics_utils::calc_error_R(currentR, targetR);
-  expected << 0, -y, 0;
-  expect_vector_approximation(actual, expected);
+  expected << M_PI, 0, 0;
+  expect_vector_approximation(actual, expected,
+    "Target:Z軸周りにpi/2回転、Current:TargetからY軸周りにpi回転");
 
   // Y軸周りの回転と、Y軸、X軸周りの回転
   double x = M_PI_4;
@@ -604,12 +606,14 @@ TEST(KinematicsUtilsFunctions, calc_error_R) {
              0, std::cos(x), -std::sin(x),
              -std::sin(y), std::cos(y) * std::sin(x), std::cos(y) * std::cos(x);
   actual = kinematics_utils::calc_error_R(targetR, currentR);
-  expected << x, 0, 0;
-  expect_vector_approximation(actual, expected);
+  expected << -M_PI_4, 0, 0;
+  expect_vector_approximation(actual, expected,
+    "Current:Y軸周りにpi回転、Target:CurrentからX軸周りにpi/4回転");
   // 反対方向
   actual = kinematics_utils::calc_error_R(currentR, targetR);
-  expected << -x, 0, 0;
-  expect_vector_approximation(actual, expected);
+  expected << M_PI_4, 0, 0;
+  expect_vector_approximation(actual, expected,
+    "Target:Y軸周りにpi回転、Current:TargetからX軸周りにpi/4回転");
 }
 
 TEST(KinematicsUtilsFunctions, calc_error_p) {
