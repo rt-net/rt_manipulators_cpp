@@ -248,7 +248,7 @@ hardware.get_min_position_limit(links[2].dxl_id, links[2].min_q);
 関節位置の格納先(`std::map<unsigned int, double>` または `kinematics_utils::q_list_t`)を入力します。
 
 `kinematics_utils::rotation_from_euler_ZYX(z, y, x)`を使用すると、
-オイラー各ZYXから回転行列を生成できます。
+Z-Y-Xオイラー角から回転行列を生成できます。
 
 ```cpp
 Eigen::Vector3d target_p;
