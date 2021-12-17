@@ -16,6 +16,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(list_samples
     x7_forward_kinematics
     s17_forward_kinematics
+    x7_inverse_kinematics
 )
 foreach(sample IN LISTS list_samples)
     message("${sample}")
