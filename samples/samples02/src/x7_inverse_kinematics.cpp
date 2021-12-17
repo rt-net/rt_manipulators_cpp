@@ -25,6 +25,9 @@ void move_to(rt_manipulators_cpp::Hardware & hardware,
              const kinematics_utils::links_t & links,
              Eigen::Vector3d & target_p, const Eigen::Matrix3d & target_R) {
   // 目標位置・姿勢をもとにIKを解き、関節角度をセットする
+  std::cout << "目標位置:" << std::endl << target_p << std::endl;
+  std::cout << "目標姿勢:" << std::endl << target_R << std::endl;
+  std::cout << "----------------------" << std::endl;
   kinematics_utils::q_list_t q_list;
   kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list);
   for (const auto & [target_id, q_value] : q_list) {
@@ -105,37 +108,38 @@ int main() {
   Eigen::Vector3d target_p;
   Eigen::Matrix3d target_R;
   kinematics_utils::q_list_t q_list;
-  // 正面
+
+  std::cout << "正面へ移動" << std::endl;
   target_p << 0.2, 0.0, 0.3;
   target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
   move_to(hardware, links, target_p, target_R);
   std::this_thread::sleep_for(std::chrono::seconds(5));
 
-  // 左上
+  std::cout << "左上へ移動" << std::endl;
   target_p << 0.2, 0.2, 0.5;
   target_R = kinematics_utils::rotation_from_euler_ZYX(0, 0, 0);
   move_to(hardware, links, target_p, target_R);
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
-  // 左下
+  std::cout << "左下へ移動" << std::endl;
   target_p << 0.2, 0.2, 0.2;
   target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI, 0);
   move_to(hardware, links, target_p, target_R);
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
-  // 右下
+  std::cout << "右下へ移動" << std::endl;
   target_p << 0.2, -0.2, 0.2;
   target_R = kinematics_utils::rotation_from_euler_ZYX(M_PI_2, M_PI, 0);
   move_to(hardware, links, target_p, target_R);
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
-  // 右上
+  std::cout << "右上へ移動" << std::endl;
   target_p << 0.2, -0.2, 0.5;
   target_R = kinematics_utils::rotation_from_euler_ZYX(-M_PI_2, 0, 0);
   move_to(hardware, links, target_p, target_R);
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
-  // 手先を真下に向ける
+  std::cout << "正面へ移動し、手先を真下へ向ける" << std::endl;
   target_p << 0.2, 0.0, 0.1;
   target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI, 0);
   move_to(hardware, links, target_p, target_R);

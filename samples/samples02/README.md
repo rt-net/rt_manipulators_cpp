@@ -160,3 +160,112 @@ kinematics::forward_kinematics(links, 1);
 // ベースリンクから終端リンクまでのリンク情報を出力する
 kinematics_utils::print_links(links, 1);
 ```
+
+## 逆運動学を解いて手先を任意の位置・姿勢に移動させる
+
+次のコマンドを実行します。
+ロボットの手先が0.2m前方の5点に向かって移動します。
+
+***安全のためロボットの周りに物や人を近づけないでください。***
+
+```sh
+# CRANE-X7の場合
+$ cd bin/
+$ ./x7_inverse_kinematics
+# Sciurus17の場合
+# 未実装
+```
+
+実行結果（CRANE-X7の場合）
+
+```sh
+./x7_inverse_kinematics
+手先目標位置・姿勢をもとに逆運動学を解き、CRANE-X7を動かすサンプルです.
+リンク情報ファイル:../config/crane-x7_links.csvを読み込みます
+リンクID:1リンク名:CRANE-X7_Base
+親:0, 子:2, 姉妹兄弟:0
+親リンクに対する関節軸ベクトル a:
+0
+0
+0
+親リンクに対する相対位置 b:
+...
+5秒後にX7が垂直姿勢へ移行するため、X7の周りに物や人を近づけないで下さい.
+正面へ移動
+目標位置:
+0.2
+  0
+0.3
+目標姿勢:
+2.22045e-16           0           1
+          0           1           0
+         -1           0 2.22045e-16
+----------------------
+左上へ移動
+目標位置:
+0.2
+0.2
+0.5
+目標姿勢:
+1 0 0
+0 1 0
+0 0 1
+----------------------
+左下へ移動
+...
+```
+
+### 解説
+
+逆運動学を解く前に、リンク構成の各リンク関節位置の下限値`q_min`(radian)と上限値`q_max`(radian)を入力します。
+
+```cpp
+// リンクID2関節位置の下限値を設定する
+links[2].q_min = -M_PI;
+// リンクID2関節位置の上限値を設定する
+links[2].q_max = -M_PI;
+```
+
+`Hardware.get_min_position_limit(id, min_position_limit)`、
+`Hardware.get_max_position_limit(id, max_position_limit)`、
+を使用することで、各サーボモータ関節位置の下限値と上限値を取得できます。
+引数にはサーボモータのIDを限界値の格納先を入力します。
+
+```cpp
+// リンクID2に対応するサーボモータの限界値を取得し、リンクパラメータに設定する
+hardware.get_max_position_limit(links[2].dxl_id, links[2].max_q);
+hardware.get_min_position_limit(links[2].dxl_id, links[2].min_q);
+```
+
+任意のリンクを任意の位置・姿勢へ移動させるため、
+`kinematics::inverse_kinematics_LM(links, target_id, target_p, target_R, q_list)`を実行し、逆運動学を解きます。
+引数にはリンク構成と、移動させたいリンク、目標位置(`Eigen::Vector3d`)、目標姿勢(`Eigen::Matrix3d`)、
+関節位置の格納先(`std::map<unsigned int, double>` または `kinematics_utils::q_list_t`)を入力します。
+
+`kinematics_utils::rotation_from_euler_ZYX(z, y, x)`を使用すると、
+オイラー各ZYXから回転行列を生成できます。
+
+```cpp
+Eigen::Vector3d target_p;
+Eigen::Matrix3d target_R;
+kinematics_utils::q_list_t q_list;
+
+// 目標位置(X方向に0.2m、Y方向に0.0m、Z方向に0.3m)
+target_p << 0.2, 0.0, 0.3;
+// 目標姿勢(Y軸周りにpi/2回転)
+target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
+
+// 逆運動学を解き、関節位置を取得する
+kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list);
+// 関節位置をサーボモータへ設定する
+for (const auto & [target_id, q_value] : q_list) {
+  hardware.set_position(links[target_id].dxl_id, q_value);
+}
+```
+
+`kinematics::inverse_kinematics_LM()`には、
+[杉原 知道.
+Levenberg-Marquardt法による可解性を問わない逆運動学.
+日本ロボット学会誌 Vol.29, 2011](
+https://www.jstage.jst.go.jp/article/jrsj/29/3/29_3_269/_pdf)
+に記載されたアルゴリズムを実装しています。
