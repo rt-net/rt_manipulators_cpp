@@ -518,6 +518,19 @@ TEST_F(KinematicsUtilsFixture, set_q_list) {
   q_list.clear();
   q_list[11] = 3.0;
   EXPECT_FALSE(kinematics_utils::set_q_list(links, q_list));
+
+  // 関節位置制限を適用
+  q_list.clear();
+  q_list[2] = 2.0;
+  q_list[3] = -3.0;
+  EXPECT_TRUE(kinematics_utils::set_q_list(links, q_list, true));
+  EXPECT_DOUBLE_EQ(0.0, links[2].q);
+  EXPECT_DOUBLE_EQ(0.0, links[3].q);
+  links[2].max_q = 5.0;
+  links[3].min_q = -5.0;
+  EXPECT_TRUE(kinematics_utils::set_q_list(links, q_list, true));
+  EXPECT_DOUBLE_EQ(2.0, links[2].q);
+  EXPECT_DOUBLE_EQ(-3.0, links[3].q);
 }
 
 TEST(KinematicsUtilsFunctions, calc_error_R) {
