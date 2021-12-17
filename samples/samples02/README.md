@@ -103,6 +103,9 @@ class Link{
   double m;  // 質量
   Eigen::Vector3d c;  // 自リンクに対する重心位置
   Eigen::Matrix3d I;  // 自リンクに対する慣性テンソル
+  int dxl_id;  // 対応するDynamixelのID
+  double min_q;  // 関節位置の下限値
+  double max_q;  // 関節位置の上限値
 };
 ```
 
