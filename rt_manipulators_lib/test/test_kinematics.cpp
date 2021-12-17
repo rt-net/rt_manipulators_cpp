@@ -132,8 +132,8 @@ TEST_F(KinematicsFixture, forward_kinematics) {
 }
 
 TEST_F(X7KinematicsFixture, inverse_kinematics_LM) {
-  // 手先リンクの位置・姿勢を検査する
   kinematics::forward_kinematics(links, 1);
+  // 関節の可動範囲を制限
   links[2].min_q = -150 * M_PI / 180.0;
   links[2].max_q = 150 * M_PI / 180.0;
   links[3].min_q = -90 * M_PI / 180.0;
@@ -152,68 +152,63 @@ TEST_F(X7KinematicsFixture, inverse_kinematics_LM) {
   Eigen::Vector3d target_p;
   Eigen::Matrix3d target_R;
   kinematics_utils::q_list_t q_list;
-  target_p << 0.2, 0.0, 0.2;
-  target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
-  EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
 
-  target_p << 0.2, -0.1, 0.2;
+  // 5方向で0.4m(x or y) * 0.4m(z)の対角線を描く
+  const int STEPS = 20;
+  // 正面方向(手先は正面を向ける)
   target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
-  EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
-  for (const auto & [target_id, q_value] : q_list) {
-    std::cout << target_id << ":" << q_value << std::endl;
+  for (int s = 0; s < STEPS; s++) {
+    // 左上から右下
+    target_p << 0.2,
+                0.2 - 0.4 * s / static_cast<double>(STEPS),
+                0.4 - 0.4 * s / static_cast<double>(STEPS);
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, 8, target_p, target_R, q_list)) << "正面：解けなかった位置:" << std::endl << target_p;
   }
-  // // 目標角度をセットしFKを実行したあと、目標位置・姿勢に到達したかを求める
-  // kinematics_utils::set_q_list(links, q_list);
-  // kinematics::forward_kinematics(links, 1);
-  // expect_matrix_approximation(links[8].R, target_R);
-  // expect_vector_approximation(links[8].p, target_p);
+  // 左面方向(手先は左面を向ける)
+  target_R = kinematics_utils::rotation_from_euler_ZYX(M_PI_2, M_PI_2, 0);
+  for (int s = 0; s < STEPS; s++) {
+    // 左上から右下
+    target_p << 0.2 - 0.4 * s / static_cast<double>(STEPS),
+                0.2,
+                0.4 - 0.4 * s / static_cast<double>(STEPS);
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, 8, target_p, target_R, q_list)) << "左面：解けなかった位置:" << std::endl << target_p;
+  }
+  // 右面方向(手先は右面を向ける)
+  target_R = kinematics_utils::rotation_from_euler_ZYX(-M_PI_2, M_PI_2, 0);
+  for (int s = 0; s < STEPS; s++) {
+    // 左上から右下
+    target_p << 0.2 - 0.4 * s / static_cast<double>(STEPS),
+                -0.2,
+                0.4 - 0.4 * s / static_cast<double>(STEPS);
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, 8, target_p, target_R, q_list)) << "右面：解けなかった位置:" << std::endl << target_p;
+  }
+  // 後面方向(手先は後面を向ける)
+  // target_R = kinematics_utils::rotation_from_euler_ZYX(0, -M_PI_2, 0);
+  // for (int s = 0; s < STEPS; s++) {
+  //   // 左上から右下
+  //   target_p << -0.2,
+  //               0.2 - 0.4 * s / static_cast<double>(STEPS),
+  //               0.2 - 0.2 * s / static_cast<double>(STEPS);
+  //   EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+  //     links, 8, target_p, target_R, q_list)) << "後面：解けなかった位置:"
+  //     << std::endl << target_p;
+  // }
 
-  // link2の90 deg回転
-  // target_p << 0.027, -0.001, 0.28;
-  // target_R << 0, -1, 0,
-  //             1, 0, 0,
-  //             0, 0, 1;
-  // EXPECT_TRUE(kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list));
-  // kinematics_utils::set_q_list(links, q_list);
-  // kinematics::forward_kinematics(links, 1);
-  // kinematics_utils::calc_error_p(links[8].p, target_p);
-
-  // expect_matrix_approximation(links[8].R, target_R);
-  // expect_vector_approximation(links[8].p, target_p);
-
-  // expected_p << -0.025, -0.003, 0.28;
-  // expected_R << 0, 1, 0,
-  //               -1, 0, 0,
-  //               0, 0, 1;
-  // expect_FK(links, 3, M_PI_2, expected_p, expected_R, "link2 回転軸方向:Z-");
-
-  // expected_p << 0.22, -0.028, 0.06;
-  // expected_R << 0, 0, 1,
-  //               0, 1, 0,
-  //               -1, 0, 0;
-  // expect_FK(links, 4, M_PI_2, expected_p, expected_R, "link3 回転軸方向:Y+");
-
-  // expected_p << -0.18, -0.028, 0.10;
-  // expected_R << 0, 0, -1,
-  //               0, 1, 0,
-  //               1, 0, 0;
-  // expect_FK(links, 5, M_PI_2, expected_p, expected_R, "link4 回転軸方向:Y-");
-
-  // expected_p << 0.0, -0.145, 0.137;
-  // expected_R << 1, 0, 0,
-  //               0, 0, -1,
-  //               0, 1, 0;
-  // expect_FK(links, 6, M_PI_2, expected_p, expected_R, "link5 回転軸方向:X+");
-
-  // expected_p << 0.0, 0.049, 0.217;
-  // expected_R << 1, 0, 0,
-  //               0, 0, 1,
-  //               0, -1, 0;
-  // expect_FK(links, 7, M_PI_2, expected_p, expected_R, "link6 回転軸方向:X-");
-
-  // expected_p << 0.0, -0.028, 0.28;
-  // expected_R << 0, -1, 0,
-  //               1, 0, 0,
-  //               0, 0, 1;
-  // expect_FK(links, 8, M_PI_2, expected_p, expected_R, "link7 回転軸方向:Z+");
+  // 上面方向(手先は上面を向ける)
+  target_R = kinematics_utils::rotation_from_euler_ZYX(0, 0, 0);
+  for (int s = 0; s < STEPS; s++) {
+    // 左上から右下
+    if (s == STEPS / 2) {
+      // 特異姿勢を回避
+      continue;
+    }
+    target_p << 0.2 - 0.4 * s / static_cast<double>(STEPS),
+                0.2 - 0.4 * s / static_cast<double>(STEPS),
+                0.4;
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, 8, target_p, target_R, q_list)) << "上面：解けなかった位置:" << std::endl << target_p;
+  }
 }
