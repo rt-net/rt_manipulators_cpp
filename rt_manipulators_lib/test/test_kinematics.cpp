@@ -75,6 +75,19 @@ class X7KinematicsFixture: public ::testing::Test {
   std::vector<manipulators_link::Link> links;
 };
 
+
+class S17KinematicsFixture: public ::testing::Test {
+ protected:
+  virtual void SetUp() {
+    links = kinematics_utils::parse_link_config_file("../config/sciurus17_links.csv");
+  }
+
+  virtual void TearDown() {
+  }
+
+  std::vector<manipulators_link::Link> links;
+};
+
 TEST_F(KinematicsFixture, forward_kinematics) {
   // 手先リンクの位置・姿勢を検査する
   kinematics::forward_kinematics(links, 1);
@@ -210,5 +223,148 @@ TEST_F(X7KinematicsFixture, inverse_kinematics_LM) {
                 0.4;
     EXPECT_TRUE(kinematics::inverse_kinematics_LM(
       links, 8, target_p, target_R, q_list)) << "上面：解けなかった位置:" << std::endl << target_p;
+  }
+}
+
+TEST_F(S17KinematicsFixture, inverse_kinematics_LM) {
+  kinematics::forward_kinematics(links, 1);
+  // 関節の可動範囲を制限
+  // 腰
+  links[2].min_q = -150 * M_PI / 180.0;
+  links[2].max_q = 150 * M_PI / 180.0;
+  // 首
+  links[3].min_q = -90 * M_PI / 180.0;
+  links[3].max_q = 90 * M_PI / 180.0;
+  links[4].min_q = -90 * M_PI / 180.0;
+  links[4].max_q = 90 * M_PI / 180.0;
+  // 右腕
+  links[5].min_q = -150 * M_PI / 180.0;
+  links[5].max_q = 150 * M_PI / 180.0;
+  links[6].min_q = -90 * M_PI / 180.0;
+  links[6].max_q = 90 * M_PI / 180.0;
+  links[7].min_q = -150 * M_PI / 180.0;
+  links[7].max_q = 150 * M_PI / 180.0;
+  links[8].min_q = -150 * M_PI / 180.0;
+  links[8].max_q = 0 * M_PI / 180.0;
+  links[9].min_q = -150 * M_PI / 180.0;
+  links[9].max_q = 150 * M_PI / 180.0;
+  links[10].min_q = -60 * M_PI / 180.0;
+  links[10].max_q = 120 * M_PI / 180.0;
+  links[11].min_q = -160 * M_PI / 180.0;
+  links[11].max_q = 160 * M_PI / 180.0;
+  // 左腕
+  links[14].min_q = -150 * M_PI / 180.0;
+  links[14].max_q = 150 * M_PI / 180.0;
+  links[15].min_q = -90 * M_PI / 180.0;
+  links[15].max_q = 90 * M_PI / 180.0;
+  links[16].min_q = -150 * M_PI / 180.0;
+  links[16].max_q = 150 * M_PI / 180.0;
+  links[17].min_q = 0 * M_PI / 180.0;
+  links[17].max_q = 150 * M_PI / 180.0;
+  links[18].min_q = -150 * M_PI / 180.0;
+  links[18].max_q = 150 * M_PI / 180.0;
+  links[19].min_q = -120 * M_PI / 180.0;
+  links[19].max_q = 60 * M_PI / 180.0;
+  links[20].min_q = -160 * M_PI / 180.0;
+  links[20].max_q = 160 * M_PI / 180.0;
+
+  Eigen::Vector3d target_p;
+  Eigen::Matrix3d target_R;
+  kinematics_utils::q_list_t q_list;
+  int right_target_link_id = 11;
+  int left_target_link_id = 20;
+
+  // 右腕と左腕、5方向で0.4m(x or y) * 0.4m(z)の対角線を描く
+  const int STEPS = 20;
+  // 正面方向(手先は正面を向ける)
+  for (int s = 0; s < STEPS; s++) {
+    // 右腕
+    // 左上から右下
+    target_p << 0.3,
+                0.0 - 0.4 * s / static_cast<double>(STEPS),
+                0.4 - 0.4 * s / static_cast<double>(STEPS);
+    target_R = kinematics_utils::rotation_from_euler_ZYX(M_PI_2, 0, 0);
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, right_target_link_id, target_p, target_R, q_list))
+      << "右腕: 正面：解けなかった位置:" << std::endl << target_p;
+
+    // 左腕
+    // 右上から左下
+    target_p << 0.3,
+                0.0 + 0.4 * s / static_cast<double>(STEPS),
+                0.4 - 0.4 * s / static_cast<double>(STEPS);
+    target_R = kinematics_utils::rotation_from_euler_ZYX(-M_PI_2, 0, 0);
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, left_target_link_id, target_p, target_R, q_list))
+      << "左腕: 正面：解けなかった位置:" << std::endl << target_p;
+  }
+
+  // 左面方向(左手先は左面を向ける)
+  target_R = kinematics_utils::rotation_from_euler_ZYX(0, 0, 0);
+  for (int s = 0; s < STEPS; s++) {
+    // 左上から右下
+    target_p << 0.2 - 0.4 * s / static_cast<double>(STEPS),
+                0.4,
+                0.4 - 0.4 * s / static_cast<double>(STEPS);
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, left_target_link_id, target_p, target_R, q_list))
+      << "左腕: 左面：解けなかった位置:" << std::endl << target_p;
+  }
+
+  // 右面方向(右手先は右面を向ける)
+  target_R = kinematics_utils::rotation_from_euler_ZYX(0, 0, 0);
+  for (int s = 0; s < STEPS; s++) {
+    // 左上から右下
+    target_p << 0.2 - 0.4 * s / static_cast<double>(STEPS),
+                -0.4,
+                0.4 - 0.4 * s / static_cast<double>(STEPS);
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, right_target_link_id, target_p, target_R, q_list))
+      << "右腕: 右面：解けなかった位置:" << std::endl << target_p;
+  }
+
+  // 後面方向(手先は後面を向ける)
+  for (int s = 0; s < STEPS; s++) {
+    // 右腕
+    // 左上から右下
+    target_p << -0.30,
+                0.05 - 0.4 * s / static_cast<double>(STEPS),
+                0.4 - 0.4 * s / static_cast<double>(STEPS);
+    target_R = kinematics_utils::rotation_from_euler_ZYX(-M_PI_2, 0, 0);
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, right_target_link_id, target_p, target_R, q_list))
+      << "右腕: 後面：解けなかった位置:" << std::endl << target_p;
+
+    // 左腕
+    // 右上から左下
+    target_p << -0.30,
+                -0.05 + 0.4 * s / static_cast<double>(STEPS),
+                0.4 - 0.4 * s / static_cast<double>(STEPS);
+    target_R = kinematics_utils::rotation_from_euler_ZYX(M_PI_2, 0, 0);
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, left_target_link_id, target_p, target_R, q_list))
+      << "左腕: 後面：解けなかった位置:" << std::endl << target_p;
+  }
+
+  // 上面方向(手先は上面を向ける)
+  target_R = kinematics_utils::rotation_from_euler_ZYX(0, 0, 0);
+  for (int s = 0; s < STEPS; s++) {
+    // 右腕
+    target_p << 0.4 - 0.4 * s / static_cast<double>(STEPS),
+                0.0 - 0.4 * s / static_cast<double>(STEPS),
+                0.5;
+    target_R = kinematics_utils::rotation_from_euler_ZYX(0, 0, -M_PI_2);
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, right_target_link_id, target_p, target_R, q_list))
+      << "右腕: 上面：解けなかった位置:" << std::endl << target_p;
+
+    // 左腕
+    target_p << 0.4 - 0.4 * s / static_cast<double>(STEPS),
+                0.0 + 0.4 * s / static_cast<double>(STEPS),
+                0.5;
+    target_R = kinematics_utils::rotation_from_euler_ZYX(0, 0, M_PI_2);
+    EXPECT_TRUE(kinematics::inverse_kinematics_LM(
+      links, left_target_link_id, target_p, target_R, q_list))
+      << "左腕: 上面：解けなかった位置:" << std::endl << target_p;
   }
 }
