@@ -448,6 +448,14 @@ bool Hardware::get_temperatures(const std::string& group_name, std::vector<int8_
   return joints_.get_temperatures(group_name, temperatures);
 }
 
+bool Hardware::get_max_position_limit(const uint8_t & id, double & max_position_limit) {
+  return joints_.get_max_position_limit(id, max_position_limit);
+}
+
+bool Hardware::get_min_position_limit(const uint8_t & id, double & min_position_limit) {
+  return joints_.get_min_position_limit(id, min_position_limit);
+}
+
 bool Hardware::set_position(const uint8_t id, const double position) {
   return joints_.set_position(id, position);
 }

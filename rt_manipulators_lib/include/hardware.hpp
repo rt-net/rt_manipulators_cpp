@@ -60,6 +60,8 @@ class Hardware {
   bool get_temperature(const uint8_t id, int8_t& temperature);
   bool get_temperature(const std::string& joint_name, int8_t& temperature);
   bool get_temperatures(const std::string& group_name, std::vector<int8_t>& temperatures);
+  bool get_max_position_limit(const uint8_t & id, double & max_position_limit);
+  bool get_min_position_limit(const uint8_t & id, double & min_position_limit);
   bool set_position(const uint8_t id, const double position);
   bool set_position(const std::string& joint_name, const double position);
   bool set_positions(const std::string& group_name, std::vector<double>& positions);

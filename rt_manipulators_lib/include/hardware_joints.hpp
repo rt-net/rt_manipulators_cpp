@@ -64,6 +64,8 @@ class Joints{
   bool get_temperature(const dxl_id_t & id, temperature_t & temperature);
   bool get_temperature(const joint_name_t & joint_name, temperature_t & temperature);
   bool get_temperatures(const group_name_t & group_name, std::vector<temperature_t>& temperatures);
+  bool get_max_position_limit(const dxl_id_t & id, position_t & max_position_limit);
+  bool get_min_position_limit(const dxl_id_t & id, position_t & min_position_limit);
   bool set_position(const dxl_id_t & id, const position_t & position);
   bool set_position(const joint_name_t & joint_name, const position_t & position);
   bool set_positions(const group_name_t & group_name, const std::vector<position_t> & positions);
