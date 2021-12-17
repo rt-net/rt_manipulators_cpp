@@ -391,6 +391,59 @@ TEST(KinematicsUtilsFunctions, rotation_from_euler_ZYX) {
   expect_matrix_approximation(actual, expected);
 }
 
+TEST(KinematicsUtilsFunctions, rotation_to_euler_omega) {
+  Eigen::Matrix3d rot;
+  rot << 1, 0, 0,
+         0, 1, 0,
+         0, 0, 1;
+  Eigen::Vector3d actual = kinematics_utils::rotation_to_omega(rot);
+  Eigen::Vector3d expected;
+  expected << 0, 0, 0;
+  expect_vector_approximation(actual, expected, "無回転");
+
+  // X軸回りにpi回転
+  rot << 1, 0, 0,
+         0, -1, 0,
+         0, 0, -1;
+  actual = kinematics_utils::rotation_to_omega(rot);
+  expected << M_PI, 0, 0;
+  expect_vector_approximation(actual, expected, "X軸周りにpi回転");
+
+  // Y軸回りにpi回転
+  rot << -1, 0, 0,
+         0, 1, 0,
+         0, 0, -1;
+  actual = kinematics_utils::rotation_to_omega(rot);
+  expected << 0, M_PI, 0;
+  expect_vector_approximation(actual, expected, "Y軸周りにpi回転");
+
+  // Z軸回りにpi回転
+  rot << -1, 0, 0,
+         0, -1, 0,
+         0, 0, 1;
+  actual = kinematics_utils::rotation_to_omega(rot);
+  expected << 0, 0, M_PI;
+  expect_vector_approximation(actual, expected, "Z軸周りにpi回転");
+
+  // X軸、Y軸回りにpi/2回転
+  rot << 0, 0, 1,
+         1, 0, 0,
+         0, 1, 0;
+  actual = kinematics_utils::rotation_to_omega(rot);
+  double angle = std::atan2(std::sqrt(3), -1) / std::sqrt(3);
+  expected << angle, angle, angle;
+  expect_vector_approximation(actual, expected, "X軸、Y軸周りにpi/2回転");
+
+  // Y軸、Z軸回りに-pi/2回転
+  rot << 0, 0, -1,
+         -1, 0, 0,
+         0, 1, 0;
+  actual = kinematics_utils::rotation_to_omega(rot);
+  angle = std::atan2(std::sqrt(3), -1) / std::sqrt(3);
+  expected << angle, -angle, -angle;
+  expect_vector_approximation(actual, expected, "Y軸、Z軸周りに-pi/2回転");
+}
+
 TEST_F(KinematicsUtilsFixture, find_route) {
   std::vector<unsigned int> actual = kinematics_utils::find_route(links, 2);
   std::vector<unsigned int> expected = {2};

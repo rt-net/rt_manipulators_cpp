@@ -35,6 +35,7 @@ Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta);
 Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat);
 Eigen::Matrix3d rotation_from_euler_ZYX(
   const double & z, const double & y, const double & x);
+Eigen::Vector3d rotation_to_omega(const Eigen::Matrix3d & mat);
 std::vector<link_id_t> find_route(const links_t & links, const link_id_t & target_id);
 q_list_t get_q_list(const links_t & links, const std::vector<link_id_t> & id_list);
 bool set_q_list(links_t & links, const q_list_t & q_list, const bool & within_limit = false);

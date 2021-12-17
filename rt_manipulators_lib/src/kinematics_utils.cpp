@@ -236,6 +236,26 @@ Eigen::Matrix3d rotation_from_euler_ZYX(
   return q.matrix();
 }
 
+Eigen::Vector3d rotation_to_omega(const Eigen::Matrix3d & mat) {
+  // 姿勢行列から等価各軸ベクトルへの変換
+  // 参考：https://www.jstage.jst.go.jp/article/jrsj/29/3/29_3_269/_pdf/-char/ja
+  auto l = Eigen::Vector3d(
+    mat(2, 1) - mat(1, 2),
+    mat(0, 2) - mat(2, 0),
+    mat(1, 0) - mat(0, 1));
+  auto l_norm = l.norm();
+
+  if (l_norm > std::numeric_limits<double>::epsilon()) {
+    // ゼロ除算を防ぐ条件式
+    return (std::atan2(l_norm, mat.trace() - 1) / l_norm) * l;
+  } else if (mat(0, 0) > 0 && mat(1, 1) > 0 && mat(2, 2) > 0) {
+    // 行列の対角成分がすべて1のとき、ゼロベクトルを返す
+    return Eigen::Vector3d::Zero();
+  }
+  // 行列の対角成分が(1, -1, -1), (-1, 1, -1), (-1, -1, 1)のときの処理
+  return M_PI_2 * Eigen::Vector3d(mat(0, 0) + 1, mat(1, 1) + 1, mat(2, 2) + 1);
+}
+
 std::vector<link_id_t> find_route(const links_t & links, const link_id_t & target_id) {
   // 目標リンク(target_id)までの経路を抽出する
   // 返り値のベクトルの末尾がtarget_idになる
