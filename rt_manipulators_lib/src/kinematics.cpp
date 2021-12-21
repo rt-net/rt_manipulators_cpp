@@ -56,7 +56,7 @@ bool inverse_kinematics_LM(
   const double we_pos = 1 / 0.1;  // 位置成分の重み  (代表長さの逆数)
   const double we_ang = 1 / (2*M_PI);  // 姿勢成分の重み
   const int num_of_iterations = 100;  // qを更新するための反復回数
-  const double omega = 0.001;  // 0.1 ~ 0.001 * 代表リンク長の2乗
+  const double omega = 0.01;  // 0.1 ~ 0.001 * 代表リンク長の2乗
   const double initial_q_value = 0;  // 初期値を0にすると特異姿勢になるため、適当な角度を設定する
   const double error_tolerance = 1.0E-6;  // 誤差の許容量。誤差がこれより小さければ反復計算を終える
 
