@@ -247,6 +247,11 @@ hardware.get_min_position_limit(links[2].dxl_id, links[2].min_q);
 引数にはリンク構成と、移動させたいリンク、目標位置(`Eigen::Vector3d`)、目標姿勢(`Eigen::Matrix3d`)、
 関節位置の格納先(`std::map<unsigned int, double>` または `kinematics_utils::q_list_t`)を入力します。
 
+`kinematics::inverse_kinematics_LM()`には、
+数値解法による逆運動学の計算アルゴリズムが実装されています。
+任意の位置姿勢に対してロボットを動かしたい場合は、
+**ロボットを動かす前に逆運動学の解が発散しないか十分に検証してください。**
+
 `kinematics_utils::rotation_from_euler_ZYX(z, y, x)`を使用すると、
 Z-Y-Xオイラー角から回転行列を生成できます。
 
@@ -267,10 +272,3 @@ for (const auto & [target_id, q_value] : q_list) {
   hardware.set_position(links[target_id].dxl_id, q_value);
 }
 ```
-
-`kinematics::inverse_kinematics_LM()`には、
-[杉原 知道.
-Levenberg-Marquardt法による可解性を問わない逆運動学.
-日本ロボット学会誌 Vol.29, 2011](
-https://www.jstage.jst.go.jp/article/jrsj/29/3/29_3_269/_pdf)
-に記載されたアルゴリズムを実装しています。
