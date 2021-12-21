@@ -246,7 +246,6 @@ Eigen::Vector3d rotation_to_omega(const Eigen::Matrix3d & mat) {
   auto l_norm = l.norm();
 
   if (l_norm != 0) {
-    // ゼロ除算を防ぐ条件式
     return (std::atan2(l_norm, mat.trace() - 1) / l_norm) * l;
   } else if (mat(0, 0) > 0 && mat(1, 1) > 0 && mat(2, 2) > 0) {
     // 行列の対角成分がすべて1のとき、ゼロベクトルを返す
