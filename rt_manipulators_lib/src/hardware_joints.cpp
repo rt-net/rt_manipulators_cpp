@@ -211,6 +211,24 @@ bool Joints::get_temperatures(
   return true;
 }
 
+bool Joints::get_max_position_limit(const dxl_id_t & id, position_t & max_position_limit) {
+  if (!has_joint(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+  max_position_limit = joint(id)->max_position_limit();
+  return true;
+}
+
+bool Joints::get_min_position_limit(const dxl_id_t & id, position_t & min_position_limit) {
+  if (!has_joint(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+  min_position_limit = joint(id)->min_position_limit();
+  return true;
+}
+
 bool Joints::set_position(const dxl_id_t & id, const position_t & position) {
   if (!has_joint(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;

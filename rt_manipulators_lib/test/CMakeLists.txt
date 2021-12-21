@@ -17,6 +17,7 @@ include(GoogleTest)
 set(list_tests
     test_joint
     test_kinematics_utils
+    test_kinematics
 )
 foreach(test_executable IN LISTS list_tests)
     message("${test_executable}")

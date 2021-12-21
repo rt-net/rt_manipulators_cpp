@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <string>
 
 #include "kinematics_utils.hpp"
@@ -57,6 +59,7 @@ std::vector<manipulators_link::Link> parse_link_config_file(const std::string & 
   const int COL_INERTIA_YZ = 22;
   const int COL_INERTIA_ZZ = 23;
   const int COL_AXIS_OF_ROTATION = 29;
+  const int COL_DXL_ID = 32;
   const double MM_TO_METERS = 1e-3;
   const double MM2_TO_METERS2 = 1e-9;
   const double G_TO_KG = 1e-3;
@@ -157,6 +160,11 @@ std::vector<manipulators_link::Link> parse_link_config_file(const std::string & 
     // link.c = rot * link.c;
     // link.I = rot * link.I * rot.transpose();
 
+    try {
+      link.dxl_id = std::stoi(str_vec[COL_DXL_ID]);
+    } catch (...) {
+    }
+
     links.push_back(link);
   }
 
@@ -226,6 +234,119 @@ Eigen::Matrix3d rotation_from_euler_ZYX(
     * Eigen::AngleAxisd(y, Eigen::Vector3d::UnitY())
     * Eigen::AngleAxisd(x, Eigen::Vector3d::UnitX());
   return q.matrix();
+}
+
+Eigen::Vector3d rotation_to_axis_angle_representation(const Eigen::Matrix3d & mat) {
+  // 姿勢行列から等価角軸ベクトルへの変換
+  // 参考：https://www.jstage.jst.go.jp/article/jrsj/29/3/29_3_269/_pdf/-char/ja
+  auto l = Eigen::Vector3d(
+    mat(2, 1) - mat(1, 2),
+    mat(0, 2) - mat(2, 0),
+    mat(1, 0) - mat(0, 1));
+  auto l_norm = l.norm();
+
+  if (l_norm != 0) {
+    return (std::atan2(l_norm, mat.trace() - 1) / l_norm) * l;
+  } else if (mat(0, 0) > 0 && mat(1, 1) > 0 && mat(2, 2) > 0) {
+    // 行列の対角成分がすべて1のとき、ゼロベクトルを返す
+    return Eigen::Vector3d::Zero();
+  }
+  // 行列の対角成分が(1, -1, -1), (-1, 1, -1), (-1, -1, 1)のときの処理
+  return M_PI_2 * Eigen::Vector3d(mat(0, 0) + 1, mat(1, 1) + 1, mat(2, 2) + 1);
+}
+
+std::vector<link_id_t> find_route(const links_t & links, const link_id_t & target_id) {
+  // 目標リンク(target_id)までの経路を抽出する
+  // 返り値のベクトルの末尾がtarget_idになる
+  std::vector<link_id_t> id_list;
+
+  if (target_id <= 1 || target_id >= links.size()) {
+    std::cerr << __func__ << ": 目標リンクIDには1より大きく、"
+              << "linksのサイズより小さい数値をセットしてください" << std::endl;
+    return id_list;
+  }
+
+  id_list.push_back(target_id);
+
+  auto parent_id = links[target_id].parent;
+  // ベースリンク(ID = 1)は含めない
+  while (parent_id != 1) {
+    id_list.push_back(parent_id);
+    parent_id = links[parent_id].parent;
+  }
+
+  // 末尾をtarget_idにするため、ベクトルの並びを逆順にする
+  std::reverse(id_list.begin(), id_list.end());
+  return id_list;
+}
+
+q_list_t get_q_list(const links_t & links, const std::vector<link_id_t> & id_list) {
+  // リンク構成から指定されたIDの関節位置qを抽出する
+  q_list_t q_list;
+  for (auto target_id : id_list) {
+    if (target_id < links.size()) {
+      q_list[target_id] = links[target_id].q;
+    } else {
+      std::cerr << __func__ << ": 無効なIDです:" << target_id << std::endl;
+    }
+  }
+  return q_list;
+}
+
+bool set_q_list(links_t & links, const q_list_t & q_list, const bool & within_limit) {
+  // リンク構成の指定されたIDに関節位置qを書き込む
+  bool result = true;
+  for (const auto & [target_id, q_value] : q_list) {
+    if (target_id < links.size()) {
+      if (within_limit) {
+        links[target_id].set_q_within_limit(q_value);
+      } else {
+        links[target_id].q = q_value;
+      }
+    } else {
+      std::cerr << __func__ << ": 無効なIDです:" << target_id << std::endl;
+      result = false;
+    }
+  }
+  return result;
+}
+
+Eigen::Vector3d calc_error_R(const Eigen::Matrix3d & target, const Eigen::Matrix3d & current) {
+  // 回転行列の差を求める
+  return rotation_to_axis_angle_representation(target * current.transpose());
+}
+
+Eigen::Vector3d calc_error_p(const Eigen::Vector3d & target, const Eigen::Vector3d & current) {
+  // 位置の差を求める
+  return target - current;
+}
+
+Eigen::VectorXd calc_error(
+  const Eigen::Vector3d & target_p, const Eigen::Matrix3d & target_R,
+  const manipulators_link::Link & current_link) {
+  // 目標位置・姿勢と、リンクの現在位置・姿勢との差を求める
+  auto error_p = calc_error_p(target_p, current_link.p);
+  auto error_r = calc_error_R(target_R, current_link.R);
+
+  Eigen::VectorXd error(6);
+  error << error_p, error_r;
+  return error;
+}
+
+Eigen::MatrixXd calc_basic_jacobian(const links_t & links, const link_id_t & target_id) {
+  // 基礎ヤコビ行列を求める(各軸は回転関節)
+  auto route = find_route(links, target_id);
+  auto target_p = links[target_id].p;
+  Eigen::MatrixXd J(6, route.size());
+  J.setZero();
+
+  for (int i=0; i < route.size(); i++) {
+    auto link_id = route[i];
+    auto a = links[link_id].R * links[link_id].a;
+    J.col(i) << a.cross(target_p - links[link_id].p), a;
+  }
+
+  return J;
 }
 
 }  // namespace kinematics_utils

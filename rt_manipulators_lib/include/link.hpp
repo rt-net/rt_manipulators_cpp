@@ -16,6 +16,8 @@
 #define RT_MANIPULATORS_LIB_INCLUDE_LINK_HPP_
 
 #include <eigen3/Eigen/Dense>
+
+#include <algorithm>
 #include <string>
 
 namespace manipulators_link {
@@ -25,7 +27,8 @@ namespace manipulators_link {
 class Link{
  public:
   Link():
-    name("ダミーリンク"), sibling(0), child(0), parent(0), q(0), dq(0), ddq(0), m(0) {
+    name("ダミーリンク"), sibling(0), child(0), parent(0), q(0), dq(0), ddq(0), m(0), dxl_id(0),
+    min_q(0), max_q(0) {
     // 0ベクトル、単位行列で初期化
     p.setZero();
     R.setIdentity();
@@ -52,6 +55,10 @@ class Link{
   double m;  // 質量
   Eigen::Vector3d c;  // 自リンクに対する重心位置
   Eigen::Matrix3d I;  // 自リンクに対する慣性テンソル
+  int dxl_id;  // 対応するDynamixelのID
+  double min_q;  // 関節位置の下限値
+  double max_q;  // 関節位置の上限値
+  void set_q_within_limit(const double & desired_q) { q = std::clamp(desired_q, min_q, max_q); }
 };
 
 }  // namespace manipulators_link

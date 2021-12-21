@@ -44,4 +44,73 @@ void forward_kinematics(std::vector<manipulators_link::Link> & links, const int 
   forward_kinematics(links, links[start_id].child);
 }
 
+bool inverse_kinematics_LM(
+  const kinematics_utils::links_t & links, const kinematics_utils::link_id_t & target_id,
+  const Eigen::Vector3d & target_p, const Eigen::Matrix3d & target_R,
+  kinematics_utils::q_list_t & result_q_list) {
+  // 参考: https://www.jstage.jst.go.jp/article/jrsj/29/3/29_3_269/_pdf/-char/ja
+  auto calc_links = links;
+  auto route = kinematics_utils::find_route(links, target_id);
+  auto q_list = kinematics_utils::get_q_list(links, route);
+
+  const double we_pos = 1 / 0.1;  // 位置成分の重み  (代表長さの逆数)
+  const double we_ang = 1 / (2*M_PI);  // 姿勢成分の重み
+  const int num_of_iterations = 100;  // qを更新するための反復回数
+  const double omega = 0.01;  // 0.1 ~ 0.001 * 代表リンク長の2乗
+  const double initial_q_value = 0;  // 初期値を0にすると特異姿勢になるため、適当な角度を設定する
+  const double error_tolerance = 1.0E-6;  // 誤差の許容量。誤差がこれより小さければ反復計算を終える
+
+  // We : 拘束条件に対する重み行列
+  auto We_vec = Eigen::VectorXd(6);
+  We_vec << we_pos, we_pos, we_pos, we_ang, we_ang, we_ang;
+  Eigen::MatrixXd We = We_vec.asDiagonal();
+
+  // qを0にリセットする
+  for (auto q_i = q_list.begin(); q_i != q_list.end(); ++q_i) {
+    q_i->second = initial_q_value;
+  }
+
+  // qをセットしてリンク情報を更新する
+  bool set_q_within_limit = true;
+  kinematics_utils::set_q_list(calc_links, q_list, set_q_within_limit);
+  forward_kinematics(calc_links, 1);
+
+  for (int n=0; n < num_of_iterations; n++) {
+    // 基礎ヤコビ行列を計算
+    auto J = kinematics_utils::calc_basic_jacobian(calc_links, target_id);
+
+      // 位置・姿勢の誤差を計算
+    auto error = kinematics_utils::calc_error(target_p, target_R, calc_links[target_id]);
+
+    // 誤差が小さければ終了
+    if (error.norm() < error_tolerance) {
+      result_q_list = q_list;
+      return true;
+    }
+
+    // 減衰因子の計算
+    auto E = 0.5 * error.transpose() * We * error;
+    auto Wn_ = omega * Eigen::MatrixXd::Identity(q_list.size(), q_list.size());
+    auto Wn = E * Eigen::MatrixXd::Identity(q_list.size(), q_list.size()) + Wn_;
+
+    // LM法の更新則
+    auto H = J.transpose() * We * J + Wn;
+    auto dq = H.inverse() * J.transpose() * We * error;  // H-1 * g
+
+    // dqをqに加算
+    int dq_i = 0;
+    for (auto q_i = q_list.begin(); q_i != q_list.end(); ++q_i) {
+      q_i->second += dq(dq_i);
+      dq_i++;
+    }
+
+    // qをセットしてリンク情報を更新する
+    kinematics_utils::set_q_list(calc_links, q_list, set_q_within_limit);
+    forward_kinematics(calc_links, 1);
+  }
+
+  result_q_list = q_list;
+  return false;
+}
+
 }  // namespace kinematics

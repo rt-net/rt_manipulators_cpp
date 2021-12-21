@@ -15,14 +15,19 @@
 #ifndef RT_MANIPULATORS_LIB_INCLUDE_KINEMATICS_HPP_
 #define RT_MANIPULATORS_LIB_INCLUDE_KINEMATICS_HPP_
 
+#include <eigen3/Eigen/Dense>
 #include <vector>
 
+#include "kinematics_utils.hpp"
 #include "link.hpp"
 
 namespace kinematics {
 
 void forward_kinematics(std::vector<manipulators_link::Link> & links, const int & start_id);
-
+bool inverse_kinematics_LM(
+  const kinematics_utils::links_t & links, const kinematics_utils::link_id_t & target_id,
+  const Eigen::Vector3d & target_p, const Eigen::Matrix3d & target_R,
+  kinematics_utils::q_list_t & result_q_list);
 }  // namespace kinematics
 
 #endif  // RT_MANIPULATORS_LIB_INCLUDE_KINEMATICS_HPP_

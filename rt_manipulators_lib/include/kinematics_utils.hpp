@@ -16,12 +16,17 @@
 #define RT_MANIPULATORS_LIB_INCLUDE_KINEMATICS_UTILS_HPP_
 
 #include <eigen3/Eigen/Dense>
+#include <map>
 #include <string>
 #include <vector>
 
 #include "link.hpp"
 
 namespace kinematics_utils {
+
+using links_t = std::vector<manipulators_link::Link>;
+using link_id_t = unsigned int;
+using q_list_t = std::map<link_id_t, double>;
 
 std::vector<manipulators_link::Link> parse_link_config_file(const std::string & file_path);
 void print_links(const std::vector<manipulators_link::Link> & links, const int & start_id);
@@ -30,6 +35,16 @@ Eigen::Matrix3d rodrigues(const Eigen::Vector3d & a, const double theta);
 Eigen::Vector3d rotation_to_euler_ZYX(const Eigen::Matrix3d & mat);
 Eigen::Matrix3d rotation_from_euler_ZYX(
   const double & z, const double & y, const double & x);
+Eigen::Vector3d rotation_to_axis_angle_representation(const Eigen::Matrix3d & mat);
+std::vector<link_id_t> find_route(const links_t & links, const link_id_t & target_id);
+q_list_t get_q_list(const links_t & links, const std::vector<link_id_t> & id_list);
+bool set_q_list(links_t & links, const q_list_t & q_list, const bool & within_limit = false);
+Eigen::Vector3d calc_error_R(const Eigen::Matrix3d & target, const Eigen::Matrix3d & current);
+Eigen::Vector3d calc_error_p(const Eigen::Vector3d & target, const Eigen::Vector3d & current);
+Eigen::VectorXd calc_error(
+  const Eigen::Vector3d & target_p, const Eigen::Matrix3d & target_R,
+  const manipulators_link::Link & current_link);
+Eigen::MatrixXd calc_basic_jacobian(const links_t & links, const link_id_t & target_id);
 
 }  // namespace kinematics_utils
 
