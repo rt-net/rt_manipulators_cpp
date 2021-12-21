@@ -326,7 +326,7 @@ Eigen::VectorXd calc_error(
   const manipulators_link::Link & current_link) {
   // 目標位置・姿勢と、リンクの現在位置・姿勢との差を求める
   auto error_p = calc_error_p(target_p, current_link.p);
-  auto error_omega = calc_error_R(target_R, current_link.R);
+  auto error_r = calc_error_R(target_R, current_link.R);
 
   Eigen::VectorXd error(6);
   error << error_p, error_omega;
