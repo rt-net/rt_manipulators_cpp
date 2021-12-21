@@ -75,13 +75,12 @@ bool inverse_kinematics_LM(
   kinematics_utils::set_q_list(calc_links, q_list, set_q_within_limit);
   forward_kinematics(calc_links, 1);
 
-  auto error = kinematics_utils::calc_error(target_p, target_R, calc_links[target_id]);
   for (int n=0; n < num_of_iterations; n++) {
     // 基礎ヤコビ行列を計算
     auto J = kinematics_utils::calc_basic_jacobian(calc_links, target_id);
 
       // 位置・姿勢の誤差を計算
-    error = kinematics_utils::calc_error(target_p, target_R, calc_links[target_id]);
+    auto error = kinematics_utils::calc_error(target_p, target_R, calc_links[target_id]);
 
     // 誤差が小さければ終了
     if (error.norm() < error_tolerance) {
