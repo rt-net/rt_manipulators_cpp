@@ -17,6 +17,7 @@ set(list_samples
     x7_forward_kinematics
     s17_forward_kinematics
     x7_inverse_kinematics
+    s17_inverse_kinematics
 )
 foreach(sample IN LISTS list_samples)
     message("${sample}")
