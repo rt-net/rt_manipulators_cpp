@@ -236,7 +236,7 @@ Eigen::Matrix3d rotation_from_euler_ZYX(
   return q.matrix();
 }
 
-Eigen::Vector3d rotation_to_omega(const Eigen::Matrix3d & mat) {
+Eigen::Vector3d rotation_to_axis_angle_representation(const Eigen::Matrix3d & mat) {
   // 姿勢行列から等価角軸ベクトルへの変換
   // 参考：https://www.jstage.jst.go.jp/article/jrsj/29/3/29_3_269/_pdf/-char/ja
   auto l = Eigen::Vector3d(
@@ -313,7 +313,7 @@ bool set_q_list(links_t & links, const q_list_t & q_list, const bool & within_li
 
 Eigen::Vector3d calc_error_R(const Eigen::Matrix3d & target, const Eigen::Matrix3d & current) {
   // 回転行列の差を求める
-  return rotation_to_omega(target * current.transpose());
+  return rotation_to_axis_angle_representation(target * current.transpose());
 }
 
 Eigen::Vector3d calc_error_p(const Eigen::Vector3d & target, const Eigen::Vector3d & current) {
