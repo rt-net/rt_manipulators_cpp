@@ -237,7 +237,7 @@ Eigen::Matrix3d rotation_from_euler_ZYX(
 }
 
 Eigen::Vector3d rotation_to_omega(const Eigen::Matrix3d & mat) {
-  // 姿勢行列から等価各軸ベクトルへの変換
+  // 姿勢行列から等価角軸ベクトルへの変換
   // 参考：https://www.jstage.jst.go.jp/article/jrsj/29/3/29_3_269/_pdf/-char/ja
   auto l = Eigen::Vector3d(
     mat(2, 1) - mat(1, 2),
