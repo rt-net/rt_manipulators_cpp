@@ -329,7 +329,7 @@ Eigen::VectorXd calc_error(
   auto error_r = calc_error_R(target_R, current_link.R);
 
   Eigen::VectorXd error(6);
-  error << error_p, error_omega;
+  error << error_p, error_r;
   return error;
 }
 
