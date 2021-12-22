@@ -29,7 +29,11 @@ void move_to(rt_manipulators_cpp::Hardware & hardware,
   std::cout << "目標姿勢:" << std::endl << target_R << std::endl;
   std::cout << "----------------------" << std::endl;
   kinematics_utils::q_list_t q_list;
-  kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list);
+  if (kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list) == false) {
+    std::cout << "IKに失敗しました" << std::endl;
+  } else {
+    std::cout << "IKに成功しました" << std::endl;
+  }
   for (const auto & [target_id, q_value] : q_list) {
     hardware.set_position(links[target_id].dxl_id, q_value);
   }
