@@ -84,7 +84,7 @@ bool inverse_kinematics_LM(
 
     // 誤差が小さければ終了
     if (error.norm() < error_tolerance) {
-      result_q_list = q_list;
+      result_q_list = kinematics_utils::get_q_list(calc_links, route);
       return true;
     }
 
@@ -109,7 +109,7 @@ bool inverse_kinematics_LM(
     forward_kinematics(calc_links, 1);
   }
 
-  result_q_list = q_list;
+  result_q_list = kinematics_utils::get_q_list(calc_links, route);
   return false;
 }
 
