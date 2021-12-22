@@ -14,6 +14,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <map>
 #include <thread>
 #include <vector>
 #include "rt_manipulators_cpp/hardware.hpp"
@@ -30,8 +31,10 @@ void move_to(rt_manipulators_cpp::Hardware & hardware,
   std::cout << "目標姿勢:" << std::endl << target_R << std::endl;
   std::cout << "----------------------" << std::endl;
   kinematics_utils::q_list_t q_list;
-  if(kinematics::inverse_kinematics_LM(links, target_id, target_p, target_R, q_list) == false) {
+  if (kinematics::inverse_kinematics_LM(links, target_id, target_p, target_R, q_list) == false) {
     std::cout << "IKに失敗しました" << std::endl;
+  } else {
+    std::cout << "IKに成功しました" << std::endl;
   }
   for (const auto & [target_id, q_value] : q_list) {
     hardware.set_position(links[target_id].dxl_id, q_value);
@@ -49,7 +52,7 @@ int main() {
 
   auto links = kinematics_utils::parse_link_config_file(link_config_file);
   kinematics::forward_kinematics(links, 1);
-  kinematics_utils::print_links(links, 1);
+  // kinematics_utils::print_links(links, 1);
 
   rt_manipulators_cpp::Hardware hardware(port_name);
   if (!hardware.connect(baudrate)) {
@@ -63,16 +66,19 @@ int main() {
   }
 
   // 手先リンクのIDを設定
-  int right_target_link_id = 11;
-  int left_target_link_id = 20;
+  const int RIGHT = 0;
+  const int LEFT = 1;
+  const std::vector<int> SIDES = {RIGHT, LEFT};
+  std::map<int, int> TARGET_LINK_ID{
+    {RIGHT, 11},
+    {LEFT, 20},
+  };
   // 関節可動範囲の設定
-  for (auto link_id : kinematics_utils::find_route(links, right_target_link_id)) {
-    hardware.get_max_position_limit(links[link_id].dxl_id, links[link_id].max_q);
-    hardware.get_min_position_limit(links[link_id].dxl_id, links[link_id].min_q);
-  }
-  for (auto link_id : kinematics_utils::find_route(links, left_target_link_id)) {
-    hardware.get_max_position_limit(links[link_id].dxl_id, links[link_id].max_q);
-    hardware.get_min_position_limit(links[link_id].dxl_id, links[link_id].min_q);
+  for (const auto & side : SIDES) {
+    for (auto link_id : kinematics_utils::find_route(links, TARGET_LINK_ID[side])) {
+      hardware.get_max_position_limit(links[link_id].dxl_id, links[link_id].max_q);
+      hardware.get_min_position_limit(links[link_id].dxl_id, links[link_id].min_q);
+    }
   }
 
   std::vector<std::string> group_names = {"right_arm", "left_arm", "torso"};
@@ -112,71 +118,62 @@ int main() {
             << std::endl;
   std::this_thread::sleep_for(std::chrono::seconds(5));
 
-  Eigen::Vector3d target_p;
-  Eigen::Matrix3d target_R;
-  kinematics_utils::q_list_t q_list;
+  // 手先は正面に向ける
+  std::map<int, Eigen::Matrix3d> target_R{
+    {RIGHT, kinematics_utils::rotation_from_euler_ZYX(M_PI_2, -M_PI_2, 0)},
+    {LEFT, kinematics_utils::rotation_from_euler_ZYX(-M_PI_2, -M_PI_2, 0)}
+  };
+  // 上腕と前腕の磁石を付ける姿勢
+  std::map<int, std::vector<double>> home_positions = {
+    {RIGHT, {-0.3574, -1.57, 0, 2.72, 0, -1.12, 0} },
+    {LEFT,  {0.3574, 1.57, 0, -2.72, 0, 1.12, 0} },
+  };
+  std::map<int, std::string> arm_group_name = {
+    {RIGHT, "right_arm"},
+    {LEFT, "left_arm"},
+  };
 
-  std::cout << "右手を正面へ移動" << std::endl;
-  target_p << 0.4, 0.0, 0.4;
-  target_R = kinematics_utils::rotation_from_euler_ZYX(M_PI_2, -M_PI_2, 0);
-  move_to(hardware, links, right_target_link_id, target_p, target_R);
-  std::this_thread::sleep_for(std::chrono::seconds(5));
+  for (const auto & side : SIDES) {
+    Eigen::Vector3d target_p;
+    kinematics_utils::q_list_t q_list;
 
-  std::cout << "左手を正面へ移動" << std::endl;
-  target_p << 0.4, 0.0, 0.4;
-  target_R = kinematics_utils::rotation_from_euler_ZYX(-M_PI_2, -M_PI_2, 0);
-  move_to(hardware, links, left_target_link_id, target_p, target_R);
-  std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::cout << "正面へ移動" << std::endl;
+    target_p << 0.4, 0.0, 0.6;
+    move_to(hardware, links, TARGET_LINK_ID[side], target_p, target_R[side]);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
-  std::cout << "右手を正面から右面へ移動" << std::endl;
-  int STEPS = 20;
-  for (int s = 0; s < STEPS; s++) {
-    double p_theta =  M_PI * s / static_cast<double>(STEPS);
-    target_p << 0.4 * std::sin(p_theta),
-                0.4 * std::cos(p_theta),
-                0.4;
-    double R_theta = M_PI - M_PI * s / static_cast<double>(STEPS);
-    target_R = kinematics_utils::rotation_from_euler_ZYX(R_theta, -M_PI_2, 0);
-    move_to(hardware, links, right_target_link_id, target_p, target_R);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::cout << "左上へ移動" << std::endl;
+    target_p << 0.4, 0.2, 0.8;
+    move_to(hardware, links, TARGET_LINK_ID[side], target_p, target_R[side]);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
+    std::cout << "左下へ移動" << std::endl;
+    target_p << 0.4, 0.2, 0.4;
+    move_to(hardware, links, TARGET_LINK_ID[side], target_p, target_R[side]);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+    std::cout << "右下へ移動" << std::endl;
+    target_p << 0.4, -0.2, 0.4;
+    move_to(hardware, links, TARGET_LINK_ID[side], target_p, target_R[side]);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+    std::cout << "右上へ移動" << std::endl;
+    target_p << 0.4, -0.2, 0.8;
+    move_to(hardware, links, TARGET_LINK_ID[side], target_p, target_R[side]);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+    std::cout << "正面へ移動" << std::endl;
+    target_p << 0.4, 0.0, 0.6;
+    move_to(hardware, links, TARGET_LINK_ID[side], target_p, target_R[side]);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+    std::cout << "終了姿勢へ移動" << std::endl;
+    hardware.set_positions(arm_group_name[side], home_positions[side]);
+    std::this_thread::sleep_for(std::chrono::seconds(3));
   }
-
-  // std::cout << "左手を左面へ移動" << std::endl;
-  // target_p << 0.0, 0.4, 0.4;
-  // target_R = kinematics_utils::rotation_from_euler_ZYX(0, 0, 0);
-  // move_to(hardware, links, left_target_link_id, target_p, target_R);
-  // std::this_thread::sleep_for(std::chrono::seconds(5));
-
-  // std::cout << "左上へ移動" << std::endl;
-  // target_p << 0.2, 0.2, 0.5;
-  // target_R = kinematics_utils::rotation_from_euler_ZYX(0, 0, 0);
-  // move_to(hardware, links, target_p, target_R);
-  // std::this_thread::sleep_for(std::chrono::seconds(3));
-
-  // std::cout << "左下へ移動" << std::endl;
-  // target_p << 0.2, 0.2, 0.2;
-  // target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI, 0);
-  // move_to(hardware, links, target_p, target_R);
-  // std::this_thread::sleep_for(std::chrono::seconds(3));
-
-  // std::cout << "右下へ移動" << std::endl;
-  // target_p << 0.2, -0.2, 0.2;
-  // target_R = kinematics_utils::rotation_from_euler_ZYX(M_PI_2, M_PI, 0);
-  // move_to(hardware, links, target_p, target_R);
-  // std::this_thread::sleep_for(std::chrono::seconds(3));
-
-  // std::cout << "右上へ移動" << std::endl;
-  // target_p << 0.2, -0.2, 0.5;
-  // target_R = kinematics_utils::rotation_from_euler_ZYX(-M_PI_2, 0, 0);
-  // move_to(hardware, links, target_p, target_R);
-  // std::this_thread::sleep_for(std::chrono::seconds(3));
-
-  // std::cout << "正面へ移動し、手先を真下へ向ける" << std::endl;
-  // target_p << 0.2, 0.0, 0.1;
-  // target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI, 0);
-  // move_to(hardware, links, target_p, target_R);
-  // std::this_thread::sleep_for(std::chrono::seconds(3));
+  std::cout << "腰軸を終了姿勢へ移動" << std::endl;
+  hardware.set_position(18, 0.0);
+  std::this_thread::sleep_for(std::chrono::seconds(5));
 
   std::cout << "スレッドを停止します." << std::endl;
   hardware.stop_thread();
