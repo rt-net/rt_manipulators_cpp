@@ -169,7 +169,8 @@ kinematics_utils::print_links(links, 1);
 ## 逆運動学を解いて手先を任意の位置・姿勢に移動させる
 
 次のコマンドを実行します。
-ロボットの手先が0.2m前方の5点に向かって移動します。
+CRANE-X7では、手先が0.2m前方の5点に向かって移動します。
+Sciurus17では、左右の手先が0.4m前方の5点に向かって移動します。
 
 ***安全のためロボットの周りに物や人を近づけないでください。***
 
@@ -178,7 +179,7 @@ kinematics_utils::print_links(links, 1);
 $ cd bin/
 $ ./x7_inverse_kinematics
 # Sciurus17の場合
-# 未実装
+$ ./s17_inverse_kinematics
 ```
 
 実行結果（CRANE-X7の場合）
