@@ -1,5 +1,7 @@
 # RTマニピュレータC++ライブラリとサンプル集（rt_manipulators_cpp）
 
+[![BuildAndTest](https://github.com/rt-net/rt_manipulators_cpp/actions/workflows/build_test.yaml/badge.svg)](https://github.com/rt-net/rt_manipulators_cpp/actions/workflows/build_test.yaml)
+
 本リポジトリは、株式会社アールティが販売している
 [アームロボット**CRANE-X7(クラインエックスセブン)**](https://rt-net.jp/products/crane-x7/)
 と
