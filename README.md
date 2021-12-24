@@ -1,5 +1,7 @@
 # RTマニピュレータC++ライブラリとサンプル集（rt_manipulators_cpp）
 
+[![BuildAndTest](https://github.com/rt-net/rt_manipulators_cpp/actions/workflows/build_test.yaml/badge.svg)](https://github.com/rt-net/rt_manipulators_cpp/actions/workflows/build_test.yaml)
+
 本リポジトリは、株式会社アールティが販売している
 [アームロボット**CRANE-X7(クラインエックスセブン)**](https://rt-net.jp/products/crane-x7/)
 と
@@ -12,8 +14,8 @@
 
 - CMake (>= 3.1.0)
 - g++ (>= 7.5.0)
-- [DYNAMIXEL SDK](https://github.com/ROBOTIS-GIT/DynamixelSDK) (linux64向けにビルド&インストール)
-- [yaml-cpp](https://github.com/jbeder/yaml-cpp)
+- [DYNAMIXEL SDK](https://github.com/ROBOTIS-GIT/DynamixelSDK) (Linux 64bit向けにビルド&インストール)
+- [yaml-cpp (>= 0.5.0)](https://github.com/jbeder/yaml-cpp)
 - Eigen (>= 3.3.4)
 - Linux OS
     - Ubuntu 18.04
@@ -27,7 +29,7 @@
 ### DYNAMIXEL SDKのインストール
 
 [DYNAMIXEL SDKのe-manual](https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_sdk/library_setup/cpp_linux/#cpp-linux)
-を参考に、linux 64bit環境用にDYNAMIXEL SDKをビルド＆インストールします。
+を参考に、Linux 64bit環境用にDYNAMIXEL SDKをビルド＆インストールします。
 
 ```sh
 $ sudo apt install build-essential
@@ -51,6 +53,7 @@ $ sudo apt install libyaml-cpp-dev libeigen3-dev
 詳細は[rt_manipulators_lib/README.md](./rt_manipulators_lib/README.md)を参照してください。
 
 ```sh
+$ cd ~
 $ git clone https://github.com/rt-net/rt_manipulators_cpp
 $ cd rt_manipuators_cpp/rt_manipulators_lib
 $ ./build_install_library.bash
@@ -83,6 +86,8 @@ hand
 サーボグループ:armのトルクをONにします.
 ...
 ```
+
+[![](https://img.youtube.com/vi/cA_3HU3HfcM/sddefault.jpg)](https://youtu.be/cA_3HU3HfcM)
 
 ## 免責事項
 
