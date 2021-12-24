@@ -14,7 +14,7 @@
 
 - CMake (>= 3.1.0)
 - g++ (>= 7.5.0)
-- [DYNAMIXEL SDK](https://github.com/ROBOTIS-GIT/DynamixelSDK) (linux64向けにビルド&インストール)
+- [DYNAMIXEL SDK](https://github.com/ROBOTIS-GIT/DynamixelSDK) (Linux 64bit向けにビルド&インストール)
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 - Eigen (>= 3.3.4)
 - Linux OS
