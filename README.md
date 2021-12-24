@@ -29,7 +29,7 @@
 ### DYNAMIXEL SDKのインストール
 
 [DYNAMIXEL SDKのe-manual](https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_sdk/library_setup/cpp_linux/#cpp-linux)
-を参考に、linux 64bit環境用にDYNAMIXEL SDKをビルド＆インストールします。
+を参考に、Linux 64bit環境用にDYNAMIXEL SDKをビルド＆インストールします。
 
 ```sh
 $ sudo apt install build-essential
