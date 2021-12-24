@@ -53,6 +53,7 @@ $ sudo apt install libyaml-cpp-dev libeigen3-dev
 詳細は[rt_manipulators_lib/README.md](./rt_manipulators_lib/README.md)を参照してください。
 
 ```sh
+$ cd ~
 $ git clone https://github.com/rt-net/rt_manipulators_cpp
 $ cd rt_manipuators_cpp/rt_manipulators_lib
 $ ./build_install_library.bash
