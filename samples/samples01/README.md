@@ -4,18 +4,25 @@
   - [サンプルのビルド](#サンプルのビルド)
   - [通信設定](#通信設定)
   - [サーボモータのトルクをON/OFFする](#サーボモータのトルクをonoffする)
+    - [動画](#動画)
     - [解説](#解説)
   - [サーボモータの現在角度を読み取る](#サーボモータの現在角度を読み取る)
+    - [動画](#動画-1)
     - [解説](#解説-1)
   - [サーボモータの目標角度を書き込む](#サーボモータの目標角度を書き込む)
+    - [動画](#動画-2)
     - [解説](#解説-2)
   - [スレッドでサーボモータの角度を読み書きする](#スレッドでサーボモータの角度を読み書きする)
+    - [動画](#動画-3)
     - [解説](#解説-3)
   - [サーボモータの速度、電流、入力電圧、温度を読み取る](#サーボモータの速度電流入力電圧温度を読み取る)
+    - [動画](#動画-4)
     - [解説](#解説-4)
   - [サーボモータの目標速度を書き込む](#サーボモータの目標速度を書き込む)
+    - [動画](#動画-5)
     - [解説](#解説-5)
   - [サーボモータの目標電流を書き込む](#サーボモータの目標電流を書き込む)
+    - [動画](#動画-6)
     - [解説](#解説-6)
 
 ## サンプルのビルド
@@ -79,6 +86,10 @@ hand
 ジョイントグループ:armのトルクをOFFにします.
 CRANE-X7との接続を解除します.
 ```
+
+### 動画
+
+[![](https://img.youtube.com/vi/cA_3HU3HfcM/sddefault.jpg)](https://youtu.be/cA_3HU3HfcM)
 
 ### 解説
 
@@ -182,6 +193,10 @@ armグループの6番目のサーボ角度は0.961806radです.
 ...
 ```
 
+### 動画
+
+[![](https://img.youtube.com/vi/c0dBK2sj2Dw/sddefault.jpg)](https://youtu.be/c0dBK2sj2Dw)
+
 ### 解説
 
 サーボモータの現在角度を取得するため、
@@ -272,6 +287,10 @@ arm、handグループのサーボ位置制御PIDゲインに(5, 0, 0)を書き�
 10秒間スリープします.
 CRANE-X7との接続を解除します.
 ```
+
+### 動画
+
+[![](https://img.youtube.com/vi/JLKXTyUJo1A/sddefault.jpg)](https://youtu.be/JLKXTyUJo1A)
 
 ### 解説
 
@@ -409,6 +428,10 @@ armグループの4番目のサーボ角度は-0.684155radです.
 ...
 ```
 
+### 動画
+
+[![](https://img.youtube.com/vi/r7ssEHS-jIk/sddefault.jpg)](https://youtu.be/r7ssEHS-jIk)
+
 ### 解説
 
 サーボモータのデータを読み書きするスレッドを起動するため、`Hardware.start_thread(group_names, update_cycle_ms)`を実行します。
@@ -463,6 +486,10 @@ joint_hand: position[rad], velocity[rad/s], current[A], voltage[V], temperature[
 0.354350, 0.000000, 0.040350, 11.700000, 37
 ...
 ```
+
+### 動画
+
+[![](https://img.youtube.com/vi/NbhPIo9yL1A/sddefault.jpg)](https://youtu.be/NbhPIo9yL1A)
 
 ### 解説
 
@@ -594,6 +621,10 @@ CRANE-X7との接続を解除します.
 wristグループにはvelocityのsync_writeが設定されています.
 安全のため, disconnect()関数内で目標速度 0 rad/sを書き込みます.
 ```
+
+### 動画
+
+[![](https://img.youtube.com/vi/JxJ_BFnzJqc/sddefault.jpg)](https://youtu.be/JxJ_BFnzJqc)
 
 ### 解説
 
@@ -734,6 +765,10 @@ CRANE-X7との接続を解除します.
 wristグループにはcurrentのsync_writeが設定されています.
 安全のため, disconnect()関数内で目標速度 0 Aを書き込みます.
 ```
+
+### 動画
+
+[![](https://img.youtube.com/vi/Qc3TnaccRmc/sddefault.jpg)](https://youtu.be/Qc3TnaccRmc)
 
 ### 解説
 

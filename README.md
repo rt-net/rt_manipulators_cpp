@@ -86,6 +86,8 @@ hand
 ...
 ```
 
+[![](https://img.youtube.com/vi/cA_3HU3HfcM/sddefault.jpg)](https://youtu.be/cA_3HU3HfcM)
+
 ## 免責事項
 
 当該製品および当ソフトウェアの使用中に生じたいかなる損害も株式会社アールティでは一切の責任を負いかねます。
