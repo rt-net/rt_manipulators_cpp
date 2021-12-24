@@ -62,7 +62,7 @@ $ ./uninstall_library.bash
 
 ## ライブラリのテスト
 
-### googletestのインストール
+### GoogleTestのインストール
 
 ```sh
 $ mkdir ~/gtest
