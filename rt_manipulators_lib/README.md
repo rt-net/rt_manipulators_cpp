@@ -1,6 +1,5 @@
 # RTマニピュレータC++ライブラリ
 
-
 ## ライブラリのインストール
 
 [build_install_library.bash](./build_install_library.bash)
@@ -59,6 +58,24 @@ $ ./uninstall_library.bash
 ## ライブラリの使い方
 
 ライブラリの使い方は[サンプル集のREADME.md](../samples/README.md)を参照してください。
+
+## ライブラリのファイル構成
+
+ライブラリは、ロボットのハードウェアを動かすために必要なファイルと、
+運動学を計算するために必要なファイルで構成されています。
+
+### ハードウェア関連
+
+- `hardware.hpp/cpp` : `Hardware`クラスを実装しています
+- `hardware_communicator.hpp/cpp` : `Hardware`クラスのうち、Dynamixelとの通信機能を実装しています
+- `hardware_joints.hpp/cpp` : `Hardware`クラスのうち、ジョイント情報を扱う機能を実装しています
+- `joints.hpp/cpp` : ジョイント情報を定義しています
+
+### 運動学関連
+
+- `kinematics.hpp/cpp` : 順運動学、逆運動学を解く関数を実装しています
+- `kinematics_utils.hpp/cpp` : 運動学計算を補助する関数を実装しています
+- `link.hpp` : リンク情報を定義しています
 
 ## ライブラリのテスト
 
