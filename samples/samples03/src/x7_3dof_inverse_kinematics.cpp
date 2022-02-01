@@ -20,16 +20,16 @@
 #include "rt_manipulators_cpp/kinematics.hpp"
 #include "rt_manipulators_cpp/kinematics_utils.hpp"
 #include "rt_manipulators_cpp/link.hpp"
+#include "inverse_kinematics.hpp"
 
 void move_to(rt_manipulators_cpp::Hardware & hardware,
              const kinematics_utils::links_t & links,
-             Eigen::Vector3d & target_p, const Eigen::Matrix3d & target_R) {
-  // 目標位置・姿勢をもとにIKを解き、関節角度をセットする
+             Eigen::Vector3d & target_p) {
+  // 目標位置をもとにIKを解き、関節角度をセットする
   std::cout << "目標位置:" << std::endl << target_p << std::endl;
-  std::cout << "目標姿勢:" << std::endl << target_R << std::endl;
   std::cout << "----------------------" << std::endl;
   kinematics_utils::q_list_t q_list;
-  if (kinematics::inverse_kinematics_LM(links, 8, target_p, target_R, q_list) == false) {
+  if (samples03::x7_3dof_inverse_kinematics(links, target_p, q_list) == false) {
     std::cout << "IKに失敗しました" << std::endl;
   } else {
     std::cout << "IKに成功しました" << std::endl;
@@ -40,7 +40,7 @@ void move_to(rt_manipulators_cpp::Hardware & hardware,
 }
 
 int main() {
-  std::cout << "手先目標位置・姿勢をもとに逆運動学を解き、"
+  std::cout << "手先目標位置をもとに解析的に逆運動学を解き、"
             << "CRANE-X7を動かすサンプルです." << std::endl;
 
   std::string port_name = "/dev/ttyUSB0";
@@ -50,7 +50,6 @@ int main() {
 
   auto links = kinematics_utils::parse_link_config_file(link_config_file);
   kinematics::forward_kinematics(links, 1);
-  kinematics_utils::print_links(links, 1);
 
   rt_manipulators_cpp::Hardware hardware(port_name);
   if (!hardware.connect(baudrate)) {
@@ -110,43 +109,36 @@ int main() {
   std::this_thread::sleep_for(std::chrono::seconds(5));
 
   Eigen::Vector3d target_p;
-  Eigen::Matrix3d target_R;
   kinematics_utils::q_list_t q_list;
 
   std::cout << "正面へ移動" << std::endl;
   target_p << 0.2, 0.0, 0.3;
-  target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI_2, 0);
-  move_to(hardware, links, target_p, target_R);
+  move_to(hardware, links, target_p);
   std::this_thread::sleep_for(std::chrono::seconds(5));
 
   std::cout << "左上へ移動" << std::endl;
   target_p << 0.2, 0.2, 0.5;
-  target_R = kinematics_utils::rotation_from_euler_ZYX(0, 0, 0);
-  move_to(hardware, links, target_p, target_R);
+  move_to(hardware, links, target_p);
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
   std::cout << "左下へ移動" << std::endl;
   target_p << 0.2, 0.2, 0.2;
-  target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI, 0);
-  move_to(hardware, links, target_p, target_R);
+  move_to(hardware, links, target_p);
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
   std::cout << "右下へ移動" << std::endl;
   target_p << 0.2, -0.2, 0.2;
-  target_R = kinematics_utils::rotation_from_euler_ZYX(M_PI_2, M_PI, 0);
-  move_to(hardware, links, target_p, target_R);
+  move_to(hardware, links, target_p);
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
   std::cout << "右上へ移動" << std::endl;
   target_p << 0.2, -0.2, 0.5;
-  target_R = kinematics_utils::rotation_from_euler_ZYX(-M_PI_2, 0, 0);
-  move_to(hardware, links, target_p, target_R);
+  move_to(hardware, links, target_p);
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
-  std::cout << "正面へ移動し、手先を真下へ向ける" << std::endl;
-  target_p << 0.2, 0.0, 0.1;
-  target_R = kinematics_utils::rotation_from_euler_ZYX(0, M_PI, 0);
-  move_to(hardware, links, target_p, target_R);
+  std::cout << "正面へ移動し、手先を下げる" << std::endl;
+  target_p << 0.2, 0.0, 0.15;
+  move_to(hardware, links, target_p);
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
   std::cout << "スレッドを停止します." << std::endl;

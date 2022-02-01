@@ -20,6 +20,10 @@ foreach(sample IN LISTS list_samples)
     message("${sample}")
     add_executable(${sample}
         src/${sample}.cpp
+        src/inverse_kinematics.cpp
+    )
+    target_include_directories(${sample} PUBLIC
+        include
     )
     target_link_libraries(${sample} PRIVATE rt_manipulators_cpp Eigen3::Eigen)
 endforeach()

@@ -74,6 +74,11 @@ bool x7_3dof_inverse_kinematics(const kinematics_utils::links_t & links,
   // 関節角度が可動範囲内にあるかチェック
   for (const auto & link : links) {
     const double dxl_id = link.dxl_id;
+    // 目標角度が存在しなければスキップ
+    if (q_list.find(dxl_id) == q_list.end()) {
+      continue;
+    }
+
     const double q = q_list[dxl_id];
     if (q < link.min_q || q > link.max_q) {
       std::cerr << "ID:" << dxl_id << " の目標角度:" << q << " が可動範囲外です" << std::endl;
