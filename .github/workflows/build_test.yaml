@@ -53,3 +53,5 @@ jobs:
           ./samples/samples01/build_samples.bash
       - name: Test library
         run: ./rt_manipulators_lib/run_test_library.bash
+      - name: Test Samples
+        run: ./samples/samples03/run_test.bash
