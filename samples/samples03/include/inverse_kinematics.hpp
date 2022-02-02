@@ -20,8 +20,12 @@
 namespace samples03 {
 
 bool x7_3dof_inverse_kinematics(const kinematics_utils::links_t & links,
-                                Eigen::Vector3d & target_p,
+                                const Eigen::Vector3d & target_p,
                                 kinematics_utils::q_list_t & q_list);
+bool x7_3dof_picking_inverse_kinematics(const kinematics_utils::links_t & links,
+                                        const Eigen::Vector3d & target_p,
+                                        kinematics_utils::q_list_t & q_list);
+
 }  // namespace samples03
 
 #endif  // SAMPLES_SAMPLES03_INCLUDE_INVERSE_KINEMATICS_HPP_

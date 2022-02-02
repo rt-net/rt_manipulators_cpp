@@ -17,8 +17,27 @@
 
 namespace samples03 {
 
+bool q_list_are_in_range(
+  const kinematics_utils::links_t & links, const kinematics_utils::q_list_t & q_list) {
+  // 目標角度が可動範囲内にあるかチェックする
+  for (const auto & link : links) {
+    const double dxl_id = link.dxl_id;
+    // 目標角度が存在しなければスキップ
+    if (q_list.find(dxl_id) == q_list.end()) {
+      continue;
+    }
+
+    const double q = q_list.at(dxl_id);
+    if (q < link.min_q || q > link.max_q) {
+      std::cerr << "ID:" << dxl_id << " の目標角度:" << q << " が可動範囲外です" << std::endl;
+      return false;
+    }
+  }
+  return true;
+}
+
 bool x7_3dof_inverse_kinematics(const kinematics_utils::links_t & links,
-                                Eigen::Vector3d & target_p,
+                                const Eigen::Vector3d & target_p,
                                 kinematics_utils::q_list_t & q_list) {
   // 目標位置をもとに、CRANE-X7の第1, 2, 4関節の目標角度を計算する
 
@@ -72,18 +91,37 @@ bool x7_3dof_inverse_kinematics(const kinematics_utils::links_t & links,
   q_list[links[5].dxl_id] = theta3;
 
   // 関節角度が可動範囲内にあるかチェック
-  for (const auto & link : links) {
-    const double dxl_id = link.dxl_id;
-    // 目標角度が存在しなければスキップ
-    if (q_list.find(dxl_id) == q_list.end()) {
-      continue;
-    }
+  if (q_list_are_in_range(links, q_list) == false) {
+    return false;
+  }
 
-    const double q = q_list[dxl_id];
-    if (q < link.min_q || q > link.max_q) {
-      std::cerr << "ID:" << dxl_id << " の目標角度:" << q << " が可動範囲外です" << std::endl;
-      return false;
-    }
+  return true;
+}
+
+bool x7_3dof_picking_inverse_kinematics(const kinematics_utils::links_t & links,
+                                        const Eigen::Vector3d & target_p,
+                                        kinematics_utils::q_list_t & q_list) {
+  // 手先先端の目標位置をもとに、CRANE-X7の第1, 2, 4, 6, 7関節の目標角度を計算する
+  // 手先は常に地面（-Z）方向を向く
+
+  // 目標位置Zに手先リンク長を加え、それを手首の目標位置とする
+  const double HAND_LENGTH = 0.06;  // Ref: https://rt-net.jp/products/crane-x7/
+  Eigen::Vector3d wrist_target_p = target_p;
+  wrist_target_p[2] += links[8].b.z() + links[9].b.z() + HAND_LENGTH;
+
+  if (x7_3dof_inverse_kinematics(links, wrist_target_p, q_list) == false) {
+    return false;
+  }
+
+  // 第2, 4関節の大きさから、手先を下に向けるための第6関節の目標角度を求める
+  q_list[links[7].dxl_id] = -M_PI - q_list[links[3].dxl_id] - q_list[links[5].dxl_id];
+
+  // 手先姿勢を維持するため、第1関節と第7関節の目標角度を同じにする
+  q_list[links[8].dxl_id] = q_list[links[2].dxl_id];
+
+  // 関節角度が可動範囲内にあるかチェック
+  if (q_list_are_in_range(links, q_list) == false) {
+    return false;
   }
 
   return true;
