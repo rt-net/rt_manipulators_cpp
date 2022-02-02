@@ -24,19 +24,58 @@
 
 void move_to(rt_manipulators_cpp::Hardware & hardware,
              const kinematics_utils::links_t & links,
-             Eigen::Vector3d & target_p) {
+             Eigen::Vector3d & target_p,
+             bool move_to_picking_pose = false) {
   // 目標位置をもとにIKを解き、関節角度をセットする
-  std::cout << "目標位置:" << std::endl << target_p << std::endl;
   std::cout << "----------------------" << std::endl;
+  std::cout << "目標位置:" << std::endl << target_p << std::endl;
   kinematics_utils::q_list_t q_list;
-  if (samples03::x7_3dof_inverse_kinematics(links, target_p, q_list) == false) {
+
+  if (move_to_picking_pose == true &&
+      samples03::x7_3dof_picking_inverse_kinematics(links, target_p, q_list) == false) {
+    std::cout << "ピッキング姿勢のIKに失敗しました" << std::endl;
+    return;
+  } else if (move_to_picking_pose == false &&
+             samples03::x7_3dof_inverse_kinematics(links, target_p, q_list) == false) {
     std::cout << "IKに失敗しました" << std::endl;
-  } else {
-    std::cout << "IKに成功しました" << std::endl;
+    return;
   }
+
+  std::cout << "IKに成功しました" << std::endl;
   for (const auto & [target_id, q_value] : q_list) {
     hardware.set_position(links[target_id].dxl_id, q_value);
   }
+}
+
+void move_demo(rt_manipulators_cpp::Hardware & hardware,
+             const kinematics_utils::links_t & links,
+             bool move_to_picking_pose = false) {
+  Eigen::Vector3d target_p;
+  double target_z = 0.2;
+  if (move_to_picking_pose) {
+    // ピッキング姿勢のIKを解く場合は、目標位置が手先となる
+    target_z = 0.05;
+  }
+
+  std::cout << "左奥へ移動" << std::endl;
+  target_p << 0.3, 0.1, target_z;
+  move_to(hardware, links, target_p, move_to_picking_pose);
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+
+  std::cout << "左手前へ移動" << std::endl;
+  target_p << 0.1, 0.1, target_z;
+  move_to(hardware, links, target_p, move_to_picking_pose);
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+
+  std::cout << "右手前へ移動" << std::endl;
+  target_p << 0.1, -0.1, target_z;
+  move_to(hardware, links, target_p, move_to_picking_pose);
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+
+  std::cout << "右奥へ移動" << std::endl;
+  target_p << 0.3, -0.1, target_z;
+  move_to(hardware, links, target_p, move_to_picking_pose);
+  std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 int main() {
@@ -109,36 +148,20 @@ int main() {
   std::this_thread::sleep_for(std::chrono::seconds(5));
 
   Eigen::Vector3d target_p;
-  kinematics_utils::q_list_t q_list;
 
   std::cout << "正面へ移動" << std::endl;
-  target_p << 0.2, 0.0, 0.3;
-  move_to(hardware, links, target_p);
-  std::this_thread::sleep_for(std::chrono::seconds(5));
-
-  std::cout << "左上へ移動" << std::endl;
-  target_p << 0.2, 0.2, 0.5;
+  target_p << 0.2, 0.0, 0.2;
   move_to(hardware, links, target_p);
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
-  std::cout << "左下へ移動" << std::endl;
-  target_p << 0.2, 0.2, 0.2;
-  move_to(hardware, links, target_p);
-  std::this_thread::sleep_for(std::chrono::seconds(3));
-
-  std::cout << "右下へ移動" << std::endl;
-  target_p << 0.2, -0.2, 0.2;
-  move_to(hardware, links, target_p);
-  std::this_thread::sleep_for(std::chrono::seconds(3));
-
-  std::cout << "右上へ移動" << std::endl;
-  target_p << 0.2, -0.2, 0.5;
-  move_to(hardware, links, target_p);
-  std::this_thread::sleep_for(std::chrono::seconds(3));
+  move_demo(hardware, links, false);
+  std::cout << "ピッキング姿勢のIKを解きます" << std::endl;
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+  move_demo(hardware, links, true);
 
   std::cout << "正面へ移動し、手先を下げる" << std::endl;
-  target_p << 0.2, 0.0, 0.15;
-  move_to(hardware, links, target_p);
+  target_p << 0.2, 0.0, 0.01;
+  move_to(hardware, links, target_p, true);
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
   std::cout << "スレッドを停止します." << std::endl;
