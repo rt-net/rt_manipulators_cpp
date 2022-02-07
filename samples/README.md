@@ -30,4 +30,13 @@ $ ./build_samples.bash
 
 ## サンプル集03 目標軌道に沿ってリンクを動かす
 
-未実装です。
+次のコマンドを実行して、サンプル集をビルドします。
+
+```sh
+$ cd samples03
+$ ./build_samples.bash
+```
+
+ビルドに成功すると`samples03/bin/`ディレクトリに実行ファイルが生成されます。
+
+サンプルプログラムの使い方については、[samples03/README.md](./samples03/README.md)を参照してください。
