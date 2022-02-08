@@ -25,6 +25,9 @@ bool x7_3dof_inverse_kinematics(const kinematics_utils::links_t & links,
 bool x7_3dof_picking_inverse_kinematics(const kinematics_utils::links_t & links,
                                         const Eigen::Vector3d & target_p,
                                         kinematics_utils::q_list_t & q_list);
+bool s17_3dof_right_arm_inverse_kinematics(const kinematics_utils::links_t & links,
+                                           const Eigen::Vector3d & target_p,
+                                           kinematics_utils::q_list_t & q_list);
 
 }  // namespace samples03
 

@@ -127,4 +127,65 @@ bool x7_3dof_picking_inverse_kinematics(const kinematics_utils::links_t & links,
   return true;
 }
 
+bool s17_3dof_right_arm_inverse_kinematics(const kinematics_utils::links_t & links,
+                                           const Eigen::Vector3d & target_p,
+                                           kinematics_utils::q_list_t & q_list) {
+  // 目標位置をもとに、Sciurus17の右腕の第1, 2, 4関節の目標角度を計算する
+
+  // リンク相対位置から、関節間のリンク長を求める
+  // L1 = Body + R_Link1 + R_Link2
+  const Eigen::Vector3d L1 = links[2].b + links[5].b + links[6].b;
+  const double L2 = links[7].b.y() + links[8].b.y();
+  const double L3 = links[9].b.y() + links[10].b.y();
+  const double L2_2 = std::pow(L2, 2);
+  const double L3_2 = std::pow(L3, 2);
+
+  // 計算式
+  // ※Sciurus17の軸の正回転方向を考慮して、θ2' = -θ2としている
+  // ※θ2が求まり次第、符号を反転する
+  // PX = L1_X + L2 * S1 + L3 * S13
+  // PY = L1_Y - (L2 * C1 + L3 * C13) * C2
+  // PZ = L1_Z - (L2 * C1 + L3 * C13) * S2
+  // 以下、PX'=PX-L1, PY'=L1-PY, PZ'=L1-PZ として実装している
+
+  const double PX = target_p.x() - L1.x();
+  const double PY = L1.y() - target_p.y();
+  const double PZ = L1.z() - target_p.z();
+  const double PX_2 = std::pow(PX, 2);
+  const double PY_2 = std::pow(PY, 2);
+  const double PZ_2 = std::pow(PZ, 2);
+  const double PXYZ_2 = PX_2 + PY_2 + PZ_2;
+
+  // 目標位置が可動範囲内にあるかチェック
+  if (std::pow(L2 - L3, 2) > PXYZ_2 || std::pow(L2 + L3, 2) < PXYZ_2) {
+    std::cerr << "目標位置が可動範囲外です" << std::endl;
+    return false;
+  }
+  double theta3 = std::acos((PXYZ_2 - L2_2 - L3_2) / (2 * L2 * L3));
+  double theta2 = std::atan2(PZ, PY);
+
+  const double C3 = std::cos(theta3);
+  const double S3 = std::sin(theta3);
+  const double L2_L3C3 = L2 + L3 * C3;
+  const double L3S3 =  L3 * S3;
+  const double SQRT_PYZ = std::sqrt(PY_2 + PZ_2);
+
+  double theta1 = std::atan2(
+    +L3S3 * SQRT_PYZ + L2_L3C3 * PX,
+    -L2_L3C3 * SQRT_PYZ - L3S3 * PX);
+
+  // θ2の符号を反転する
+  theta2 *= -1.0;
+
+  q_list[links[5].dxl_id] = theta1;
+  q_list[links[6].dxl_id] = theta2;
+  q_list[links[8].dxl_id] = theta3;
+
+  // 関節角度が可動範囲内にあるかチェック
+  if (q_list_are_in_range(links, q_list) == false) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace samples03
