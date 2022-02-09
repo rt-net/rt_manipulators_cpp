@@ -205,15 +205,21 @@ TEST_F(S17KinematicsFixture, 3dof_right_arm_inverse_kinematics) {
   EXPECT_FALSE(samples03::s17_3dof_right_arm_inverse_kinematics(links, target_p, q_list));
 
   // 解が求まることを期待
-  target_p << 0.1, -0.2, 0.2;
+  target_p << 0.2, -0.2, 0.2;
   EXPECT_TRUE(samples03::s17_3dof_right_arm_inverse_kinematics(links, target_p, q_list));
-  EXPECT_NEAR(q_list[2], -1.058, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[3], -1.394, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[5], 2.21, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[2], -0.565, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[3], -1.258, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[5], 2.079, TOLERANCE_Q);
 
-  target_p << -0.1, -0.5, 0.5;
+  target_p << 0.0, -0.2, 0.2;
   EXPECT_TRUE(samples03::s17_3dof_right_arm_inverse_kinematics(links, target_p, q_list));
-  EXPECT_NEAR(q_list[2], -0.427, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[3], 0.231, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[5], 1.334, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[2], -1.454, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[3], -1.215, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[5], 2.151, TOLERANCE_Q);
+
+  target_p << -0.2, -0.2, 0.2;
+  EXPECT_TRUE(samples03::s17_3dof_right_arm_inverse_kinematics(links, target_p, q_list));
+  EXPECT_NEAR(q_list[2], -1.682, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[3], -1.417, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[5], 1.540, TOLERANCE_Q);
 }

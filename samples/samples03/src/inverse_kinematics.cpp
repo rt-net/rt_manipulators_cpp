@@ -133,24 +133,21 @@ bool s17_3dof_right_arm_inverse_kinematics(const kinematics_utils::links_t & lin
   // 目標位置をもとに、Sciurus17の右腕の第1, 2, 4関節の目標角度を計算する
 
   // リンク相対位置から、関節間のリンク長を求める
-  // L1 = Body + R_Link1 + R_Link2
-  const Eigen::Vector3d L1 = links[2].b + links[5].b + links[6].b;
-  const double L2 = links[7].b.y() + links[8].b.y();
-  const double L3 = links[9].b.y() + links[10].b.y();
+  // 右腕の原点：P1 = Body + R_Link1 + R_Link2
+  const Eigen::Vector3d P1 = links[2].b + links[5].b + links[6].b;
+  const double L2 = std::fabs(links[7].b.y() + links[8].b.y());
+  const double L3 = std::fabs(links[9].b.y() + links[10].b.y());
   const double L2_2 = std::pow(L2, 2);
   const double L3_2 = std::pow(L3, 2);
 
-  // 計算式
-  // ※Sciurus17の軸の正回転方向を考慮して、θ2' = -θ2としている
-  // ※θ2が求まり次第、符号を反転する
-  // PX = L1_X + L2 * S1 + L3 * S13
-  // PY = L1_Y - (L2 * C1 + L3 * C13) * C2
-  // PZ = L1_Z - (L2 * C1 + L3 * C13) * S2
-  // 以下、PX'=PX-L1, PY'=L1-PY, PZ'=L1-PZ として実装している
-
-  const double PX = target_p.x() - L1.x();
-  const double PY = L1.y() - target_p.y();
-  const double PZ = L1.z() - target_p.z();
+  // 順運動学の計算式
+  // PX = P1 + -L3*(-C1*S3 + S1*S2*C3) - S1*S2*L2
+  // PY = P1 + -C2*C3*L3 -C2*L2
+  // PZ = P1 + -L3*(-S1*S3 + C1*S2*C3) - C1*S2*L2
+  // 以下、PX'=PX-L1, PY'=PY-L1, PZ'=PZ-L1 として実装している
+  const double PX = target_p.x() - P1.x();
+  const double PY = target_p.y() - P1.y();
+  const double PZ = target_p.z() - P1.z();
   const double PX_2 = std::pow(PX, 2);
   const double PY_2 = std::pow(PY, 2);
   const double PZ_2 = std::pow(PZ, 2);
@@ -161,21 +158,17 @@ bool s17_3dof_right_arm_inverse_kinematics(const kinematics_utils::links_t & lin
     std::cerr << "目標位置が可動範囲外です" << std::endl;
     return false;
   }
-  double theta3 = std::acos((PXYZ_2 - L2_2 - L3_2) / (2 * L2 * L3));
-  double theta2 = std::atan2(PZ, PY);
+  const double theta3 = std::acos((PXYZ_2 - L2_2 - L3_2) / (2 * L2 * L3));
 
   const double C3 = std::cos(theta3);
+  const double theta2 = -std::acos(-PY / (C3 * L3 + L2));
+
+  const double S2 = std::sin(theta2);
   const double S3 = std::sin(theta3);
-  const double L2_L3C3 = L2 + L3 * C3;
-  const double L3S3 =  L3 * S3;
-  const double SQRT_PYZ = std::sqrt(PY_2 + PZ_2);
-
-  double theta1 = std::atan2(
-    +L3S3 * SQRT_PYZ + L2_L3C3 * PX,
-    -L2_L3C3 * SQRT_PYZ - L3S3 * PX);
-
-  // θ2の符号を反転する
-  theta2 *= -1.0;
+  const double A = S2 * C3 * L3 + S2 * L2;
+  const double B = S3 * L3;
+  const double theta1 = std::atan2(-A * PX + B * PZ,
+                             B * PX + A * PZ);
 
   q_list[links[5].dxl_id] = theta1;
   q_list[links[6].dxl_id] = theta2;
