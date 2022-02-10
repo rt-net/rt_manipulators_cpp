@@ -196,7 +196,7 @@ bool s17_3dof_right_arm_picking_inverse_kinematics(const kinematics_utils::links
   }
 
   // 手先の目標姿勢を定める
-  Eigen::Matrix3d wrist_target_R = kinematics_utils::rotation_from_euler_ZYX(M_PI, 0.0, M_PI_2);
+  Eigen::Matrix3d wrist_target_R = kinematics_utils::rotation_from_euler_ZYX(0.0, 0.0, M_PI_2);
 
   // 手先姿勢の回転行列を求める
   const double theta1 = q_list[links[5].dxl_id];
@@ -214,16 +214,38 @@ bool s17_3dof_right_arm_picking_inverse_kinematics(const kinematics_utils::links
              S1*C3 - C1*S2*S3, -S1*S3 - C1*S2*C3, C1*C2;
 
   // 姿勢の差を求める
-  // Eigen::Matrix3d diff_R = kinematics_utils::calc_error_R
+  const Eigen::Matrix3d diff_R = wrist_R.transpose() * wrist_target_R;
+  const double R00 = diff_R(0, 0);
+  const double R01 = diff_R(0, 1);
+  const double R02 = diff_R(0, 2);
+  const double R10 = diff_R(1, 0);
+  const double R11 = diff_R(1, 1);
+  const double R12 = diff_R(1, 2);
+  const double R21 = diff_R(2, 1);
+  const double R01_2 = std::pow(R01, 2);
+  const double R21_2 = std::pow(R21, 2);
 
-  std::cout << "wrist_R:" << wrist_R << std::endl;
-  std::cout << "write_target_R:" << wrist_target_R << std::endl;
+  // diff_R = R(-Y軸でtheta4回転) * R(+Z軸でtheta5回転) * R(-Y軸でtheta6回転)とし、
+  // 行列要素から回転角度を求める
+  double theta5 = std::atan2(-std::sqrt(R01_2 + R21_2), R11);
 
-  // // 第2, 4関節の大きさから、手先を下に向けるための第6関節の目標角度を求める
-  // q_list[links[7].dxl_id] = -M_PI - q_list[links[3].dxl_id] - q_list[links[5].dxl_id];
+  double theta4 = 0;
+  double theta6 = 0;
 
-  // // 手先姿勢を維持するため、第1関節と第7関節の目標角度を同じにする
-  // q_list[links[8].dxl_id] = q_list[links[2].dxl_id];
+  if (theta5 > 0) {
+    theta4 = atan2(-R21, -R01);
+    theta6 = atan2(-R12, +R10);
+  } else if (theta5 < 0) {
+    theta4 = atan2(+R21, +R01);
+    theta6 = atan2(+R12, -R10);
+  } else {
+    // theta4は任意
+    theta6 = atan2(-R02, R00) - theta4;
+  }
+
+  q_list[links[9].dxl_id] = theta4;
+  q_list[links[10].dxl_id] = theta5;
+  q_list[links[11].dxl_id] = theta6;
 
   // 関節角度が可動範囲内にあるかチェック
   if (q_list_are_in_range(links, q_list) == false) {
