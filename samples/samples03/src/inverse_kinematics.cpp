@@ -213,7 +213,7 @@ bool s17_3dof_right_arm_picking_inverse_kinematics(const kinematics_utils::links
              C2*S3, C2*C3, S2,
              S1*C3 - C1*S2*S3, -S1*S3 - C1*S2*C3, C1*C2;
 
-  // 現在の手首姿勢から目標の姿勢に遷移するための回転行列を求める
+  // 現在の手先姿勢から目標姿勢に遷移するための回転行列を求める
   const Eigen::Matrix3d diff_R = wrist_R.transpose() * wrist_target_R;
   const double R00 = diff_R(0, 0);
   const double R01 = diff_R(0, 1);
