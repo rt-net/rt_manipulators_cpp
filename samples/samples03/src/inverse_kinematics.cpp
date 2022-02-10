@@ -228,14 +228,15 @@ bool s17_3dof_right_arm_picking_inverse_kinematics(const kinematics_utils::links
   // diff_R = R(-Y軸でtheta4回転) * R(+Z軸でtheta5回転) * R(-Y軸でtheta6回転)とし、
   // 行列要素から回転角度を求める
   double theta5 = std::atan2(-std::sqrt(R01_2 + R21_2), R11);
+  const double S5 = std::sin(theta5);
 
   double theta4 = 0;
   double theta6 = 0;
 
-  if (theta5 > 0) {
+  if (theta5 > S5) {
     theta4 = atan2(-R21, -R01);
     theta6 = atan2(-R12, +R10);
-  } else if (theta5 < 0) {
+  } else if (theta5 < S5) {
     theta4 = atan2(+R21, +R01);
     theta6 = atan2(+R12, -R10);
   } else {
