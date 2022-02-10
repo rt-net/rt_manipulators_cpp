@@ -9,13 +9,6 @@ joint_groups:
       - right_arm_joint5
       - right_arm_joint6
       - right_arm_joint7
-    sync_read:
-      - position
-    sync_write:
-      - position
-
-  right_hand:
-    joints:
       - right_arm_joint_hand
     sync_read:
       - position
@@ -31,13 +24,6 @@ joint_groups:
       - left_arm_joint5
       - left_arm_joint6
       - left_arm_joint7
-    sync_read:
-      - position
-    sync_write:
-      - position
-
-  left_hand:
-    joints:
       - left_arm_joint_hand
     sync_read:
       - position
