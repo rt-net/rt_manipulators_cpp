@@ -181,4 +181,56 @@ bool s17_3dof_right_arm_inverse_kinematics(const kinematics_utils::links_t & lin
   return true;
 }
 
+bool s17_3dof_right_arm_picking_inverse_kinematics(const kinematics_utils::links_t & links,
+                                                   const Eigen::Vector3d & target_p,
+                                                   kinematics_utils::q_list_t & q_list) {
+  // 手先先端の目標位置をもとに、Sciurus17の右腕の第1, 2, 4, 5, 6, 7関節の目標角度を計算する
+  // 手先は常に地面（-Z）方向を向く
+
+  // 目標位置Zに手先リンク長を加え、それを手首の目標位置とする
+  Eigen::Vector3d wrist_target_p = target_p;
+  wrist_target_p[2] += 0.103;  // Ref: https://rt-net.jp/products/sciurus17/
+
+  if (s17_3dof_right_arm_inverse_kinematics(links, wrist_target_p, q_list) == false) {
+    return false;
+  }
+
+  // 手先の目標姿勢を定める
+  Eigen::Matrix3d wrist_target_R = kinematics_utils::rotation_from_euler_ZYX(M_PI, 0.0, M_PI_2);
+
+  // 手先姿勢の回転行列を求める
+  const double theta1 = q_list[links[5].dxl_id];
+  const double theta2 = q_list[links[6].dxl_id];
+  const double theta3 = q_list[links[8].dxl_id];
+  const double C1 = std::cos(theta1);
+  const double C2 = std::cos(theta2);
+  const double C3 = std::cos(theta3);
+  const double S1 = std::sin(theta1);
+  const double S2 = std::sin(theta2);
+  const double S3 = std::sin(theta3);
+  Eigen::Matrix3d wrist_R;
+  wrist_R << C1*C3 + S1*S2*S3, -C1*S3 + S1*S2*C3, -S1*C2,
+             C2*S3, C2*C3, S2,
+             S1*C3 - C1*S2*S3, -S1*S3 - C1*S2*C3, C1*C2;
+
+  // 姿勢の差を求める
+  // Eigen::Matrix3d diff_R = kinematics_utils::calc_error_R
+
+  std::cout << "wrist_R:" << wrist_R << std::endl;
+  std::cout << "write_target_R:" << wrist_target_R << std::endl;
+
+  // // 第2, 4関節の大きさから、手先を下に向けるための第6関節の目標角度を求める
+  // q_list[links[7].dxl_id] = -M_PI - q_list[links[3].dxl_id] - q_list[links[5].dxl_id];
+
+  // // 手先姿勢を維持するため、第1関節と第7関節の目標角度を同じにする
+  // q_list[links[8].dxl_id] = q_list[links[2].dxl_id];
+
+  // 関節角度が可動範囲内にあるかチェック
+  if (q_list_are_in_range(links, q_list) == false) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace samples03

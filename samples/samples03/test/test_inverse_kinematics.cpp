@@ -223,3 +223,46 @@ TEST_F(S17KinematicsFixture, 3dof_right_arm_inverse_kinematics) {
   EXPECT_NEAR(q_list[3], -1.417, TOLERANCE_Q);
   EXPECT_NEAR(q_list[5], 1.540, TOLERANCE_Q);
 }
+
+TEST_F(S17KinematicsFixture, 3dof_right_arm_picking_inverse_kinematics) {
+  Eigen::Vector3d target_p;
+  Eigen::Matrix3d target_R;
+  kinematics_utils::q_list_t q_list;
+
+  // 目標角度が可動範囲外になることを期待
+  target_p << 0.0, 0.0, 0.0;
+  EXPECT_FALSE(samples03::s17_3dof_right_arm_picking_inverse_kinematics(links, target_p, q_list));
+
+  // target_p << 0.2, 0.0, 0.2;
+  // EXPECT_FALSE(samples03::s17_3dof_right_arm_picking_inverse_kinematics(links, target_p, q_list));
+
+  // 解が求まらないことを期待
+  target_p << 1.0, 0.0, 1.0;
+  EXPECT_FALSE(samples03::s17_3dof_right_arm_picking_inverse_kinematics(links, target_p, q_list));
+
+  // 解が求まることを期待
+  target_p << 0.2, -0.2, 0.0;
+  EXPECT_FALSE(samples03::s17_3dof_right_arm_picking_inverse_kinematics(links, target_p, q_list));
+  EXPECT_NEAR(q_list[2], -0.468, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[3], -1.401, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[5], 1.641, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[6], 0.0, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[7], 0.0, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[8], 0.0, TOLERANCE_Q);
+
+  // target_p << -0.2, 0.2, 0.0;
+  // EXPECT_TRUE(samples03::x7_3dof_picking_inverse_kinematics(links, target_p, q_list));
+  // EXPECT_NEAR(q_list[2], 2.356, TOLERANCE_Q);
+  // EXPECT_NEAR(q_list[3], -0.608, TOLERANCE_Q);
+  // EXPECT_NEAR(q_list[5], -1.939, TOLERANCE_Q);
+  // EXPECT_NEAR(q_list[7], -0.594, TOLERANCE_Q);
+  // EXPECT_NEAR(q_list[8], 2.356, TOLERANCE_Q);
+
+  // target_p << -0.2, -0.2, 0.0;
+  // EXPECT_TRUE(samples03::x7_3dof_picking_inverse_kinematics(links, target_p, q_list));
+  // EXPECT_NEAR(q_list[2], -2.356, TOLERANCE_Q);
+  // EXPECT_NEAR(q_list[3], -0.608, TOLERANCE_Q);
+  // EXPECT_NEAR(q_list[5], -1.939, TOLERANCE_Q);
+  // EXPECT_NEAR(q_list[7], -0.594, TOLERANCE_Q);
+  // EXPECT_NEAR(q_list[8], -2.356, TOLERANCE_Q);
+}
