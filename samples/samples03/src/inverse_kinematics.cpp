@@ -20,16 +20,10 @@ namespace samples03 {
 bool q_list_are_in_range(
   const kinematics_utils::links_t & links, const kinematics_utils::q_list_t & q_list) {
   // 目標角度が可動範囲内にあるかチェックする
-  for (const auto & link : links) {
-    const double dxl_id = link.dxl_id;
-    // 目標角度が存在しなければスキップ
-    if (q_list.find(dxl_id) == q_list.end()) {
-      continue;
-    }
-
-    const double q = q_list.at(dxl_id);
-    if (q < link.min_q || q > link.max_q) {
-      std::cerr << "ID:" << dxl_id << " の目標角度:" << q << " が可動範囲外です" << std::endl;
+  for (const auto & [target_id, q_value] : q_list) {
+    if (q_value < links[target_id].min_q || q_value > links[target_id].max_q) {
+      std::cerr << "リンクID:" << target_id << " の目標角度:" << q_value;
+      std::cerr << " が可動範囲外です" << std::endl;
       return false;
     }
   }
@@ -86,9 +80,9 @@ bool x7_3dof_inverse_kinematics(const kinematics_utils::links_t & links,
   theta2 *= -1.0;
   theta3 *= -1.0;
 
-  q_list[links[2].dxl_id] = theta1;
-  q_list[links[3].dxl_id] = theta2;
-  q_list[links[5].dxl_id] = theta3;
+  q_list[2] = theta1;
+  q_list[3] = theta2;
+  q_list[5] = theta3;
 
   // 関節角度が可動範囲内にあるかチェック
   if (q_list_are_in_range(links, q_list) == false) {
@@ -114,10 +108,10 @@ bool x7_3dof_picking_inverse_kinematics(const kinematics_utils::links_t & links,
   }
 
   // 第2, 4関節の大きさから、手先を下に向けるための第6関節の目標角度を求める
-  q_list[links[7].dxl_id] = -M_PI - q_list[links[3].dxl_id] - q_list[links[5].dxl_id];
+  q_list[7] = -M_PI - q_list[3] - q_list[5];
 
   // 手先姿勢を維持するため、第1関節と第7関節の目標角度を同じにする
-  q_list[links[8].dxl_id] = q_list[links[2].dxl_id];
+  q_list[8] = q_list[2];
 
   // 関節角度が可動範囲内にあるかチェック
   if (q_list_are_in_range(links, q_list) == false) {
@@ -170,9 +164,9 @@ bool s17_3dof_right_arm_inverse_kinematics(const kinematics_utils::links_t & lin
   const double theta1 = std::atan2(-A * PX + B * PZ,
                              B * PX + A * PZ);
 
-  q_list[links[5].dxl_id] = theta1;
-  q_list[links[6].dxl_id] = theta2;
-  q_list[links[8].dxl_id] = theta3;
+  q_list[5] = theta1;
+  q_list[6] = theta2;
+  q_list[8] = theta3;
 
   // 関節角度が可動範囲内にあるかチェック
   if (q_list_are_in_range(links, q_list) == false) {
@@ -199,9 +193,9 @@ bool s17_3dof_right_arm_picking_inverse_kinematics(const kinematics_utils::links
   Eigen::Matrix3d wrist_target_R = kinematics_utils::rotation_from_euler_ZYX(0.0, 0.0, M_PI_2);
 
   // 手先姿勢の回転行列を求める
-  const double theta1 = q_list[links[5].dxl_id];
-  const double theta2 = q_list[links[6].dxl_id];
-  const double theta3 = q_list[links[8].dxl_id];
+  const double theta1 = q_list[5];
+  const double theta2 = q_list[6];
+  const double theta3 = q_list[8];
   const double C1 = std::cos(theta1);
   const double C2 = std::cos(theta2);
   const double C3 = std::cos(theta3);
@@ -244,9 +238,9 @@ bool s17_3dof_right_arm_picking_inverse_kinematics(const kinematics_utils::links
     theta6 = atan2(-R02, R00) - theta4;
   }
 
-  q_list[links[9].dxl_id] = theta4;
-  q_list[links[10].dxl_id] = theta5;
-  q_list[links[11].dxl_id] = theta6;
+  q_list[9] = theta4;
+  q_list[10] = theta5;
+  q_list[11] = theta6;
 
   // 関節角度が可動範囲内にあるかチェック
   if (q_list_are_in_range(links, q_list) == false) {
