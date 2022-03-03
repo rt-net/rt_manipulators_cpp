@@ -33,6 +33,7 @@ $ ./build_samples.bash
 
 次のコマンドを実行します。
 CRANE-X7では、手先が0.3m前方の5点に向かって移動します。
+Sciurus17では、右手先が0.4m前方の4点に向かって移動します。
 
 ***安全のためロボットの周りに物や人を近づけないでください。***
 
@@ -40,6 +41,8 @@ CRANE-X7では、手先が0.3m前方の5点に向かって移動します。
 # CRANE-X7の場合
 $ cd bin/
 $ ./x7_3dof_inverse_kinematics
+# Sciurus17の場合
+$ ./s17_3dof_inverse_kinematics
 ```
 
 実行結果（CRANE-X7の場合）
@@ -121,6 +124,52 @@ target_p << 0.2, 0.0, 0.0;
 
 // 逆運動学を解き、関節角度を取得する
 samples03::x7_3dof_picking_inverse_kinematics(links, target_p, q_list);
+// 関節角度をサーボモータへ設定する
+for (const auto & [target_id, q_value] : q_list) {
+  hardware.set_position(links[target_id].dxl_id, q_value);
+}
+```
+
+Sciurus17向けの逆運動学計算関数には、
+`samples03::s17_3dof_right_arm_inverse_kinematics(links, target_p, q_list)`と
+`samples03::s17_3dof_right_arm_picking_inverse_kinematics(links, target_p, q_list)`
+を用意しています。
+引数にはリンク構成と、目標位置(`Eigen::Vector3d`)、
+関節角度の格納先(`std::map<unsigned int, double>` または `kinematics_utils::q_list_t`)を入力します。
+
+`samples03::s17_3dof_right_arm_inverse_kinematics(links, target_p, q_list)`
+は、右腕の第6リンクの原点を目標位置(`target_p`)として受け取り、
+右腕の第1、2、4関節の目標角度を出力する関数です。
+
+`samples03::s17_3dof_right_arm_picking_inverse_kinematics(links, target_p, q_list)`
+は、右ハンドの先端を目標位置(`target_p`)として受け取り、
+右腕の第1、2、4関節と、第5、6、7関節の目標角度を出力する関数です。
+手先が地面(-Z)方向を向くように逆運動学を解きます。
+
+```cpp
+Eigen::Vector3d target_p;
+kinematics_utils::q_list_t q_list;
+
+// 右手目標位置(X方向に0.2m、Y方向に-0.3m、Z方向に0.2m)
+target_p << 0.2, -0.3, 0.2;
+
+// 逆運動学を解き、関節角度を取得する
+samples03::s17_3dof_right_arm_inverse_kinematics(links, target_p, q_list);
+// 関節角度をサーボモータへ設定する
+for (const auto & [target_id, q_value] : q_list) {
+  hardware.set_position(links[target_id].dxl_id, q_value);
+}
+```
+
+```cpp
+Eigen::Vector3d target_p;
+kinematics_utils::q_list_t q_list;
+// ピッキング姿勢の逆運動学
+// 手先の目標位置(X方向に0.2m、Y方向に-0.3m、Z方向に0.0m)
+target_p << 0.2, -0.3, 0.0;
+
+// 逆運動学を解き、関節角度を取得する
+samples03::s17_3dof_right_arm_picking_inverse_kinematics(links, target_p, q_list);
 // 関節角度をサーボモータへ設定する
 for (const auto & [target_id, q_value] : q_list) {
   hardware.set_position(links[target_id].dxl_id, q_value);
