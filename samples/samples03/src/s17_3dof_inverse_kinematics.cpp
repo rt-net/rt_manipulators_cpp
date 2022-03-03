@@ -32,11 +32,11 @@ void move_to(rt_manipulators_cpp::Hardware & hardware,
   kinematics_utils::q_list_t q_list;
 
   if (move_to_picking_pose == true &&
-      samples03::x7_3dof_picking_inverse_kinematics(links, target_p, q_list) == false) {
+      samples03::s17_3dof_right_arm_picking_inverse_kinematics(links, target_p, q_list) == false) {
     std::cout << "ピッキング姿勢のIKに失敗しました" << std::endl;
     return;
   } else if (move_to_picking_pose == false &&
-             samples03::x7_3dof_inverse_kinematics(links, target_p, q_list) == false) {
+             samples03::s17_3dof_right_arm_inverse_kinematics(links, target_p, q_list) == false) {
     std::cout << "IKに失敗しました" << std::endl;
     return;
   }
@@ -54,26 +54,26 @@ void move_demo(rt_manipulators_cpp::Hardware & hardware,
   double target_z = 0.2;
   if (move_to_picking_pose) {
     // ピッキング姿勢のIKを解く場合は、目標位置が手先となる
-    target_z = 0.05;
+    target_z = 0.1;
   }
 
-  std::cout << "左奥へ移動" << std::endl;
-  target_p << 0.3, 0.1, target_z;
-  move_to(hardware, links, target_p, move_to_picking_pose);
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-
-  std::cout << "左手前へ移動" << std::endl;
-  target_p << 0.1, 0.1, target_z;
-  move_to(hardware, links, target_p, move_to_picking_pose);
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-
-  std::cout << "右手前へ移動" << std::endl;
-  target_p << 0.1, -0.1, target_z;
+  std::cout << "正面奥へ移動" << std::endl;
+  target_p << 0.4, -0.2, target_z;
   move_to(hardware, links, target_p, move_to_picking_pose);
   std::this_thread::sleep_for(std::chrono::seconds(2));
 
   std::cout << "右奥へ移動" << std::endl;
-  target_p << 0.3, -0.1, target_z;
+  target_p << 0.4, -0.3, target_z;
+  move_to(hardware, links, target_p, move_to_picking_pose);
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+
+  std::cout << "右手前へ移動" << std::endl;
+  target_p << 0.2, -0.3, target_z;
+  move_to(hardware, links, target_p, move_to_picking_pose);
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+
+  std::cout << "正面手前へ移動" << std::endl;
+  target_p << 0.2, -0.2, target_z;
   move_to(hardware, links, target_p, move_to_picking_pose);
   std::this_thread::sleep_for(std::chrono::seconds(2));
 }
@@ -101,7 +101,7 @@ int main() {
     return -1;
   }
 
-// 手先リンクのIDを設定
+  // 手先リンクのIDを設定
   const int RIGHT = 0;
   const int LEFT = 1;
   const std::vector<int> SIDES = {RIGHT, LEFT};
@@ -144,45 +144,34 @@ int main() {
     }
   }
 
-  std::cout << "5秒後にSciurus17が動作するため、X7の周りに物や人を近づけないで下さい."
+  std::cout << "read/writeスレッドを起動します." << std::endl;
+  if (!hardware.start_thread(group_names, std::chrono::milliseconds(10))) {
+    std::cerr << "スレッドの起動に失敗しました." << std::endl;
+    return -1;
+  }
+
+  std::cout << "5秒後にSciurus17が動作するため、Sciurus17の周りに物や人を近づけないで下さい."
             << std::endl;
   std::this_thread::sleep_for(std::chrono::seconds(5));
 
-  // 上腕と前腕の磁石を付ける姿勢
-  std::map<int, std::vector<double>> home_positions = {
-    {RIGHT, {-0.3574, -1.57, 0, 2.72, 0, -1.12, 0, 0} },
-    {LEFT,  {0.3574, 1.57, 0, -2.72, 0, 1.12, 0, 0} },
-  };
-  std::map<int, std::string> arm_group_name = {
-    {RIGHT, "right_arm"},
-    {LEFT, "left_arm"},
-  };
-
-  for (const auto & side : SIDES) {
-    std::cout << "終了姿勢へ移動" << std::endl;
-    hardware.set_positions(arm_group_name[side], home_positions[side]);
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-  }
-  std::cout << "腰軸を終了姿勢へ移動" << std::endl;
+  std::cout << "腰軸を0度へ移動" << std::endl;
   hardware.set_position(18, 0.0);
-  std::this_thread::sleep_for(std::chrono::seconds(5));
+  std::this_thread::sleep_for(std::chrono::seconds(1));
 
-  // Eigen::Vector3d target_p;
+  // ホームポジション：上腕と前腕の磁石を付ける姿勢
+  std::vector<double> home_positions = {-0.3574, -1.57, 0, 2.72, 0, -1.12, 0, 0};
+  std::cout << "右腕をホームポジションへ移動" << std::endl;
+  hardware.set_positions("right_arm", home_positions);
+  std::this_thread::sleep_for(std::chrono::seconds(1));
 
-  // std::cout << "正面へ移動" << std::endl;
-  // target_p << 0.2, 0.0, 0.2;
-  // move_to(hardware, links, target_p);
-  // std::this_thread::sleep_for(std::chrono::seconds(3));
+  move_demo(hardware, links, false);
+  std::cout << "ピッキング姿勢のIKを解きます" << std::endl;
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+  move_demo(hardware, links, true);
 
-  // move_demo(hardware, links, false);
-  // std::cout << "ピッキング姿勢のIKを解きます" << std::endl;
-  // std::this_thread::sleep_for(std::chrono::seconds(2));
-  // move_demo(hardware, links, true);
-
-  // std::cout << "正面へ移動し、手先を下げる" << std::endl;
-  // target_p << 0.2, 0.0, 0.01;
-  // move_to(hardware, links, target_p, true);
-  // std::this_thread::sleep_for(std::chrono::seconds(3));
+  std::cout << "右腕をホームポジションへ移動" << std::endl;
+  hardware.set_positions("right_arm", home_positions);
+  std::this_thread::sleep_for(std::chrono::seconds(3));
 
   std::cout << "スレッドを停止します." << std::endl;
   hardware.stop_thread();
