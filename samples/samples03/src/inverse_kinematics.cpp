@@ -21,6 +21,11 @@ bool q_list_are_in_range(
   const kinematics_utils::links_t & links, const kinematics_utils::q_list_t & q_list) {
   // 目標角度が可動範囲内にあるかチェックする
   for (const auto & [target_id, q_value] : q_list) {
+    if (std::isnan(q_value)) {
+      std::cerr << "リンクID:" << target_id << " の目標角度が異常値です"  << std::endl;
+      return false;
+    }
+
     if (q_value < links[target_id].min_q || q_value > links[target_id].max_q) {
       std::cerr << "リンクID:" << target_id << " の目標角度:" << q_value;
       std::cerr << " が可動範囲外です" << std::endl;

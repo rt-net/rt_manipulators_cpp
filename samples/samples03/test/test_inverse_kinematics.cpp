@@ -204,6 +204,10 @@ TEST_F(S17KinematicsFixture, 3dof_right_arm_inverse_kinematics) {
   target_p << 1.0, 0.0, 1.0;
   EXPECT_FALSE(samples03::s17_3dof_right_arm_inverse_kinematics(links, target_p, q_list));
 
+  // 解が求まらないことを期待
+  target_p << 0.2, -0.4, 0.3;
+  EXPECT_FALSE(samples03::s17_3dof_right_arm_inverse_kinematics(links, target_p, q_list));
+
   // 解が求まることを期待
   target_p << 0.2, -0.2, 0.2;
   EXPECT_TRUE(samples03::s17_3dof_right_arm_inverse_kinematics(links, target_p, q_list));
