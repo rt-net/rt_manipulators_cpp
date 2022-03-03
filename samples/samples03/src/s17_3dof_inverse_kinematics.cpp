@@ -84,7 +84,7 @@ int main() {
 
   std::string port_name = "/dev/ttyUSB0";
   int baudrate = 3000000;  // 3Mbps
-  std::string hardware_config_file = "../config/sciurus17_3groups.yaml";
+  std::string hardware_config_file = "../config/sciurus17.yaml";
   std::string link_config_file = "../config/sciurus17_links.csv";
 
   auto links = kinematics_utils::parse_link_config_file(link_config_file);
@@ -159,7 +159,7 @@ int main() {
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
   // ホームポジション：上腕と前腕の磁石を付ける姿勢
-  std::vector<double> home_positions = {-0.3574, -1.57, 0, 2.72, 0, -1.12, 0, 0};
+  std::vector<double> home_positions = {-0.3574, -1.57, 0, 2.72, 0, -1.12, 0};
   std::cout << "右腕をホームポジションへ移動" << std::endl;
   hardware.set_positions("right_arm", home_positions);
   std::this_thread::sleep_for(std::chrono::seconds(1));
