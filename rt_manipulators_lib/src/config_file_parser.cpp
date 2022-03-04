@@ -64,24 +64,18 @@ bool parse(const std::string& config_yaml, hardware_joints::Joints & parsed_join
       joint_names.push_back(joint_name);
       auto joint_id = config[joint_name]["id"].as<int>();
       auto ope_mode = config[joint_name]["operating_mode"].as<int>();
-      double max_position_limit = 0;
-      double min_position_limit = 0;
-      double current_limit = 0;
-      // yamlファイルで設定するのはマージンのため、maxが-に、minが+になる
-      // 後工程で、実際にサーボが持つリミット値を加算する
+      double position_limit_margin = 0;
+      double current_limit_margin = 0;
       if (config[joint_name]["pos_limit_margin"]) {
-        max_position_limit -= config[joint_name]["pos_limit_margin"].as<double>();
-        min_position_limit += config[joint_name]["pos_limit_margin"].as<double>();
+        position_limit_margin = config[joint_name]["pos_limit_margin"].as<double>();
       }
       if (config[joint_name]["current_limit_margin"]) {
-        // current_limitは0以上の値にする
-        current_limit = std::max(
-          -config[joint_name]["current_limit_margin"].as<double>(),
-          0.0);
+        current_limit_margin = config[joint_name]["current_limit_margin"].as<double>();
       }
 
-      auto joint = joint::Joint(
-        joint_id, ope_mode, max_position_limit, min_position_limit, current_limit);
+      auto joint = joint::Joint(joint_id, ope_mode);
+      joint.set_position_limit_margin(position_limit_margin);
+      joint.set_current_limit_margin(current_limit_margin);
       parsed_joints.append_joint(joint_name, joint);
     }
 

@@ -26,10 +26,15 @@ class Joint {
   Joint(const uint8_t id, const uint8_t operating_mode,
         const double max_position_limit, const double min_position_limit,
         const double current_limit_when_position_exceeds_limit);
+  Joint(const uint8_t id, const uint8_t operating_mode);
   uint8_t id() const;
   uint8_t operating_mode() const;
+  void set_position_limit_margin(const double position_radian);
+  void set_position_limit(const double min_position_radian, const double max_position_radian);
   double max_position_limit() const;
   double min_position_limit() const;
+  void set_current_limit_margin(const double current_ampere);
+  void set_current_limit(const double max_current_ampere);
   double current_limit_when_position_exceeds_limit() const;
   void set_present_position(const double position_radian);
   void set_present_velocity(const double velocity_rps);
@@ -51,8 +56,11 @@ class Joint {
  private:
   uint8_t id_;
   uint8_t operating_mode_;
+  double position_limit_margin_;
   double max_position_limit_;
   double min_position_limit_;
+  double current_limit_margin_;
+  double max_current_limit_;
   double current_limit_when_position_exceeds_limit_;
   double present_position_;
   double present_velocity_;
