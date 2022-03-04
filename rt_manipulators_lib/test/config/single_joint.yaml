@@ -1,0 +1,14 @@
+joint_groups:
+  test_group:
+    joints:
+      - joint1
+    sync_read:
+      - position
+      - velocity
+      - current
+      - voltage
+      - temperature
+    sync_write:
+      - position
+
+joint1: { id : 0, operating_mode: 3, pos_limit_margin: 0.5, current_limit_margin: 1.23}

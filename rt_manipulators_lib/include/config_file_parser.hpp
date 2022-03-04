@@ -20,6 +20,8 @@
 
 namespace config_file_parser {
 
+using JointName = std::string;
+
 bool parse(const std::string& config_yaml, hardware_joints::Joints & parsed_joints);
 
 }  // namespace config_file_parser
