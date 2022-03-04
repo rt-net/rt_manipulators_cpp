@@ -11,6 +11,7 @@ add_library(${library_name}
     hardware_communicator.cpp
     kinematics.cpp
     kinematics_utils.cpp
+    config_file_parser.cpp
 )
 set_target_properties(${library_name} PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
