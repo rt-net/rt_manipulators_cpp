@@ -1,0 +1,14 @@
+joint_groups:
+  test_group1:
+    joints:
+      - joint1
+      - joint2
+  test_group2:
+    joints:
+      - joint3
+      - joint4
+
+joint1: { id : 0, operating_mode: 3}
+joint2: { id : 1, operating_mode: 3}
+joint3: { id : 2, operating_mode: 3}
+joint4: { id : 3, operating_mode: 3}

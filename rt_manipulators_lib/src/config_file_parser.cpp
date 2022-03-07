@@ -91,6 +91,21 @@ bool parse(const std::string& config_yaml, hardware_joints::Joints & parsed_join
     }
 
     auto joint_group = joint::JointGroup(joint_names, sync_read_targets, sync_write_targets);
+
+    // sync_readとsync_writeの関係をチェック
+    if (joint_group.sync_write_velocity_enabled() && !joint_group.sync_read_position_enabled()) {
+      std::cerr << group_name << "グループはvelocityをsync_writeしますが, ";
+      std::cerr << "positionをsync_readしません." << std::endl;
+      std::cerr << "positionもsync_readするようにコンフィグファイルを修正して下さい." << std::endl;
+      return false;
+    }
+    if (joint_group.sync_write_current_enabled() && !joint_group.sync_read_position_enabled()) {
+      std::cerr << group_name << "グループはcurrentをsync_writeしますが, ";
+      std::cerr << "positionをsync_readしません." << std::endl;
+      std::cerr << "positionもsync_readするようにコンフィグファイルを修正して下さい." << std::endl;
+      return false;
+    }
+
     parsed_joints.append_group(group_name, joint_group);
   }
 
