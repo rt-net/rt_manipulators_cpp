@@ -23,9 +23,6 @@ namespace joint {
 
 class Joint {
  public:
-  Joint(const uint8_t id, const uint8_t operating_mode,
-        const double max_position_limit, const double min_position_limit,
-        const double current_limit_when_position_exceeds_limit);
   Joint(const uint8_t id, const uint8_t operating_mode);
   uint8_t id() const;
   uint8_t operating_mode() const;

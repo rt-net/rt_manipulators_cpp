@@ -16,17 +16,6 @@
 
 namespace joint {
 
-Joint::Joint(const uint8_t id, const uint8_t operating_mode,
-             const double max_position_limit, const double min_position_limit,
-             const double current_limit_when_position_exceeds_limit)
-    : id_(id), operating_mode_(operating_mode),
-      max_position_limit_(max_position_limit), min_position_limit_(min_position_limit),
-      current_limit_when_position_exceeds_limit_(
-        current_limit_when_position_exceeds_limit),
-      present_position_(0.0), present_velocity_(0.0), present_current_(0.0),
-      present_voltage_(0.0), present_temperature_(0), goal_position_(0.0),
-      goal_velocity_(0.0), goal_current_(0.0) {}
-
 Joint::Joint(const uint8_t id, const uint8_t operating_mode)
     : id_(id), operating_mode_(operating_mode),
       position_limit_margin_(0.0),
