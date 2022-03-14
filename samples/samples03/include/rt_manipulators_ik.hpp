@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SAMPLES_SAMPLES03_INCLUDE_INVERSE_KINEMATICS_HPP_
-#define SAMPLES_SAMPLES03_INCLUDE_INVERSE_KINEMATICS_HPP_
+#ifndef SAMPLES_SAMPLES03_INCLUDE_RT_MANIPULATORS_IK_HPP_
+#define SAMPLES_SAMPLES03_INCLUDE_RT_MANIPULATORS_IK_HPP_
 
 #include "rt_manipulators_cpp/kinematics_utils.hpp"
 
@@ -25,7 +25,13 @@ bool x7_3dof_inverse_kinematics(const kinematics_utils::links_t & links,
 bool x7_3dof_picking_inverse_kinematics(const kinematics_utils::links_t & links,
                                         const Eigen::Vector3d & target_p,
                                         kinematics_utils::q_list_t & q_list);
+bool s17_3dof_right_arm_inverse_kinematics(const kinematics_utils::links_t & links,
+                                           const Eigen::Vector3d & target_p,
+                                           kinematics_utils::q_list_t & q_list);
+bool s17_3dof_right_arm_picking_inverse_kinematics(const kinematics_utils::links_t & links,
+                                                   const Eigen::Vector3d & target_p,
+                                                   kinematics_utils::q_list_t & q_list);
 
 }  // namespace samples03
 
-#endif  // SAMPLES_SAMPLES03_INCLUDE_INVERSE_KINEMATICS_HPP_
+#endif  // SAMPLES_SAMPLES03_INCLUDE_RT_MANIPULATORS_IK_HPP_
