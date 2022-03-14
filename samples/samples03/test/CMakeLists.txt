@@ -14,13 +14,13 @@ find_package(GTest REQUIRED)
 include(GoogleTest)
 
 set(list_tests
-    test_inverse_kinematics
+    test_rt_manipulators_ik
 )
 foreach(test_executable IN LISTS list_tests)
     message("${test_executable}")
     add_executable(${test_executable}
         ${test_executable}.cpp
-        ../src/inverse_kinematics.cpp
+        ../src/rt_manipulators_ik.cpp
     )
     target_include_directories(${test_executable} PUBLIC
         ../include
