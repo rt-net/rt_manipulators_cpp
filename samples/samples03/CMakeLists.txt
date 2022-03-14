@@ -21,7 +21,7 @@ foreach(sample IN LISTS list_samples)
     message("${sample}")
     add_executable(${sample}
         src/${sample}.cpp
-        src/inverse_kinematics.cpp
+        src/rt_manipulators_ik.cpp
     )
     target_include_directories(${sample} PUBLIC
         include

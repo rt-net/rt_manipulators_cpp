@@ -20,7 +20,7 @@
 #include "rt_manipulators_cpp/kinematics.hpp"
 #include "rt_manipulators_cpp/kinematics_utils.hpp"
 #include "rt_manipulators_cpp/link.hpp"
-#include "inverse_kinematics.hpp"
+#include "rt_manipulators_ik.hpp"
 
 void move_to(rt_manipulators_cpp::Hardware & hardware,
              const kinematics_utils::links_t & links,

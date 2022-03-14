@@ -19,7 +19,7 @@
 #include "rt_manipulators_cpp/kinematics.hpp"
 #include "rt_manipulators_cpp/kinematics_utils.hpp"
 #include "rt_manipulators_cpp/link.hpp"
-#include "inverse_kinematics.hpp"
+#include "rt_manipulators_ik.hpp"
 
 
 class X7KinematicsFixture: public ::testing::Test {

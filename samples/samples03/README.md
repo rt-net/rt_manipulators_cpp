@@ -78,10 +78,10 @@ IKに成功しました
 ### 解説
 
 解析的に逆運動学を解く関数を使用する場合、
-`samples03/include/inverse_kinematics.hpp`をincludeします。
+`samples03/include/rt_manipulators_ik.hpp`をincludeします。
 
 ```cpp
-#include "inverse_kinematics.hpp"
+#include "rt_manipulators_ik.hpp"
 ```
 
 CRANE-X7向けの逆運動学計算関数として、

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <iostream>
-#include "inverse_kinematics.hpp"
+#include "rt_manipulators_ik.hpp"
 #include "rt_manipulators_cpp/kinematics.hpp"
 
 namespace samples03 {
