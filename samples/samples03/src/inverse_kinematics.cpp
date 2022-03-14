@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include "inverse_kinematics.hpp"
+#include "rt_manipulators_cpp/kinematics.hpp"
 
 namespace samples03 {
 
@@ -198,19 +199,10 @@ bool s17_3dof_right_arm_picking_inverse_kinematics(const kinematics_utils::links
   Eigen::Matrix3d wrist_target_R = kinematics_utils::rotation_from_euler_ZYX(0.0, 0.0, M_PI_2);
 
   // 手先姿勢の回転行列を求める
-  const double theta1 = q_list[5];
-  const double theta2 = q_list[6];
-  const double theta3 = q_list[8];
-  const double C1 = std::cos(theta1);
-  const double C2 = std::cos(theta2);
-  const double C3 = std::cos(theta3);
-  const double S1 = std::sin(theta1);
-  const double S2 = std::sin(theta2);
-  const double S3 = std::sin(theta3);
-  Eigen::Matrix3d wrist_R;
-  wrist_R << C1*C3 + S1*S2*S3, -C1*S3 + S1*S2*C3, -S1*C2,
-             C2*S3, C2*C3, S2,
-             S1*C3 - C1*S2*S3, -S1*S3 - C1*S2*C3, C1*C2;
+  auto calc_links = links;
+  kinematics_utils::set_q_list(calc_links, q_list);
+  kinematics::forward_kinematics(calc_links, 1);
+  Eigen::Matrix3d wrist_R = calc_links[8].R;
 
   // 現在の手先姿勢から目標姿勢に遷移するための回転行列を求める
   const Eigen::Matrix3d diff_R = wrist_R.transpose() * wrist_target_R;
@@ -226,23 +218,29 @@ bool s17_3dof_right_arm_picking_inverse_kinematics(const kinematics_utils::links
 
   // diff_R = R(-Y軸でtheta4回転) * R(+Z軸でtheta5回転) * R(-Y軸でtheta6回転)とし、
   // 行列要素から回転角度を求める
-  double theta5 = std::atan2(-std::sqrt(R01_2 + R21_2), R11);
-  const double S5 = std::sin(theta5);
 
   double theta4 = 0;
+  double theta5 = 0;
   double theta6 = 0;
-
-  if (theta5 > S5) {
-    theta4 = atan2(-R21, -R01);
-    theta6 = atan2(-R12, +R10);
-  } else if (theta5 < S5) {
+  if (std::sqrt(R01_2 + R21_2) == 0) {
+    // sin(theta5)が0のとき、
+    // R11 (cos(theta5)) は±1になるため、次の式でtheta5, theta6を求める
+    theta5 = M_PI / 2 - R11 * M_PI / 2;
+    theta6 = atan2(-R02, R00) - R11 * theta4;
+  } else {
+    theta5 = std::atan2(-std::sqrt(R01_2 + R21_2), R11);
     theta4 = atan2(+R21, +R01);
     theta6 = atan2(+R12, -R10);
-  } else {
-    // theta4は任意
-    theta6 = atan2(-R02, R00) - theta4;
+    q_list[9] = theta4;
+    q_list[10] = theta5;
+    q_list[11] = theta6;
+    // 解が可動範囲外の場合、theta5の符号を反転した値をもとに解を求める
+    if (q_list_are_in_range(links, q_list) == false) {
+      theta5 = std::atan2(std::sqrt(R01_2 + R21_2), R11);
+      theta4 = atan2(-R21, -R01);
+      theta6 = atan2(-R12, +R10);
+    }
   }
-
   q_list[9] = theta4;
   q_list[10] = theta5;
   q_list[11] = theta6;
