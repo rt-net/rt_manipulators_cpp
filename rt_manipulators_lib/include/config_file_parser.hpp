@@ -16,7 +16,7 @@
 #define RT_MANIPULATORS_LIB_INCLUDE_CONFIG_FILE_PARSER_HPP_
 
 #include <string>
-#include "rt_manipulators_cpp/hardware_joints.hpp"
+#include "hardware_joints.hpp"
 
 namespace config_file_parser {
 
