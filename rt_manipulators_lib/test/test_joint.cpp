@@ -22,12 +22,7 @@ class JointTestFixture : public ::testing::Test {
   virtual void SetUp() {
     uint8_t id = 0;
     uint8_t operating_mode = 1;
-    double min_position_limit = 2.0;
-    double max_position_limit = 3.0;
-    double current_limit_when_position_exceeds_limit = 4.0;
-    test_joint = std::make_shared<joint::Joint>(
-      id, operating_mode, max_position_limit, min_position_limit,
-      current_limit_when_position_exceeds_limit);
+    test_joint = std::make_shared<joint::Joint>(id, operating_mode);
   }
 
   virtual void TearDown() {
@@ -45,14 +40,21 @@ TEST_F(JointTestFixture, initialize_operating_mode) {
   EXPECT_EQ(test_joint->operating_mode(), 1);
 }
 
-TEST_F(JointTestFixture, initialize_min_position_limit) {
-  EXPECT_DOUBLE_EQ(test_joint->min_position_limit(), 2.0);
+TEST_F(JointTestFixture, set_position_limit) {
+  test_joint->set_position_limit_margin(0.5);
+  test_joint->set_position_limit(2.0, 4.0);
+  EXPECT_DOUBLE_EQ(test_joint->min_position_limit(), 2.5);
+  EXPECT_DOUBLE_EQ(test_joint->max_position_limit(), 3.5);
+
+  // 0より小さいマージンはセットされないことを期待
+  test_joint->set_position_limit_margin(-1.0);
+  test_joint->set_position_limit(3.0, 5.0);
+  EXPECT_DOUBLE_EQ(test_joint->min_position_limit(), 3.0);
+  EXPECT_DOUBLE_EQ(test_joint->max_position_limit(), 5.0);
 }
 
-TEST_F(JointTestFixture, initialize_max_position_limit) {
-  EXPECT_DOUBLE_EQ(test_joint->max_position_limit(), 3.0);
-}
-
-TEST_F(JointTestFixture, initialize_current_limit) {
-  EXPECT_DOUBLE_EQ(test_joint->current_limit_when_position_exceeds_limit(), 4.0);
+TEST_F(JointTestFixture, set_current_limit) {
+  test_joint->set_current_limit_margin(0.2);
+  test_joint->set_current_limit(1.0);
+  EXPECT_DOUBLE_EQ(test_joint->current_limit_when_position_exceeds_limit(), 0.8);
 }

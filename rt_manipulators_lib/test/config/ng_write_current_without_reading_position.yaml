@@ -1,0 +1,10 @@
+joint_groups:
+  test_group:
+    joints:
+      - joint1
+    sync_read:
+      - current
+    sync_write:
+      - current
+
+joint1: { id : 0, operating_mode: 3}

@@ -16,27 +16,52 @@
 
 namespace joint {
 
-Joint::Joint(const uint8_t id, const uint8_t operating_mode,
-             const double max_position_limit, const double min_position_limit,
-             const double current_limit_when_position_exceeds_limit)
+Joint::Joint(const uint8_t id, const uint8_t operating_mode)
     : id_(id), operating_mode_(operating_mode),
-      max_position_limit_(max_position_limit), min_position_limit_(min_position_limit),
-      current_limit_when_position_exceeds_limit_(
-        current_limit_when_position_exceeds_limit),
+      position_limit_margin_(0.0),
+      max_position_limit_(0.0), min_position_limit_(0.0),
+      current_limit_margin_(0.0),
+      max_current_limit_(0.0),
+      current_limit_when_position_exceeds_limit_(0.0),
       present_position_(0.0), present_velocity_(0.0), present_current_(0.0),
       present_voltage_(0.0), present_temperature_(0), goal_position_(0.0),
       goal_velocity_(0.0), goal_current_(0.0) {}
+
 
 uint8_t Joint::id() const { return id_; }
 
 uint8_t Joint::operating_mode() const { return operating_mode_; }
 
-double Joint::max_position_limit() const { return max_position_limit_; }
+void Joint::set_position_limit_margin(const double position_radian) {
+  // 0より小さいマージンはセットしない
+  position_limit_margin_ = std::max(position_radian, 0.0);
+}
 
-double Joint::min_position_limit() const { return min_position_limit_; }
+void Joint::set_position_limit(const double min_position_radian, const double max_position_radian) {
+  min_position_limit_ = min_position_radian;
+  max_position_limit_ = max_position_radian;
+}
+
+double Joint::max_position_limit() const {
+  return max_position_limit_ - position_limit_margin_;
+}
+
+double Joint::min_position_limit() const {
+  return min_position_limit_ + position_limit_margin_;
+}
+
+void Joint::set_current_limit_margin(const double current_ampere) {
+  // 0より小さいマージンはセットしない
+  current_limit_margin_ = std::max(current_ampere, 0.0);
+}
+
+void Joint::set_current_limit(const double max_current_ampere) {
+  // 0より小さいリミットはセットしない
+  max_current_limit_ = std::max(max_current_ampere, 0.0);
+}
 
 double Joint::current_limit_when_position_exceeds_limit() const {
-  return current_limit_when_position_exceeds_limit_;
+  return max_current_limit_ - current_limit_margin_;
 }
 
 void Joint::set_present_position(const double position_radian) {

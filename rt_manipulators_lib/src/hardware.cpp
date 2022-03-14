@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "hardware.hpp"
-#include <yaml-cpp/yaml.h>
 #include <algorithm>
 #include <cmath>
-#include <fstream>
 #include <iostream>
+
+#include "hardware.hpp"
+#include "config_file_parser.hpp"
 
 namespace rt_manipulators_cpp {
 
@@ -90,22 +90,48 @@ Hardware::~Hardware() {
 
 bool Hardware::load_config_file(const std::string& config_yaml) {
   // コンフィグファイルの読み込み
-  if (parse_config_file(config_yaml) == false) {
+  if (config_file_parser::parse(config_yaml, joints_) == false) {
     return false;
   }
 
-  // sync_readとsync_writeの関係をチェック
   for (const auto& [group_name, group] : joints_.groups()) {
-    if (group->sync_write_velocity_enabled() && !group->sync_read_position_enabled()) {
-      std::cerr << group_name << "グループはvelocityをsync_writeしますが, ";
-      std::cerr << "positionをsync_readしません." << std::endl;
-      std::cerr << "positionもsync_readするようにコンフィグファイルを修正して下さい." << std::endl;
+    // ジョイントリミットの読み込みと設定
+    for (const auto& joint_name : group->joint_names()) {
+      auto joint_id = joints_.joint(joint_name)->id();
+      uint32_t dxl_max_pos_limit = 0;
+      uint32_t dxl_min_pos_limit = 0;
+      uint16_t dxl_current_limit = 0;
+      if (!comm_->read_double_word_data(joint_id, ADDR_MAX_POSITION_LIMIT, dxl_max_pos_limit)) {
+        std::cerr << joint_name << "のMax Position Limitの読み取りに失敗しました." << std::endl;
+        return false;
+      }
+      if (!comm_->read_double_word_data(joint_id, ADDR_MIN_POSITION_LIMIT, dxl_min_pos_limit)) {
+        std::cerr << joint_name << "のMin Position Limitの読み取りに失敗しました." << std::endl;
+        return false;
+      }
+      if (!comm_->read_word_data(joint_id, ADDR_CURRENT_LIMIT, dxl_current_limit)) {
+        std::cerr << joint_name << "のCurrent Limitの読み取りに失敗しました." << std::endl;
+        return false;
+      }
+
+      joints_.joint(joint_name)->set_position_limit(
+        dxl_pos_to_radian(static_cast<int32_t>(dxl_min_pos_limit)),
+        dxl_pos_to_radian(static_cast<int32_t>(dxl_max_pos_limit)));
+      joints_.joint(joint_name)->set_current_limit(
+        dxl_current_to_ampere(dxl_current_limit));
+    }
+
+    if (!write_operating_mode(group_name)) {
+      std::cerr << group_name << "のOperating Modeを設定できません." << std::endl;
       return false;
     }
-    if (group->sync_write_current_enabled() && !group->sync_read_position_enabled()) {
-      std::cerr << group_name << "グループはcurrentをsync_writeしますが, ";
-      std::cerr << "positionをsync_readしません." << std::endl;
-      std::cerr << "positionもsync_readするようにコンフィグファイルを修正して下さい." << std::endl;
+
+    if (!create_sync_read_group(group_name)) {
+      std::cerr << group_name << "のsync readグループを作成できません." << std::endl;
+      return false;
+    }
+    if (!create_sync_write_group(group_name)) {
+      std::cerr << group_name << "のsync writeグループを作成できません." << std::endl;
       return false;
     }
   }
@@ -732,121 +758,6 @@ bool Hardware::write_double_word_data_to_group(const std::string& group_name,
     }
   }
   return retval;
-}
-
-bool Hardware::parse_config_file(const std::string& config_yaml) {
-  // yamlファイルを読み取り、joints_に格納する
-  std::ifstream fs(config_yaml);
-  if (!fs.is_open()) {
-    std::cerr << "コンフィグファイル:" << config_yaml << "が存在しません." << std::endl;
-    return false;
-  }
-
-  YAML::Node config = YAML::LoadFile(config_yaml);
-  for (const auto & config_joint_group : config["joint_groups"]) {
-    auto group_name = config_joint_group.first.as<std::string>();
-    if (joints_.has_group(group_name)) {
-      std::cerr << group_name << "グループが2つ以上存在します." << std::endl;
-      return false;
-    }
-
-    if (!config["joint_groups"][group_name]["joints"]) {
-      std::cerr << group_name << "グループに'joints'が設定されていせん。" << std::endl;
-      return false;
-    }
-
-    std::vector<JointName> joint_names;
-    for (const auto & config_joint : config["joint_groups"][group_name]["joints"]) {
-      auto joint_name = config_joint.as<std::string>();
-      if (joints_.has_joint(joint_name)) {
-        std::cerr << joint_name << "ジョイントが2つ以上存在します." << std::endl;
-        return false;
-      }
-
-      if (!config[joint_name]) {
-        std::cerr << joint_name << "ジョイントの設定が存在しません." << std::endl;
-        return false;
-      }
-
-      if (!config[joint_name]["id"] || !config[joint_name]["operating_mode"]) {
-        std::cerr << joint_name << "にidまたはoperating_modeが設定されていません." << std::endl;
-        return false;
-      }
-
-      joint_names.push_back(joint_name);
-      auto joint_id = config[joint_name]["id"].as<int>();
-      auto ope_mode = config[joint_name]["operating_mode"].as<int>();
-
-      uint32_t dxl_max_pos_limit = 0;
-      uint32_t dxl_min_pos_limit = 0;
-      uint16_t dxl_current_limit = 0;
-      if (!comm_->read_double_word_data(joint_id, ADDR_MAX_POSITION_LIMIT, dxl_max_pos_limit)) {
-        std::cerr << joint_name << "のMax Position Limitの読み取りに失敗しました." << std::endl;
-        return false;
-      }
-      if (!comm_->read_double_word_data(joint_id, ADDR_MIN_POSITION_LIMIT, dxl_min_pos_limit)) {
-        std::cerr << joint_name << "のMin Position Limitの読み取りに失敗しました." << std::endl;
-        return false;
-      }
-      if (!comm_->read_word_data(joint_id, ADDR_CURRENT_LIMIT, dxl_current_limit)) {
-        std::cerr << joint_name << "のCurrent Limitの読み取りに失敗しました." << std::endl;
-        return false;
-      }
-
-      // 角度リミット値をラジアンに変換
-      double max_position_limit = dxl_pos_to_radian(static_cast<int32_t>(dxl_max_pos_limit));
-      double min_position_limit = dxl_pos_to_radian(static_cast<int32_t>(dxl_min_pos_limit));
-
-      // 角度リミット値にマージンを加算する
-      if (config[joint_name]["pos_limit_margin"]) {
-        max_position_limit -= config[joint_name]["pos_limit_margin"].as<double>();
-        min_position_limit += config[joint_name]["pos_limit_margin"].as<double>();
-      }
-
-      // 電流リミット値をアンペアに変換
-      double current_limit = dxl_current_to_ampere(dxl_current_limit);
-      // 電流リミット値にマージンを加算する
-      if (config[joint_name]["current_limit_margin"]) {
-        // current_limitは0以上の値にする
-        current_limit = std::max(
-          current_limit - config[joint_name]["current_limit_margin"].as<double>(),
-          0.0);
-      }
-
-      auto joint = joint::Joint(
-        joint_id, ope_mode, max_position_limit, min_position_limit, current_limit);
-      joints_.append_joint(joint_name, joint);
-    }
-    std::vector<std::string> sync_read_targets;
-    std::vector<std::string> sync_write_targets;
-    if (config["joint_groups"][group_name]["sync_read"]) {
-      sync_read_targets =
-          config["joint_groups"][group_name]["sync_read"].as<std::vector<std::string>>();
-    }
-    if (config["joint_groups"][group_name]["sync_write"]) {
-      sync_write_targets =
-          config["joint_groups"][group_name]["sync_write"].as<std::vector<std::string>>();
-    }
-
-    auto joint_group = joint::JointGroup(joint_names, sync_read_targets, sync_write_targets);
-    joints_.append_group(group_name, joint_group);
-
-    if (!write_operating_mode(group_name)) {
-      std::cerr << group_name << "のOperating Modeを設定できません." << std::endl;
-      return false;
-    }
-
-    if (!create_sync_read_group(group_name)) {
-      std::cerr << group_name << "のsync readグループを作成できません." << std::endl;
-      return false;
-    }
-    if (!create_sync_write_group(group_name)) {
-      std::cerr << group_name << "のsync writeグループを作成できません." << std::endl;
-      return false;
-    }
-  }
-
-  return true;
 }
 
 bool Hardware::write_operating_mode(const std::string& group_name) {

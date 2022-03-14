@@ -18,6 +18,7 @@ set(list_tests
     test_joint
     test_kinematics_utils
     test_kinematics
+    test_config_file_parser
 )
 foreach(test_executable IN LISTS list_tests)
     message("${test_executable}")

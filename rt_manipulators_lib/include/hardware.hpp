@@ -96,7 +96,6 @@ class Hardware {
   std::shared_ptr<hardware_communicator::Communicator> comm_;
 
  private:
-  bool parse_config_file(const std::string& config_yaml);
   bool write_operating_mode(const std::string& group_name);
   bool limit_goal_velocity_by_present_position(const std::string& group_name);
   bool limit_goal_current_by_present_position(const std::string& group_name);
