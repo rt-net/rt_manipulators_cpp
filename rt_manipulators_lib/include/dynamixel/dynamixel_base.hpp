@@ -18,7 +18,7 @@
 #include <memory>
 #include <string>
 
-#include "rt_manipulators_cpp/hardware_communicator.hpp"
+#include "hardware_communicator.hpp"
 
 namespace dynamixel_base {
 
