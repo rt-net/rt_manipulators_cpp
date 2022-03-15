@@ -135,11 +135,11 @@ joint_groups:
       - ジョイント名(4)
       - ジョイント名(5)
 
-ジョイント名(1): { id : 0, operating_mode: 3 }
-ジョイント名(2): { id : 1, operating_mode: 3 }
-ジョイント名(3): { id : 2, operating_mode: 3 }
-ジョイント名(4): { id : 3, operating_mode: 3 }
-ジョイント名(5): { id : 4, operating_mode: 3 }
+ジョイント名(1): { id : 0, dynamixel: "XM430", operating_mode: 3 }
+ジョイント名(2): { id : 1, dynamixel: "XM430", operating_mode: 3 }
+ジョイント名(3): { id : 2, dynamixel: "XM430", operating_mode: 3 }
+ジョイント名(4): { id : 3, dynamixel: "XM540", operating_mode: 3 }
+ジョイント名(5): { id : 4, dynamixel: "XM540", operating_mode: 3 }
 ```
 
 トルクをONするために`Hardware.torque_on(group_name)`を実行します。
@@ -317,11 +317,11 @@ joint_groups:
     sync_write:
       - position
 
-ジョイント名(1): { id : 0, operating_mode: 3 }
-ジョイント名(2): { id : 1, operating_mode: 3 }
-ジョイント名(3): { id : 2, operating_mode: 3 }
-ジョイント名(4): { id : 3, operating_mode: 3 }
-ジョイント名(5): { id : 4, operating_mode: 3 }
+ジョイント名(1): { id : 0, dynamixel: "XM430", operating_mode: 3 }
+ジョイント名(2): { id : 1, dynamixel: "XM430", operating_mode: 3 }
+ジョイント名(3): { id : 2, dynamixel: "XM430", operating_mode: 3 }
+ジョイント名(4): { id : 3, dynamixel: "XM540", operating_mode: 3 }
+ジョイント名(5): { id : 4, dynamixel: "XM540", operating_mode: 3 }
 ```
 
 サーボモータの最大動作加速度を設定するため、`Hardware.write_max_acceleration_to_group(group_name, acceleration)`を実行します。
@@ -664,9 +664,9 @@ joint_groups:
     sync_read:
       - position
 
-ジョイント名(1): { id : 0, operating_mode: 1, pos_limit_margin: 0.5}
-ジョイント名(2): { id : 1, operating_mode: 1, pos_limit_margin: 0.5}
-ジョイント名(3): { id : 2, operating_mode: 1, pos_limit_margin: 0.5}
+ジョイント名(1): { id : 0, dynamixel: "XM430", operating_mode: 1, pos_limit_margin: 0.5}
+ジョイント名(2): { id : 1, dynamixel: "XM430", operating_mode: 1, pos_limit_margin: 0.5}
+ジョイント名(3): { id : 2, dynamixel: "XM430", operating_mode: 1, pos_limit_margin: 0.5}
 ```
 
 サーボモータの速度制御PIゲインを設定するため、`Hardware.write_velocity_pi_gain_to_group(group_name, p, i)`を実行します。
@@ -809,9 +809,9 @@ joint_groups:
     sync_read:
       - position
 
-ジョイント名(1): { id : 0, operating_mode: 1, pos_limit_margin: 0.5, current_limit_margin: 1.0}
-ジョイント名(2): { id : 1, operating_mode: 1, pos_limit_margin: 0.5, current_limit_margin: 1.0}
-ジョイント名(3): { id : 2, operating_mode: 1, pos_limit_margin: 0.5, current_limit_margin: 1.0}
+ジョイント名(1): { id : 0, dynamixel: "XM430", operating_mode: 1, pos_limit_margin: 0.5, current_limit_margin: 1.0}
+ジョイント名(2): { id : 1, dynamixel: "XM430", operating_mode: 1, pos_limit_margin: 0.5, current_limit_margin: 1.0}
+ジョイント名(3): { id : 2, dynamixel: "XM430", operating_mode: 1, pos_limit_margin: 0.5, current_limit_margin: 1.0}
 ```
 
 サーボモータに目標電流を書き込む準備として、
