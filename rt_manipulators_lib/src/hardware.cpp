@@ -194,9 +194,11 @@ void Hardware::disconnect() {
 }
 
 bool Hardware::torque_on(const std::string& group_name) {
-  if (!write_byte_data_to_group(group_name, ADDR_TORQUE_ENABLE, 1)) {
-    std::cerr << group_name << "グループのトルクONに失敗しました." << std::endl;
-    return false;
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    if (!joints_.joint(joint_name)->dxl->write_torque_enable(comm_, true)) {
+      std::cerr << joint_name << "ジョイントのトルクONに失敗しました." << std::endl;
+      return false;
+    }
   }
 
   // 安全のため、サーボの現在角度を目標角度に設定する
@@ -212,7 +214,14 @@ bool Hardware::torque_on(const std::string& group_name) {
 }
 
 bool Hardware::torque_off(const std::string& group_name) {
-  return write_byte_data_to_group(group_name, ADDR_TORQUE_ENABLE, 0);
+  bool retval = true;
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    if (!joints_.joint(joint_name)->dxl->write_torque_enable(comm_, false)) {
+      std::cerr << joint_name << "ジョイントのトルクOFFに失敗しました." << std::endl;
+      retval = false;
+    }
+  }
+  return retval;
 }
 
 bool Hardware::sync_read(const std::string& group_name) {
@@ -707,23 +716,6 @@ bool Hardware::write_velocity_pi_gain_to_group(const std::string& group_name, co
   }
 
   return true;
-}
-
-bool Hardware::write_byte_data_to_group(const std::string& group_name, const uint16_t address,
-                                        const uint8_t write_data) {
-  if (!joints_.has_group(group_name)) {
-    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
-    return false;
-  }
-
-  bool retval = true;
-  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-    auto id = joints_.joint(joint_name)->id();
-    if (!comm_->write_byte_data(id, address, write_data)) {
-      retval = false;
-    }
-  }
-  return retval;
 }
 
 bool Hardware::write_word_data_to_group(const std::string& group_name, const uint16_t address,

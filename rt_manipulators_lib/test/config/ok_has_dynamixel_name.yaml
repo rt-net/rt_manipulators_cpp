@@ -1,0 +1,8 @@
+joint_groups:
+  test_group:
+    joints:
+      - joint1
+      - joint2
+
+joint1: { id: 1, dynamixel: "XM430", operating_mode: 3}
+joint2: { id: 2, dynamixel: "XM540", operating_mode: 3}

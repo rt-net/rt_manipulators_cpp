@@ -12,6 +12,9 @@ add_library(${library_name}
     kinematics.cpp
     kinematics_utils.cpp
     config_file_parser.cpp
+    dynamixel/dynamixel_xm.cpp
+    dynamixel/dynamixel_xm430.cpp
+    dynamixel/dynamixel_xm540.cpp
 )
 set_target_properties(${library_name} PROPERTIES VERSION 1.0.0 SOVERSION 1)
 

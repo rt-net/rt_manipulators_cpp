@@ -63,6 +63,15 @@ TEST(ConfigFileParserTest, two_groups_four_joints) {
   EXPECT_EQ(parsed_joints.joint("joint4")->id(), 3);
 }
 
+TEST(ConfigFileParserTest, has_dynamixel_name) {
+  // ジョイントにDynamixelの情報がセットされていることを期待
+  hardware_joints::Joints parsed_joints;
+  ASSERT_TRUE(config_file_parser::parse("../config/ok_has_dynamixel_name.yaml", parsed_joints));
+  EXPECT_EQ(parsed_joints.joint("joint1")->dxl->get_id(), 1);
+  EXPECT_EQ(parsed_joints.joint("joint1")->dxl->get_name(), "XM430");
+  EXPECT_EQ(parsed_joints.joint("joint2")->dxl->get_name(), "XM540");
+}
+
 TEST(ConfigFileParserTest, has_same_groups) {
   // 同じグループ名が２つあると、失敗することを期待
   hardware_joints::Joints parsed_joints;

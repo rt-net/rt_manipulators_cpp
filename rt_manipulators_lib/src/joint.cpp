@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "dynamixel/dynamixel_xm430.hpp"
+#include "dynamixel/dynamixel_xm540.hpp"
 #include "joint.hpp"
 
 namespace joint {
@@ -27,6 +29,17 @@ Joint::Joint(const uint8_t id, const uint8_t operating_mode)
       present_voltage_(0.0), present_temperature_(0), goal_position_(0.0),
       goal_velocity_(0.0), goal_current_(0.0) {}
 
+
+Joint::Joint(const uint8_t id, const uint8_t operating_mode, const std::string dynamixel_name)
+  : Joint(id, operating_mode) {
+  if (dynamixel_name == "XM430") {
+    dxl = std::make_shared<dynamixel_xm430::DynamixelXM430>(id);
+  } else if (dynamixel_name == "XM540") {
+    dxl = std::make_shared<dynamixel_xm540::DynamixelXM540>(id);
+  } else {
+    dxl = std::make_shared<dynamixel_base::DynamixelBase>(id);
+  }
+}
 
 uint8_t Joint::id() const { return id_; }
 

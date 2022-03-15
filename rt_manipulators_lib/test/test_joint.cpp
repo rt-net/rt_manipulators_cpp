@@ -58,3 +58,19 @@ TEST_F(JointTestFixture, set_current_limit) {
   test_joint->set_current_limit(1.0);
   EXPECT_DOUBLE_EQ(test_joint->current_limit_when_position_exceeds_limit(), 0.8);
 }
+
+TEST(JointTest, set_dynamixel_name) {
+  // Dynamixelクラスが正しくセットされることを期待する
+  std::shared_ptr<joint::Joint> joint;
+  joint = std::make_shared<joint::Joint>(0, 0, "base");
+  EXPECT_EQ(joint->dxl->get_name(), "base");
+
+  joint = std::make_shared<joint::Joint>(0, 0, "");
+  EXPECT_EQ(joint->dxl->get_name(), "base");
+
+  joint = std::make_shared<joint::Joint>(0, 0, "XM430");
+  EXPECT_EQ(joint->dxl->get_name(), "XM430");
+
+  joint = std::make_shared<joint::Joint>(0, 0, "XM540");
+  EXPECT_EQ(joint->dxl->get_name(), "XM540");
+}
