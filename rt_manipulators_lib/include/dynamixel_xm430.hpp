@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_XM430_HPP_
-#define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_XM430_HPP_
+#ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM430_HPP_
+#define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM430_HPP_
 
 #include "dynamixel_xm.hpp"
 
@@ -26,4 +26,4 @@ class DynamixelXM430 : public dynamixel_xm::DynamixelXM {
 
 }  // namespace dynamixel_xm430
 
-#endif  // RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_XM430_HPP_
+#endif  // RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM430_HPP_

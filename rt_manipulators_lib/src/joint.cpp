@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dynamixel/dynamixel_xm430.hpp"
-#include "dynamixel/dynamixel_xm540.hpp"
+#include "dynamixel_xm430.hpp"
+#include "dynamixel_xm540.hpp"
 #include "joint.hpp"
 
 namespace joint {

@@ -12,15 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM540_HPP_
+#define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM540_HPP_
 
-#include "dynamixel/dynamixel_xm430.hpp"
+#include "dynamixel_xm.hpp"
 
+namespace dynamixel_xm540 {
 
-namespace dynamixel_xm430 {
+class DynamixelXM540 : public dynamixel_xm::DynamixelXM {
+ public:
+  explicit DynamixelXM540(const uint8_t id);
+};
 
-DynamixelXM430::DynamixelXM430(const uint8_t id)
-  : dynamixel_xm::DynamixelXM(id) {
-  name_ = "XM430";
-}
+}  // namespace dynamixel_xm540
 
-}  // namespace dynamixel_xm430
+#endif  // RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM540_HPP_

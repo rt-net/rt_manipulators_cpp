@@ -12,19 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_XM_HPP_
-#define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_XM_HPP_
 
-#include "dynamixel_base.hpp"
+#include "dynamixel_xm430.hpp"
 
-namespace dynamixel_xm {
 
-class DynamixelXM : public dynamixel_base::DynamixelBase  {
- public:
-  explicit DynamixelXM(const uint8_t id);
-  bool write_torque_enable(const dynamixel_base::comm_t & comm, const bool enable);
-};
+namespace dynamixel_xm430 {
 
-}  // namespace dynamixel_xm
+DynamixelXM430::DynamixelXM430(const uint8_t id)
+  : dynamixel_xm::DynamixelXM(id) {
+  name_ = "XM430";
+}
 
-#endif  // RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_XM_HPP_
+}  // namespace dynamixel_xm430

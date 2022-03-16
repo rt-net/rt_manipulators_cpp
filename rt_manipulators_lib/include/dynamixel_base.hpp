@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_BASE_HPP_
-#define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_BASE_HPP_
+#ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_BASE_HPP_
+#define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_BASE_HPP_
 
 #include <memory>
 #include <string>
@@ -41,4 +41,4 @@ class DynamixelBase {
 
 }  // namespace dynamixel_base
 
-#endif  // RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_BASE_HPP_
+#endif  // RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_BASE_HPP_

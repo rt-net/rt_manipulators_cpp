@@ -15,9 +15,9 @@
 #include <memory>
 
 #include "gtest/gtest.h"
-#include "rt_manipulators_cpp/dynamixel/dynamixel_base.hpp"
-#include "rt_manipulators_cpp/dynamixel/dynamixel_xm.hpp"
-#include "rt_manipulators_cpp/dynamixel/dynamixel_xm430.hpp"
+#include "rt_manipulators_cpp/dynamixel_base.hpp"
+#include "rt_manipulators_cpp/dynamixel_xm.hpp"
+#include "rt_manipulators_cpp/dynamixel_xm430.hpp"
 #include "rt_manipulators_cpp/hardware_communicator.hpp"
 
 TEST(DynamixelXMTest, create_xm_series_instance) {

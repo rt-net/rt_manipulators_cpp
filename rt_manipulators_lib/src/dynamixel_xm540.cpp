@@ -13,20 +13,14 @@
 // limitations under the License.
 
 
-#include "dynamixel/dynamixel_xm.hpp"
+#include "dynamixel_xm540.hpp"
 
 
-namespace dynamixel_xm {
+namespace dynamixel_xm540 {
 
-const uint16_t ADDR_TORQUE_ENABLE = 64;
-
-DynamixelXM::DynamixelXM(const uint8_t id)
-  : dynamixel_base::DynamixelBase(id) {
-  name_ = "XM";
+DynamixelXM540::DynamixelXM540(const uint8_t id)
+  : dynamixel_xm::DynamixelXM(id) {
+  name_ = "XM540";
 }
 
-bool DynamixelXM::write_torque_enable(const dynamixel_base::comm_t & comm, const bool enable) {
-  return comm->write_byte_data(id_, ADDR_TORQUE_ENABLE, enable);
-}
-
-}  // namespace dynamixel_xm
+}  // namespace dynamixel_xm540

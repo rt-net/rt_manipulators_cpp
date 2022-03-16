@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include "dynamixel/dynamixel_base.hpp"
+#include "dynamixel_base.hpp"
 
 namespace joint {
 

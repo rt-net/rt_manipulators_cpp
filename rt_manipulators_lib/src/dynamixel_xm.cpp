@@ -12,18 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_XM540_HPP_
-#define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_XM540_HPP_
 
 #include "dynamixel_xm.hpp"
 
-namespace dynamixel_xm540 {
 
-class DynamixelXM540 : public dynamixel_xm::DynamixelXM {
- public:
-  explicit DynamixelXM540(const uint8_t id);
-};
+namespace dynamixel_xm {
 
-}  // namespace dynamixel_xm540
+const uint16_t ADDR_TORQUE_ENABLE = 64;
 
-#endif  // RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_DYNAMIXEL_XM540_HPP_
+DynamixelXM::DynamixelXM(const uint8_t id)
+  : dynamixel_base::DynamixelBase(id) {
+  name_ = "XM";
+}
+
+bool DynamixelXM::write_torque_enable(const dynamixel_base::comm_t & comm, const bool enable) {
+  return comm->write_byte_data(id_, ADDR_TORQUE_ENABLE, enable);
+}
+
+}  // namespace dynamixel_xm
