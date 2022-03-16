@@ -47,7 +47,6 @@ const uint16_t ADDR_OPERATING_MODE = 11;
 const uint16_t ADDR_CURRENT_LIMIT = 38;
 const uint16_t ADDR_MAX_POSITION_LIMIT = 48;
 const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
-const uint16_t ADDR_TORQUE_ENABLE = 64;
 const uint16_t ADDR_VELOCITY_I_GAIN = 76;
 const uint16_t ADDR_VELOCITY_P_GAIN = 78;
 const uint16_t ADDR_POSITION_D_GAIN = 80;
