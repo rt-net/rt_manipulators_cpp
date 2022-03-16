@@ -24,7 +24,6 @@ namespace rt_manipulators_cpp {
 // Ref: https://emanual.robotis.com/docs/en/dxl/x/xm430-w350/
 // Ref: https://emanual.robotis.com/docs/en/dxl/x/xm540-w270/
 // Ref: https://emanual.robotis.com/docs/en/dxl/x/xm540-w150/
-const double PROTOCOL_VERSION = 2.0;
 const int DXL_HOME_POSITION = 2048;
 const double TO_RADIANS = (180.0 / 2048.0) * M_PI / 180.0;
 const double TO_DXL_POS = 1.0 / TO_RADIANS;
