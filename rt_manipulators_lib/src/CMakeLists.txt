@@ -12,8 +12,11 @@ add_library(${library_name}
     kinematics.cpp
     kinematics_utils.cpp
     config_file_parser.cpp
+    dynamixel_xm.cpp
+    dynamixel_xm430.cpp
+    dynamixel_xm540.cpp
 )
-set_target_properties(${library_name} PROPERTIES VERSION 1.0.0 SOVERSION 1)
+set_target_properties(${library_name} PROPERTIES VERSION 1.1.0 SOVERSION 1)
 
 target_include_directories(${library_name} PUBLIC
     ${PROJECT_SOURCE_DIR}/include

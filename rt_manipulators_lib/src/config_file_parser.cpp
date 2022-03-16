@@ -64,8 +64,13 @@ bool parse(const std::string& config_yaml, hardware_joints::Joints & parsed_join
       joint_names.push_back(joint_name);
       auto joint_id = config[joint_name]["id"].as<int>();
       auto ope_mode = config[joint_name]["operating_mode"].as<int>();
+      std::string dynamixel_name = "";
       double position_limit_margin = 0;
       double current_limit_margin = 0;
+
+      if (config[joint_name]["dynamixel"]) {
+        dynamixel_name = config[joint_name]["dynamixel"].as<std::string>();
+      }
       if (config[joint_name]["pos_limit_margin"]) {
         position_limit_margin = config[joint_name]["pos_limit_margin"].as<double>();
       }
@@ -73,7 +78,7 @@ bool parse(const std::string& config_yaml, hardware_joints::Joints & parsed_join
         current_limit_margin = config[joint_name]["current_limit_margin"].as<double>();
       }
 
-      auto joint = joint::Joint(joint_id, ope_mode);
+      auto joint = joint::Joint(joint_id, ope_mode, dynamixel_name);
       joint.set_position_limit_margin(position_limit_margin);
       joint.set_current_limit_margin(current_limit_margin);
       parsed_joints.append_joint(joint_name, joint);

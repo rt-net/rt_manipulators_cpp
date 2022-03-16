@@ -16,14 +16,18 @@
 #define RT_MANIPULATORS_LIB_INCLUDE_JOINT_HPP_
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
+
+#include "dynamixel_base.hpp"
 
 namespace joint {
 
 class Joint {
  public:
   Joint(const uint8_t id, const uint8_t operating_mode);
+  Joint(const uint8_t id, const uint8_t operating_mode, const std::string dynamixel_name);
   uint8_t id() const;
   uint8_t operating_mode() const;
   void set_position_limit_margin(const double position_radian);
@@ -49,6 +53,8 @@ class Joint {
   double get_goal_position() const;
   double get_goal_velocity() const;
   double get_goal_current() const;
+
+  std::shared_ptr<dynamixel_base::DynamixelBase> dxl;
 
  private:
   uint8_t id_;

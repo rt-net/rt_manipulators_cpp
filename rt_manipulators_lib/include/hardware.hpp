@@ -86,8 +86,6 @@ class Hardware {
                                        const uint16_t i);
 
  protected:
-  bool write_byte_data_to_group(const std::string& group_name, const uint16_t address,
-                                const uint8_t write_data);
   bool write_word_data_to_group(const std::string& group_name, const uint16_t address,
                                 const uint16_t write_data);
   bool write_double_word_data_to_group(const std::string& group_name, const uint16_t address,

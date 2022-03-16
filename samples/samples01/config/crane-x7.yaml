@@ -21,11 +21,11 @@ joint_groups:
       - position
 
 
-joint1: { id : 2, operating_mode: 3 }
-joint2: { id : 3, operating_mode: 3 }
-joint3: { id : 4, operating_mode: 3 }
-joint4: { id : 5, operating_mode: 3 }
-joint5: { id : 6, operating_mode: 3 }
-joint6: { id : 7, operating_mode: 3 }
-joint7: { id : 8, operating_mode: 3 }
-joint_hand: { id : 9, operating_mode: 3 }
+joint1: { id: 2, dynamixel: "XM430", operating_mode: 3 }
+joint2: { id: 3, dynamixel: "XM540", operating_mode: 3 }
+joint3: { id: 4, dynamixel: "XM430", operating_mode: 3 }
+joint4: { id: 5, dynamixel: "XM430", operating_mode: 3 }
+joint5: { id: 6, dynamixel: "XM430", operating_mode: 3 }
+joint6: { id: 7, dynamixel: "XM430", operating_mode: 3 }
+joint7: { id: 8, dynamixel: "XM430", operating_mode: 3 }
+joint_hand: { id: 9, dynamixel: "XM430", operating_mode: 3 }

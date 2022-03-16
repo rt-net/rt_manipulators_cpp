@@ -9,6 +9,6 @@ joint_groups:
     sync_write:
       - velocity
 
-joint5: { id : 6, operating_mode: 1, pos_limit_margin: 0.524}
-joint6: { id : 7, operating_mode: 1, pos_limit_margin: 0.524}
-joint7: { id : 8, operating_mode: 1, pos_limit_margin: 0.524}
+joint5: { id: 6, dynamixel: "XM430", operating_mode: 1, pos_limit_margin: 0.524}
+joint6: { id: 7, dynamixel: "XM430", operating_mode: 1, pos_limit_margin: 0.524}
+joint7: { id: 8, dynamixel: "XM430", operating_mode: 1, pos_limit_margin: 0.524}
