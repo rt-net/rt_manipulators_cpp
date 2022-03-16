@@ -71,7 +71,7 @@ $ ./uninstall_library.bash
 - `hardware_joints.hpp/cpp` : `Hardware`クラスのうち、ジョイント情報を扱う機能を実装しています
 - `joints.hpp/cpp` : ジョイント情報を定義しています
 - `config_file_parser.hpp/cpp` : コンフィグファイルの読み取りを担います
-- `dynamixel/*` : 各Dynamixelと通信するためのデータ変換を担います
+- `dynamixel_*` : 各Dynamixelと通信するためのデータ変換を担います
 
 ### 運動学関連
 
