@@ -37,7 +37,6 @@ const double TO_DXL_CURRENT = 1.0 / TO_CURRENT_AMPERE;
 const double TO_VOLTAGE_VOLT = 0.1;
 
 // Dynamixel XM Series address table
-const uint16_t ADDR_OPERATING_MODE = 11;
 const uint16_t ADDR_CURRENT_LIMIT = 38;
 const uint16_t ADDR_MAX_POSITION_LIMIT = 48;
 const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
@@ -726,15 +725,14 @@ bool Hardware::write_operating_mode(const std::string& group_name) {
       return false;
     }
 
-    auto id = joints_.joint(joint_name)->id();
     uint8_t present_ope_mode;
-    if (!comm_->read_byte_data(id, ADDR_OPERATING_MODE, present_ope_mode)) {
+    if (!joints_.joint(joint_name)->dxl->read_operating_mode(comm_, present_ope_mode)) {
       std::cout << joint_name << "ジョイントのOperating Modeを読み取れません." << std::endl;
       return false;
     }
 
     if (target_ope_mode != present_ope_mode) {
-      if (!comm_->write_byte_data(id, ADDR_OPERATING_MODE, target_ope_mode)) {
+      if (!joints_.joint(joint_name)->dxl->write_operating_mode(comm_, target_ope_mode)) {
         std::cout << joint_name << "ジョイントにOperating Modeを書き込めません." << std::endl;
         std::cout << "トルクがONになっている場合はOFFしてください." << std::endl;
         return false;

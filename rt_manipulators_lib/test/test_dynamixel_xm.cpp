@@ -45,8 +45,17 @@ TEST_F(XMTestFixture, get_id) {
   ASSERT_EQ(dxl->get_id(), 1);
 }
 
-TEST_F(XMTestFixture, write_torque_enable) {
+TEST_F(XMTestFixture, read_operating_mode) {
+  uint8_t mode;
   // Dynamixelが接続されていないため、通信が関わるテストはFalseを返す
+  ASSERT_FALSE(dxl->read_operating_mode(comm, mode));
+}
+
+TEST_F(XMTestFixture, write_operating_mode) {
+  ASSERT_FALSE(dxl->write_operating_mode(comm, false));
+}
+
+TEST_F(XMTestFixture, write_torque_enable) {
   ASSERT_FALSE(dxl->write_torque_enable(comm, false));
 }
 

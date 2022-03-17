@@ -32,6 +32,11 @@ class DynamixelBase {
   uint8_t get_id() const { return id_; }
   std::string get_name() const { return name_; }
 
+  virtual bool read_operating_mode(
+    const dynamixel_base::comm_t & comm, uint8_t & mode) { return false; }
+  virtual bool write_operating_mode(
+    const dynamixel_base::comm_t & comm, const uint8_t mode) { return false; }
+
   virtual bool write_torque_enable(
     const dynamixel_base::comm_t & comm, const bool enable) { return false; }
 

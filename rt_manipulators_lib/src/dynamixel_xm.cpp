@@ -19,6 +19,7 @@
 
 namespace dynamixel_xm {
 
+const uint16_t ADDR_OPERATING_MODE = 11;
 const uint16_t ADDR_TORQUE_ENABLE = 64;
 const uint16_t ADDR_VELOCITY_I_GAIN = 76;
 const uint16_t ADDR_VELOCITY_P_GAIN = 78;
@@ -42,6 +43,14 @@ const int DXL_MAX_VELOCITY = 32767;
 DynamixelXM::DynamixelXM(const uint8_t id)
   : dynamixel_base::DynamixelBase(id) {
   name_ = "XM";
+}
+
+bool DynamixelXM::read_operating_mode(const dynamixel_base::comm_t & comm, uint8_t & mode) {
+  return comm->read_byte_data(id_, ADDR_OPERATING_MODE, mode);
+}
+
+bool DynamixelXM::write_operating_mode(const dynamixel_base::comm_t & comm, const uint8_t mode) {
+  return comm->write_byte_data(id_, ADDR_OPERATING_MODE, mode);
 }
 
 bool DynamixelXM::write_torque_enable(const dynamixel_base::comm_t & comm, const bool enable) {

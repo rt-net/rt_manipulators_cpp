@@ -23,6 +23,9 @@ class DynamixelXM : public dynamixel_base::DynamixelBase  {
  public:
   explicit DynamixelXM(const uint8_t id);
 
+  bool read_operating_mode(const dynamixel_base::comm_t & comm, uint8_t & mode);
+  bool write_operating_mode(const dynamixel_base::comm_t & comm, const uint8_t mode);
+
   bool write_torque_enable(const dynamixel_base::comm_t & comm, const bool enable);
 
   bool write_velocity_i_gain(const dynamixel_base::comm_t & comm, const unsigned int gain);
