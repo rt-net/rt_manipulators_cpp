@@ -50,24 +50,24 @@ TEST_F(XMTestFixture, write_torque_enable) {
   ASSERT_FALSE(dxl->write_torque_enable(comm, false));
 }
 
-TEST_F(XMTestFixture, write_position_p_gain) {
-  ASSERT_FALSE(dxl->write_position_p_gain(comm, 123));
-}
-
-TEST_F(XMTestFixture, write_position_i_gain) {
-  ASSERT_FALSE(dxl->write_position_i_gain(comm, 123));
-}
-
-TEST_F(XMTestFixture, write_position_d_gain) {
-  ASSERT_FALSE(dxl->write_position_d_gain(comm, 123));
+TEST_F(XMTestFixture, write_velocity_i_gain) {
+  ASSERT_FALSE(dxl->write_velocity_i_gain(comm, 123));
 }
 
 TEST_F(XMTestFixture, write_velocity_p_gain) {
   ASSERT_FALSE(dxl->write_velocity_p_gain(comm, 123));
 }
 
-TEST_F(XMTestFixture, write_velocity_i_gain) {
-  ASSERT_FALSE(dxl->write_velocity_i_gain(comm, 123));
+TEST_F(XMTestFixture, write_position_d_gain) {
+  ASSERT_FALSE(dxl->write_position_d_gain(comm, 123));
+}
+
+TEST_F(XMTestFixture, write_position_i_gain) {
+  ASSERT_FALSE(dxl->write_position_i_gain(comm, 123));
+}
+
+TEST_F(XMTestFixture, write_position_p_gain) {
+  ASSERT_FALSE(dxl->write_position_p_gain(comm, 123));
 }
 
 TEST_F(XMTestFixture, write_profile_acceleration) {
