@@ -127,8 +127,38 @@ TEST_F(XMTestFixture, to_position_radian) {
   EXPECT_DOUBLE_EQ(dxl->to_position_radian(2048 - 1024), -M_PI_2);
 }
 
+TEST_F(XMTestFixture, to_velocity_rps) {
+  EXPECT_DOUBLE_EQ(dxl->to_velocity_rps(0), 0.0);
+  EXPECT_NEAR(dxl->to_velocity_rps(1), 0.0239808, 0.0001);
+  EXPECT_NEAR(dxl->to_velocity_rps(-1), -0.0239808, 0.0001);
+}
+
 TEST_F(XMTestFixture, to_current_ampere) {
   EXPECT_DOUBLE_EQ(dxl->to_current_ampere(0), 0.0);
   EXPECT_DOUBLE_EQ(dxl->to_current_ampere(1000), 2.69);
   EXPECT_DOUBLE_EQ(dxl->to_current_ampere(-1000), -2.69);
+}
+
+TEST_F(XMTestFixture, to_voltage_volt) {
+  EXPECT_DOUBLE_EQ(dxl->to_voltage_volt(0), 0.0);
+  EXPECT_DOUBLE_EQ(dxl->to_voltage_volt(1), 0.1);
+  EXPECT_DOUBLE_EQ(dxl->to_voltage_volt(2), 0.2);
+}
+
+TEST_F(XMTestFixture, from_position_radian) {
+  EXPECT_EQ(dxl->from_position_radian(0.0), 2048);
+  EXPECT_EQ(dxl->from_position_radian(M_PI_2), 2048 + 1024);
+  EXPECT_EQ(dxl->from_position_radian(-M_PI_2), 2048 - 1024);
+}
+
+TEST_F(XMTestFixture, from_velocity_rps) {
+  EXPECT_EQ(dxl->from_velocity_rps(0.0), 0);
+  EXPECT_EQ(dxl->from_velocity_rps(0.239809), 10);
+  EXPECT_EQ(dxl->from_velocity_rps(-0.239809), 0xFFFFFFF6);  // -10
+}
+
+TEST_F(XMTestFixture, from_current_ampere) {
+  EXPECT_EQ(dxl->from_current_ampere(0.0), 0);
+  EXPECT_EQ(dxl->from_current_ampere(2.691), 1000);
+  EXPECT_EQ(dxl->from_current_ampere(-2.691), 0xFFFFFC18);  // -1000
 }

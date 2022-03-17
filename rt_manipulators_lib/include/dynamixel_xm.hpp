@@ -45,7 +45,12 @@ class DynamixelXM : public dynamixel_base::DynamixelBase  {
   unsigned int to_profile_acceleration(const double acceleration_rpss);
   unsigned int to_profile_velocity(const double velocity_rps);
   double to_position_radian(const int position);
+  double to_velocity_rps(const int velocity);
   double to_current_ampere(const int current);
+  double to_voltage_volt(const int voltage);
+  unsigned int from_position_radian(const double position_rad);
+  unsigned int from_velocity_rps(const double velocity_rps);
+  unsigned int from_current_ampere(const double current_ampere);
 
  private:
   int HOME_POSITION_;

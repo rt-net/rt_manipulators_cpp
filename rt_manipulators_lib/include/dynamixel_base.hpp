@@ -65,7 +65,12 @@ class DynamixelBase {
   virtual unsigned int to_profile_acceleration(const double acceleration_rpss) { return 1; }
   virtual unsigned int to_profile_velocity(const double velocity_rps) { return 1; }
   virtual double to_position_radian(const int position) { return 0.0; }
+  virtual double to_velocity_rps(const int velocity) { return 0.0; }
   virtual double to_current_ampere(const int current) { return 0.0; }
+  virtual double to_voltage_volt(const int voltage) { return 0.0; }
+  virtual unsigned int from_position_radian(const double position_rad) { return 0; }
+  virtual unsigned int from_velocity_rps(const double velocity_rps) { return 0; }
+  virtual unsigned int from_current_ampere(const double current_ampere) { return 0; }
 
  protected:
   uint8_t id_;

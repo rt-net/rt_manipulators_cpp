@@ -24,17 +24,6 @@ namespace rt_manipulators_cpp {
 // Ref: https://emanual.robotis.com/docs/en/dxl/x/xm430-w350/
 // Ref: https://emanual.robotis.com/docs/en/dxl/x/xm540-w270/
 // Ref: https://emanual.robotis.com/docs/en/dxl/x/xm540-w150/
-const int DXL_HOME_POSITION = 2048;
-const double TO_RADIANS = (180.0 / 2048.0) * M_PI / 180.0;
-const double TO_DXL_POS = 1.0 / TO_RADIANS;
-const double TO_VELOCITY_REV_PER_MIN = 0.229;
-const double TO_VELOCITY_RAD_PER_MIN = TO_VELOCITY_REV_PER_MIN * 2.0 * M_PI;
-const double TO_VELOCITY_RAD_PER_SEC = TO_VELOCITY_RAD_PER_MIN / 60.0;
-const double DXL_VELOCITY_FROM_RAD_PER_SEC = 1.0 / TO_VELOCITY_RAD_PER_SEC;
-const int DXL_MAX_VELOCITY = 32767;
-const double TO_CURRENT_AMPERE = 0.00269;
-const double TO_DXL_CURRENT = 1.0 / TO_CURRENT_AMPERE;
-const double TO_VOLTAGE_VOLT = 0.1;
 
 // Dynamixel XM Series address table
 const uint16_t ADDR_GOAL_CURRENT = 102;
@@ -226,7 +215,7 @@ bool Hardware::sync_read(const std::string& group_name) {
       if (get_data(group_name, joint_name, addr_sync_read_position_[group_name],
                   LEN_PRESENT_POSITION, data)) {
         joints_.joint(joint_name)->set_present_position(
-          joints_.joint(joint_name)->dxl->to_position_radian(static_cast<int>(data)));
+          joints_.joint(joint_name)->dxl->to_position_radian(static_cast<int32_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_positionを取得できません." << std::endl;
         retval = false;
@@ -240,7 +229,7 @@ bool Hardware::sync_read(const std::string& group_name) {
       if (get_data(group_name, joint_name, addr_sync_read_velocity_[group_name],
                   LEN_PRESENT_VELOCITY, data)) {
         joints_.joint(joint_name)->set_present_velocity(
-          dxl_velocity_to_rps(static_cast<int32_t>(data)));
+          joints_.joint(joint_name)->dxl->to_velocity_rps(static_cast<int32_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_velocityを取得できません." << std::endl;
         retval = false;
@@ -254,7 +243,7 @@ bool Hardware::sync_read(const std::string& group_name) {
       if (get_data(group_name, joint_name, addr_sync_read_current_[group_name],
                   LEN_PRESENT_CURRENT, data)) {
         joints_.joint(joint_name)->set_present_current(
-          joints_.joint(joint_name)->dxl->to_current_ampere(static_cast<int>(data)));
+          joints_.joint(joint_name)->dxl->to_current_ampere(static_cast<int16_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_currentを取得できません." << std::endl;
         retval = false;
@@ -268,7 +257,7 @@ bool Hardware::sync_read(const std::string& group_name) {
       if (get_data(group_name, joint_name, addr_sync_read_voltage_[group_name],
                   LEN_PRESENT_VOLTAGE, data)) {
         joints_.joint(joint_name)->set_present_voltage(
-          dxl_voltage_to_volt(static_cast<int16_t>(data)));
+          joints_.joint(joint_name)->dxl->to_voltage_volt(static_cast<int16_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_voltageを取得できません." << std::endl;
         retval = false;
@@ -303,7 +292,8 @@ bool Hardware::sync_write(const std::string& group_name) {
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     std::vector<uint8_t> write_data;
     if (joints_.group(group_name)->sync_write_position_enabled()) {
-      uint32_t goal_position = radian_to_dxl_pos(joints_.joint(joint_name)->get_goal_position());
+      uint32_t goal_position = joints_.joint(joint_name)->dxl->from_position_radian(
+        joints_.joint(joint_name)->get_goal_position());
       write_data.push_back(DXL_LOBYTE(DXL_LOWORD(goal_position)));
       write_data.push_back(DXL_HIBYTE(DXL_LOWORD(goal_position)));
       write_data.push_back(DXL_LOBYTE(DXL_HIWORD(goal_position)));
@@ -311,7 +301,8 @@ bool Hardware::sync_write(const std::string& group_name) {
     }
 
     if (joints_.group(group_name)->sync_write_velocity_enabled()) {
-      uint32_t goal_velocity = to_dxl_velocity(joints_.joint(joint_name)->get_goal_velocity());
+      uint32_t goal_velocity = joints_.joint(joint_name)->dxl->from_velocity_rps(
+        joints_.joint(joint_name)->get_goal_velocity());
       write_data.push_back(DXL_LOBYTE(DXL_LOWORD(goal_velocity)));
       write_data.push_back(DXL_HIBYTE(DXL_LOWORD(goal_velocity)));
       write_data.push_back(DXL_LOBYTE(DXL_HIWORD(goal_velocity)));
@@ -319,7 +310,8 @@ bool Hardware::sync_write(const std::string& group_name) {
     }
 
     if (joints_.group(group_name)->sync_write_current_enabled()) {
-      uint16_t goal_current = to_dxl_current(joints_.joint(joint_name)->get_goal_current());
+      uint16_t goal_current = joints_.joint(joint_name)->dxl->from_current_ampere(
+        joints_.joint(joint_name)->get_goal_current());
       write_data.push_back(DXL_LOBYTE(goal_current));
       write_data.push_back(DXL_HIBYTE(goal_current));
     }
@@ -943,26 +935,6 @@ void Hardware::read_write_thread(const std::vector<std::string>& group_names,
 
     std::this_thread::sleep_until(next_start_time);
   }
-}
-
-double Hardware::dxl_velocity_to_rps(const int32_t velocity) const {
-  return velocity * TO_VELOCITY_RAD_PER_SEC;
-}
-
-double Hardware::dxl_voltage_to_volt(const int16_t voltage) const {
-  return voltage * TO_VOLTAGE_VOLT;
-}
-
-uint32_t Hardware::radian_to_dxl_pos(const double position) {
-  return position * TO_DXL_POS + DXL_HOME_POSITION;
-}
-
-uint32_t Hardware::to_dxl_velocity(const double velocity_rps) {
-  return velocity_rps * DXL_VELOCITY_FROM_RAD_PER_SEC;
-}
-
-uint16_t Hardware::to_dxl_current(const double current_ampere) {
-  return current_ampere * TO_DXL_CURRENT;
 }
 
 }  // namespace rt_manipulators_cpp

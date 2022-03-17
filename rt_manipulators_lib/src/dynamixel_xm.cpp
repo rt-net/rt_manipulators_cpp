@@ -44,6 +44,9 @@ const double DXL_VELOCITY_FROM_RAD_PER_SEC = 1.0 / TO_VELOCITY_RAD_PER_SEC;
 const int DXL_MAX_VELOCITY = 32767;
 const double TO_RADIANS = (180.0 / 2048.0) * M_PI / 180.0;
 const double TO_CURRENT_AMPERE = 0.00269;
+const double TO_VOLTAGE_VOLT = 0.1;
+const double TO_DXL_POS = 1.0 / TO_RADIANS;
+const double TO_DXL_CURRENT = 1.0 / TO_CURRENT_AMPERE;
 
 DynamixelXM::DynamixelXM(const uint8_t id, const int home_position)
   : dynamixel_base::DynamixelBase(id), HOME_POSITION_(home_position) {
@@ -157,8 +160,28 @@ double DynamixelXM::to_position_radian(const int position) {
   return (position - HOME_POSITION_) * TO_RADIANS;
 }
 
+double DynamixelXM::to_velocity_rps(const int velocity) {
+  return velocity * TO_VELOCITY_RAD_PER_SEC;
+}
+
 double DynamixelXM::to_current_ampere(const int current) {
   return current * TO_CURRENT_AMPERE;
+}
+
+double DynamixelXM::to_voltage_volt(const int voltage) {
+  return voltage * TO_VOLTAGE_VOLT;
+}
+
+unsigned int DynamixelXM::from_position_radian(const double position_rad) {
+  return position_rad * TO_DXL_POS + HOME_POSITION_;
+}
+
+unsigned int DynamixelXM::from_velocity_rps(const double velocity_rps) {
+  return velocity_rps * DXL_VELOCITY_FROM_RAD_PER_SEC;
+}
+
+unsigned int DynamixelXM::from_current_ampere(const double current_ampere) {
+  return current_ampere * TO_DXL_CURRENT;
 }
 
 }  // namespace dynamixel_xm
