@@ -32,11 +32,6 @@ const double TO_VELOCITY_RAD_PER_MIN = TO_VELOCITY_REV_PER_MIN * 2.0 * M_PI;
 const double TO_VELOCITY_RAD_PER_SEC = TO_VELOCITY_RAD_PER_MIN / 60.0;
 const double DXL_VELOCITY_FROM_RAD_PER_SEC = 1.0 / TO_VELOCITY_RAD_PER_SEC;
 const int DXL_MAX_VELOCITY = 32767;
-const double TO_ACCELERATION_REV_PER_MM = 214.577;
-const double TO_ACCELERATION_TO_RAD_PER_MM = TO_ACCELERATION_REV_PER_MM * 2.0 * M_PI;
-const double TO_ACCELERATION_TO_RAD_PER_SS = TO_ACCELERATION_TO_RAD_PER_MM / 3600.0;
-const double DXL_ACCELERATION_FROM_RAD_PER_SS = 1.0 / TO_ACCELERATION_TO_RAD_PER_SS;
-const int DXL_MAX_ACCELERATION = 32767;
 const double TO_CURRENT_AMPERE = 0.00269;
 const double TO_DXL_CURRENT = 1.0 / TO_CURRENT_AMPERE;
 const double TO_VOLTAGE_VOLT = 0.1;
@@ -49,8 +44,6 @@ const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
 const uint16_t ADDR_GOAL_CURRENT = 102;
 const uint16_t ADDR_GOAL_VELOCITY = 104;
 const uint16_t ADDR_GOAL_POSITION = 116;
-const uint16_t ADDR_PROFILE_ACCELERATION = 108;
-const uint16_t ADDR_PROFILE_VELOCITY = 112;
 const uint16_t ADDR_PRESENT_CURRENT = 126;
 const uint16_t ADDR_PRESENT_VELOCITY = 128;
 const uint16_t ADDR_PRESENT_POSITION = 132;
@@ -564,14 +557,15 @@ bool Hardware::write_max_acceleration_to_group(const std::string& group_name,
     return false;
   }
 
-  auto dxl_acceleration = to_dxl_acceleration(acceleration_rpss);
-  if (!write_double_word_data_to_group(group_name, ADDR_PROFILE_ACCELERATION, dxl_acceleration)) {
-    std::cerr << group_name << "グループのProfile Accelerationの書き込みに失敗しました."
-              << std::endl;
-    return false;
+  bool retval = true;
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    if (!joints_.joint(joint_name)->dxl->write_profile_acceleration(comm_, acceleration_rpss)) {
+      std::cerr << joint_name << std::endl;
+      std::cerr << "ジョイントのProfile Accelerationの書き込みに失敗しました." << std::endl;
+      retval = false;
+    }
   }
-
-  return true;
+  return retval;
 }
 
 bool Hardware::write_max_velocity_to_group(const std::string& group_name,
@@ -582,13 +576,15 @@ bool Hardware::write_max_velocity_to_group(const std::string& group_name,
     return false;
   }
 
-  auto dxl_velocity = to_dxl_profile_velocity(velocity_rps);
-  if (!write_double_word_data_to_group(group_name, ADDR_PROFILE_VELOCITY, dxl_velocity)) {
-    std::cerr << group_name << "グループのProfile Velocityの書き込みに失敗しました." << std::endl;
-    return false;
+  bool retval = true;
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    if (!joints_.joint(joint_name)->dxl->write_profile_velocity(comm_, velocity_rps)) {
+      std::cerr << joint_name << std::endl;
+      std::cerr << "ジョイントのProfile Velocityの書き込みに失敗しました." << std::endl;
+      retval = false;
+    }
   }
-
-  return true;
+  return retval;
 }
 
 bool Hardware::write_position_pid_gain(const uint8_t id, const uint16_t p, const uint16_t i,
@@ -639,12 +635,13 @@ bool Hardware::write_position_pid_gain_to_group(const std::string& group_name, c
     return false;
   }
 
+  bool retval = true;
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     if (!write_position_pid_gain(joint_name, p, i, d)) {
-      return false;
+      retval = false;
     }
   }
-  return true;
+  return retval;
 }
 
 bool Hardware::write_velocity_pi_gain(const uint8_t id, const uint16_t p, const uint16_t i) {
@@ -688,12 +685,13 @@ bool Hardware::write_velocity_pi_gain_to_group(const std::string& group_name, co
     return false;
   }
 
+  bool retval = true;
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     if (!write_velocity_pi_gain(joint_name, p, i)) {
-      return false;
+      retval = false;
     }
   }
-  return true;
+  return retval;
 }
 
 bool Hardware::write_word_data_to_group(const std::string& group_name, const uint16_t address,
@@ -707,23 +705,6 @@ bool Hardware::write_word_data_to_group(const std::string& group_name, const uin
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
     if (!comm_->write_word_data(id, address, write_data)) {
-      retval = false;
-    }
-  }
-  return retval;
-}
-
-bool Hardware::write_double_word_data_to_group(const std::string& group_name,
-                                               const uint16_t address, const uint32_t write_data) {
-  if (!joints_.has_group(group_name)) {
-    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
-    return false;
-  }
-
-  bool retval = true;
-  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-    auto id = joints_.joint(joint_name)->id();
-    if (!comm_->write_double_word_data(id, address, write_data)) {
       retval = false;
     }
   }
@@ -999,36 +980,6 @@ uint32_t Hardware::to_dxl_velocity(const double velocity_rps) {
 
 uint16_t Hardware::to_dxl_current(const double current_ampere) {
   return current_ampere * TO_DXL_CURRENT;
-}
-
-uint32_t Hardware::to_dxl_acceleration(const double acceleration_rpss) {
-  // 加速度 rad/s^2をDYNAMIXELのデータに変換する
-
-  int dxl_acceleration = DXL_ACCELERATION_FROM_RAD_PER_SS * acceleration_rpss;
-  if (dxl_acceleration > DXL_MAX_ACCELERATION) {
-    dxl_acceleration = DXL_MAX_ACCELERATION;
-  } else if (dxl_acceleration <= 0) {
-    // XMシリーズのDYNAMIXELでは、'0'は最大加速度を意味する
-    // よって、加速度の最小値は'1'である
-    dxl_acceleration = 1;
-  }
-
-  return static_cast<uint32_t>(dxl_acceleration);
-}
-
-uint32_t Hardware::to_dxl_profile_velocity(const double velocity_rps) {
-  // 速度 rad/sをDYNAMIXELのProfile Velocityデータに変換する
-
-  int dxl_velocity = DXL_VELOCITY_FROM_RAD_PER_SEC * velocity_rps;
-  if (dxl_velocity > DXL_MAX_VELOCITY) {
-    dxl_velocity = DXL_MAX_VELOCITY;
-  } else if (dxl_velocity <= 0) {
-    // XMシリーズのDYNAMIXELでは、'0'は最大速度を意味する
-    // よって、速度の最小値は'1'である
-    dxl_velocity = 1;
-  }
-
-  return static_cast<uint32_t>(dxl_velocity);
 }
 
 }  // namespace rt_manipulators_cpp

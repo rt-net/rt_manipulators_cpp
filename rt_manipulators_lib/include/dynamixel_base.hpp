@@ -46,6 +46,14 @@ class DynamixelBase {
   virtual bool write_velocity_i_gain(
     const dynamixel_base::comm_t & comm, const unsigned int gain) { return false; }
 
+  virtual bool write_profile_acceleration(
+    const dynamixel_base::comm_t & comm, const double acceleration_rpss) { return false; }
+  virtual bool write_profile_velocity(
+    const dynamixel_base::comm_t & comm, const double velocity_rps) { return false; }
+
+  virtual unsigned int to_profile_acceleration(const double acceleration_rpss) { return 0; }
+  virtual unsigned int to_profile_velocity(const double velocity_rps) { return 0; }
+
  protected:
   uint8_t id_;
   std::string name_;

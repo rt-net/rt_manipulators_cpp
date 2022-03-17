@@ -30,6 +30,14 @@ class DynamixelXM : public dynamixel_base::DynamixelBase  {
   bool write_position_d_gain(const dynamixel_base::comm_t & comm, const unsigned int gain);
   bool write_velocity_p_gain(const dynamixel_base::comm_t & comm, const unsigned int gain);
   bool write_velocity_i_gain(const dynamixel_base::comm_t & comm, const unsigned int gain);
+
+  bool write_profile_acceleration(
+    const dynamixel_base::comm_t & comm, const double acceleration_rpss);
+  bool write_profile_velocity(
+    const dynamixel_base::comm_t & comm, const double velocity_rps);
+
+  unsigned int to_profile_acceleration(const double acceleration_rpss);
+  unsigned int to_profile_velocity(const double velocity_rps);
 };
 
 }  // namespace dynamixel_xm

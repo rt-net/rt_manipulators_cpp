@@ -88,8 +88,6 @@ class Hardware {
  protected:
   bool write_word_data_to_group(const std::string& group_name, const uint16_t address,
                                 const uint16_t write_data);
-  bool write_double_word_data_to_group(const std::string& group_name, const uint16_t address,
-                                       const uint32_t write_data);
 
   std::shared_ptr<hardware_communicator::Communicator> comm_;
 
@@ -110,8 +108,6 @@ class Hardware {
   uint32_t radian_to_dxl_pos(const double position);
   uint32_t to_dxl_velocity(const double velocity_rps);
   uint16_t to_dxl_current(const double current_ampere);
-  uint32_t to_dxl_acceleration(const double acceleration_rpss);
-  uint32_t to_dxl_profile_velocity(const double velocity_rps);
 
   hardware_joints::Joints joints_;
   std::map<JointGroupName, uint16_t> addr_sync_read_position_;

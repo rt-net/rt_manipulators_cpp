@@ -69,3 +69,29 @@ TEST_F(XMTestFixture, write_velocity_p_gain) {
 TEST_F(XMTestFixture, write_velocity_i_gain) {
   ASSERT_FALSE(dxl->write_velocity_i_gain(comm, 123));
 }
+
+TEST_F(XMTestFixture, write_profile_acceleration) {
+  ASSERT_FALSE(dxl->write_profile_acceleration(comm, 0));
+}
+
+TEST_F(XMTestFixture, write_profile_velocity) {
+  ASSERT_FALSE(dxl->write_profile_velocity(comm, 0));
+}
+
+TEST_F(XMTestFixture, to_profile_acceleration) {
+  // rad/s^2 to rev/min^2
+  // 0以下に対しては1を返すことを期待
+  EXPECT_EQ(dxl->to_profile_acceleration(-1), 1);
+  EXPECT_EQ(dxl->to_profile_acceleration(0), 1);
+  EXPECT_EQ(dxl->to_profile_acceleration(3.745076), 10);
+  EXPECT_EQ(dxl->to_profile_acceleration(1000000), 32767);
+}
+
+TEST_F(XMTestFixture, to_profile_velocity) {
+  // rad/s to rev/min
+  // 0以下に対しては1を返すことを期待
+  EXPECT_EQ(dxl->to_profile_velocity(-1), 1);
+  EXPECT_EQ(dxl->to_profile_velocity(0), 1);
+  EXPECT_EQ(dxl->to_profile_velocity(0.239809), 10);
+  EXPECT_EQ(dxl->to_profile_velocity(1000000), 32767);
+}
