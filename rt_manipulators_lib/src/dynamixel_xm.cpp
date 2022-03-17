@@ -19,6 +19,8 @@
 namespace dynamixel_xm {
 
 const uint16_t ADDR_TORQUE_ENABLE = 64;
+const uint16_t ADDR_VELOCITY_I_GAIN = 76;
+const uint16_t ADDR_VELOCITY_P_GAIN = 78;
 const uint16_t ADDR_POSITION_D_GAIN = 80;
 const uint16_t ADDR_POSITION_I_GAIN = 82;
 const uint16_t ADDR_POSITION_P_GAIN = 84;
@@ -45,6 +47,16 @@ bool DynamixelXM::write_position_i_gain(
 bool DynamixelXM::write_position_d_gain(
   const dynamixel_base::comm_t & comm, const unsigned int gain) {
   return comm->write_word_data(id_, ADDR_POSITION_D_GAIN, static_cast<uint16_t>(gain));
+}
+
+bool DynamixelXM::write_velocity_p_gain(
+  const dynamixel_base::comm_t & comm, const unsigned int gain) {
+  return comm->write_word_data(id_, ADDR_VELOCITY_P_GAIN, static_cast<uint16_t>(gain));
+}
+
+bool DynamixelXM::write_velocity_i_gain(
+  const dynamixel_base::comm_t & comm, const unsigned int gain) {
+  return comm->write_word_data(id_, ADDR_VELOCITY_I_GAIN, static_cast<uint16_t>(gain));
 }
 
 }  // namespace dynamixel_xm

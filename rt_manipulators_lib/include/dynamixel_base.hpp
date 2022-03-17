@@ -31,13 +31,19 @@ class DynamixelBase {
 
   uint8_t get_id() const { return id_; }
   std::string get_name() const { return name_; }
+
   virtual bool write_torque_enable(
     const dynamixel_base::comm_t & comm, const bool enable) { return false; }
+
   virtual bool write_position_p_gain(
     const dynamixel_base::comm_t & comm, const unsigned int gain) { return false; }
   virtual bool write_position_i_gain(
     const dynamixel_base::comm_t & comm, const unsigned int gain) { return false; }
   virtual bool write_position_d_gain(
+    const dynamixel_base::comm_t & comm, const unsigned int gain) { return false; }
+  virtual bool write_velocity_p_gain(
+    const dynamixel_base::comm_t & comm, const unsigned int gain) { return false; }
+  virtual bool write_velocity_i_gain(
     const dynamixel_base::comm_t & comm, const unsigned int gain) { return false; }
 
  protected:

@@ -46,8 +46,6 @@ const uint16_t ADDR_OPERATING_MODE = 11;
 const uint16_t ADDR_CURRENT_LIMIT = 38;
 const uint16_t ADDR_MAX_POSITION_LIMIT = 48;
 const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
-const uint16_t ADDR_VELOCITY_I_GAIN = 76;
-const uint16_t ADDR_VELOCITY_P_GAIN = 78;
 const uint16_t ADDR_GOAL_CURRENT = 102;
 const uint16_t ADDR_GOAL_VELOCITY = 104;
 const uint16_t ADDR_GOAL_POSITION = 116;
@@ -656,13 +654,13 @@ bool Hardware::write_velocity_pi_gain(const uint8_t id, const uint16_t p, const 
     return false;
   }
 
-  if (!comm_->write_word_data(id, ADDR_VELOCITY_P_GAIN, p)) {
+  if (!joints_.joint(id)->dxl->write_velocity_p_gain(comm_, p)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のVelocity P Gainの書き込みに失敗しました." << std::endl;
     return false;
   }
 
-  if (!comm_->write_word_data(id, ADDR_VELOCITY_I_GAIN, i)) {
+  if (!joints_.joint(id)->dxl->write_velocity_i_gain(comm_, i)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のVelocity I Gainの書き込みに失敗しました." << std::endl;
     return false;
@@ -690,16 +688,11 @@ bool Hardware::write_velocity_pi_gain_to_group(const std::string& group_name, co
     return false;
   }
 
-  if (!write_word_data_to_group(group_name, ADDR_VELOCITY_P_GAIN, p)) {
-    std::cerr << group_name << "グループのVelocity P Gainの書き込みに失敗しました." << std::endl;
-    return false;
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    if (!write_velocity_pi_gain(joint_name, p, i)) {
+      return false;
+    }
   }
-
-  if (!write_word_data_to_group(group_name, ADDR_VELOCITY_I_GAIN, i)) {
-    std::cerr << group_name << "グループのVelocity I Gainの書き込みに失敗しました." << std::endl;
-    return false;
-  }
-
   return true;
 }
 
