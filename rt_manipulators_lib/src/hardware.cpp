@@ -37,9 +37,6 @@ const double TO_DXL_CURRENT = 1.0 / TO_CURRENT_AMPERE;
 const double TO_VOLTAGE_VOLT = 0.1;
 
 // Dynamixel XM Series address table
-const uint16_t ADDR_CURRENT_LIMIT = 38;
-const uint16_t ADDR_MAX_POSITION_LIMIT = 48;
-const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
 const uint16_t ADDR_GOAL_CURRENT = 102;
 const uint16_t ADDR_GOAL_VELOCITY = 104;
 const uint16_t ADDR_GOAL_POSITION = 116;
@@ -82,28 +79,24 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
   for (const auto& [group_name, group] : joints_.groups()) {
     // ジョイントリミットの読み込みと設定
     for (const auto& joint_name : group->joint_names()) {
-      auto joint_id = joints_.joint(joint_name)->id();
-      uint32_t dxl_max_pos_limit = 0;
-      uint32_t dxl_min_pos_limit = 0;
-      uint16_t dxl_current_limit = 0;
-      if (!comm_->read_double_word_data(joint_id, ADDR_MAX_POSITION_LIMIT, dxl_max_pos_limit)) {
+      double max_position_limit = 0.0;
+      double min_position_limit = 0.0;
+      double current_limit = 0.0;
+      if (!joints_.joint(joint_name)->dxl->read_max_position_limit(comm_, max_position_limit)) {
         std::cerr << joint_name << "のMax Position Limitの読み取りに失敗しました." << std::endl;
         return false;
       }
-      if (!comm_->read_double_word_data(joint_id, ADDR_MIN_POSITION_LIMIT, dxl_min_pos_limit)) {
+      if (!joints_.joint(joint_name)->dxl->read_min_position_limit(comm_, min_position_limit)) {
         std::cerr << joint_name << "のMin Position Limitの読み取りに失敗しました." << std::endl;
         return false;
       }
-      if (!comm_->read_word_data(joint_id, ADDR_CURRENT_LIMIT, dxl_current_limit)) {
+      if (!joints_.joint(joint_name)->dxl->read_current_limit(comm_, current_limit)) {
         std::cerr << joint_name << "のCurrent Limitの読み取りに失敗しました." << std::endl;
         return false;
       }
 
-      joints_.joint(joint_name)->set_position_limit(
-        dxl_pos_to_radian(static_cast<int32_t>(dxl_min_pos_limit)),
-        dxl_pos_to_radian(static_cast<int32_t>(dxl_max_pos_limit)));
-      joints_.joint(joint_name)->set_current_limit(
-        dxl_current_to_ampere(dxl_current_limit));
+      joints_.joint(joint_name)->set_position_limit(min_position_limit, max_position_limit);
+      joints_.joint(joint_name)->set_current_limit(current_limit);
     }
 
     if (!write_operating_mode(group_name)) {
@@ -233,7 +226,7 @@ bool Hardware::sync_read(const std::string& group_name) {
       if (get_data(group_name, joint_name, addr_sync_read_position_[group_name],
                   LEN_PRESENT_POSITION, data)) {
         joints_.joint(joint_name)->set_present_position(
-          dxl_pos_to_radian(static_cast<int32_t>(data)));
+          joints_.joint(joint_name)->dxl->to_position_radian(static_cast<int>(data)));
       } else {
         std::cerr << joint_name << "のpresent_positionを取得できません." << std::endl;
         retval = false;
@@ -261,7 +254,7 @@ bool Hardware::sync_read(const std::string& group_name) {
       if (get_data(group_name, joint_name, addr_sync_read_current_[group_name],
                   LEN_PRESENT_CURRENT, data)) {
         joints_.joint(joint_name)->set_present_current(
-          dxl_current_to_ampere(static_cast<int16_t>(data)));
+          joints_.joint(joint_name)->dxl->to_current_ampere(static_cast<int>(data)));
       } else {
         std::cerr << joint_name << "のpresent_currentを取得できません." << std::endl;
         retval = false;
@@ -952,16 +945,8 @@ void Hardware::read_write_thread(const std::vector<std::string>& group_names,
   }
 }
 
-double Hardware::dxl_pos_to_radian(const int32_t position) {
-  return (position - DXL_HOME_POSITION) * TO_RADIANS;
-}
-
 double Hardware::dxl_velocity_to_rps(const int32_t velocity) const {
   return velocity * TO_VELOCITY_RAD_PER_SEC;
-}
-
-double Hardware::dxl_current_to_ampere(const int16_t current) const {
-  return current * TO_CURRENT_AMPERE;
 }
 
 double Hardware::dxl_voltage_to_volt(const int16_t voltage) const {

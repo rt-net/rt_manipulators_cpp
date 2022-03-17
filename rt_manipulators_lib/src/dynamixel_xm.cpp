@@ -20,6 +20,9 @@
 namespace dynamixel_xm {
 
 const uint16_t ADDR_OPERATING_MODE = 11;
+const uint16_t ADDR_CURRENT_LIMIT = 38;
+const uint16_t ADDR_MAX_POSITION_LIMIT = 48;
+const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
 const uint16_t ADDR_TORQUE_ENABLE = 64;
 const uint16_t ADDR_VELOCITY_I_GAIN = 76;
 const uint16_t ADDR_VELOCITY_P_GAIN = 78;
@@ -39,9 +42,11 @@ const double TO_VELOCITY_RAD_PER_MIN = TO_VELOCITY_REV_PER_MIN * 2.0 * M_PI;
 const double TO_VELOCITY_RAD_PER_SEC = TO_VELOCITY_RAD_PER_MIN / 60.0;
 const double DXL_VELOCITY_FROM_RAD_PER_SEC = 1.0 / TO_VELOCITY_RAD_PER_SEC;
 const int DXL_MAX_VELOCITY = 32767;
+const double TO_RADIANS = (180.0 / 2048.0) * M_PI / 180.0;
+const double TO_CURRENT_AMPERE = 0.00269;
 
-DynamixelXM::DynamixelXM(const uint8_t id)
-  : dynamixel_base::DynamixelBase(id) {
+DynamixelXM::DynamixelXM(const uint8_t id, const int home_position)
+  : dynamixel_base::DynamixelBase(id), HOME_POSITION_(home_position) {
   name_ = "XM";
 }
 
@@ -51,6 +56,30 @@ bool DynamixelXM::read_operating_mode(const dynamixel_base::comm_t & comm, uint8
 
 bool DynamixelXM::write_operating_mode(const dynamixel_base::comm_t & comm, const uint8_t mode) {
   return comm->write_byte_data(id_, ADDR_OPERATING_MODE, mode);
+}
+
+bool DynamixelXM::read_current_limit(
+  const dynamixel_base::comm_t & comm, double & limit_ampere) {
+  uint16_t dxl_current_limit = 0;
+  bool retval = comm->read_word_data(id_, ADDR_CURRENT_LIMIT, dxl_current_limit);
+  limit_ampere = to_current_ampere(dxl_current_limit);
+  return retval;
+}
+
+bool DynamixelXM::read_max_position_limit(
+  const dynamixel_base::comm_t & comm, double & limit_radian) {
+  uint16_t dxl_position_limit = 0;
+  bool retval = comm->read_word_data(id_, ADDR_MAX_POSITION_LIMIT, dxl_position_limit);
+  limit_radian = to_position_radian(dxl_position_limit);
+  return retval;
+}
+
+bool DynamixelXM::read_min_position_limit(
+  const dynamixel_base::comm_t & comm, double & limit_radian) {
+  uint16_t dxl_position_limit = 0;
+  bool retval = comm->read_word_data(id_, ADDR_MIN_POSITION_LIMIT, dxl_position_limit);
+  limit_radian = to_position_radian(dxl_position_limit);
+  return retval;
 }
 
 bool DynamixelXM::write_torque_enable(const dynamixel_base::comm_t & comm, const bool enable) {
@@ -122,6 +151,14 @@ unsigned int DynamixelXM::to_profile_velocity(const double velocity_rps) {
   }
 
   return static_cast<unsigned int>(dxl_velocity);
+}
+
+double DynamixelXM::to_position_radian(const int position) {
+  return (position - HOME_POSITION_) * TO_RADIANS;
+}
+
+double DynamixelXM::to_current_ampere(const int current) {
+  return current * TO_CURRENT_AMPERE;
 }
 
 }  // namespace dynamixel_xm

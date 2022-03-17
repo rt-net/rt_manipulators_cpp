@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cmath>
 #include <memory>
 
 #include "gtest/gtest.h"
@@ -53,6 +54,21 @@ TEST_F(XMTestFixture, read_operating_mode) {
 
 TEST_F(XMTestFixture, write_operating_mode) {
   ASSERT_FALSE(dxl->write_operating_mode(comm, false));
+}
+
+TEST_F(XMTestFixture, read_current_limit) {
+  double limit;
+  ASSERT_FALSE(dxl->read_current_limit(comm, limit));
+}
+
+TEST_F(XMTestFixture, read_max_position_limit) {
+  double limit;
+  ASSERT_FALSE(dxl->read_max_position_limit(comm, limit));
+}
+
+TEST_F(XMTestFixture, read_min_position_limit) {
+  double limit;
+  ASSERT_FALSE(dxl->read_min_position_limit(comm, limit));
 }
 
 TEST_F(XMTestFixture, write_torque_enable) {
@@ -103,4 +119,16 @@ TEST_F(XMTestFixture, to_profile_velocity) {
   EXPECT_EQ(dxl->to_profile_velocity(0), 1);
   EXPECT_EQ(dxl->to_profile_velocity(0.239809), 10);
   EXPECT_EQ(dxl->to_profile_velocity(1000000), 32767);
+}
+
+TEST_F(XMTestFixture, to_position_radian) {
+  EXPECT_DOUBLE_EQ(dxl->to_position_radian(2048), 0.0);
+  EXPECT_DOUBLE_EQ(dxl->to_position_radian(2048 + 1024), M_PI_2);
+  EXPECT_DOUBLE_EQ(dxl->to_position_radian(2048 - 1024), -M_PI_2);
+}
+
+TEST_F(XMTestFixture, to_current_ampere) {
+  EXPECT_DOUBLE_EQ(dxl->to_current_ampere(0), 0.0);
+  EXPECT_DOUBLE_EQ(dxl->to_current_ampere(1000), 2.69);
+  EXPECT_DOUBLE_EQ(dxl->to_current_ampere(-1000), -2.69);
 }

@@ -36,6 +36,12 @@ class DynamixelBase {
     const dynamixel_base::comm_t & comm, uint8_t & mode) { return false; }
   virtual bool write_operating_mode(
     const dynamixel_base::comm_t & comm, const uint8_t mode) { return false; }
+  virtual bool read_current_limit(
+    const dynamixel_base::comm_t & comm, double & limit_ampere) { return false; }
+  virtual bool read_max_position_limit(
+    const dynamixel_base::comm_t & comm, double & limit_radian) { return false; }
+  virtual bool read_min_position_limit(
+    const dynamixel_base::comm_t & comm, double & limit_radian) { return false; }
 
   virtual bool write_torque_enable(
     const dynamixel_base::comm_t & comm, const bool enable) { return false; }
@@ -56,8 +62,10 @@ class DynamixelBase {
   virtual bool write_profile_velocity(
     const dynamixel_base::comm_t & comm, const double velocity_rps) { return false; }
 
-  virtual unsigned int to_profile_acceleration(const double acceleration_rpss) { return 0; }
-  virtual unsigned int to_profile_velocity(const double velocity_rps) { return 0; }
+  virtual unsigned int to_profile_acceleration(const double acceleration_rpss) { return 1; }
+  virtual unsigned int to_profile_velocity(const double velocity_rps) { return 1; }
+  virtual double to_position_radian(const int position) { return 0.0; }
+  virtual double to_current_ampere(const int current) { return 0.0; }
 
  protected:
   uint8_t id_;

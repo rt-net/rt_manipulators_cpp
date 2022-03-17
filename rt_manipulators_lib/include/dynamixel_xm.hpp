@@ -21,10 +21,13 @@ namespace dynamixel_xm {
 
 class DynamixelXM : public dynamixel_base::DynamixelBase  {
  public:
-  explicit DynamixelXM(const uint8_t id);
+  explicit DynamixelXM(const uint8_t id, const int home_position = 2048);
 
   bool read_operating_mode(const dynamixel_base::comm_t & comm, uint8_t & mode);
   bool write_operating_mode(const dynamixel_base::comm_t & comm, const uint8_t mode);
+  bool read_current_limit(const dynamixel_base::comm_t & comm, double & limit_ampere);
+  bool read_max_position_limit(const dynamixel_base::comm_t & comm, double & limit_radian);
+  bool read_min_position_limit(const dynamixel_base::comm_t & comm, double & limit_radian);
 
   bool write_torque_enable(const dynamixel_base::comm_t & comm, const bool enable);
 
@@ -41,6 +44,11 @@ class DynamixelXM : public dynamixel_base::DynamixelBase  {
 
   unsigned int to_profile_acceleration(const double acceleration_rpss);
   unsigned int to_profile_velocity(const double velocity_rps);
+  double to_position_radian(const int position);
+  double to_current_ampere(const int current);
+
+ private:
+  int HOME_POSITION_;
 };
 
 }  // namespace dynamixel_xm
