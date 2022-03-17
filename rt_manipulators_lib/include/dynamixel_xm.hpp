@@ -30,7 +30,6 @@ class DynamixelXM : public dynamixel_base::DynamixelBase  {
   bool write_position_d_gain(const dynamixel_base::comm_t & comm, const unsigned int gain);
   bool write_velocity_p_gain(const dynamixel_base::comm_t & comm, const unsigned int gain);
   bool write_velocity_i_gain(const dynamixel_base::comm_t & comm, const unsigned int gain);
-
 };
 
 }  // namespace dynamixel_xm
