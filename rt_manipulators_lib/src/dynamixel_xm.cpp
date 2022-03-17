@@ -48,19 +48,9 @@ bool DynamixelXM::write_torque_enable(const dynamixel_base::comm_t & comm, const
   return comm->write_byte_data(id_, ADDR_TORQUE_ENABLE, enable);
 }
 
-bool DynamixelXM::write_position_p_gain(
+bool DynamixelXM::write_velocity_i_gain(
   const dynamixel_base::comm_t & comm, const unsigned int gain) {
-  return comm->write_word_data(id_, ADDR_POSITION_P_GAIN, static_cast<uint16_t>(gain));
-}
-
-bool DynamixelXM::write_position_i_gain(
-  const dynamixel_base::comm_t & comm, const unsigned int gain) {
-  return comm->write_word_data(id_, ADDR_POSITION_I_GAIN, static_cast<uint16_t>(gain));
-}
-
-bool DynamixelXM::write_position_d_gain(
-  const dynamixel_base::comm_t & comm, const unsigned int gain) {
-  return comm->write_word_data(id_, ADDR_POSITION_D_GAIN, static_cast<uint16_t>(gain));
+  return comm->write_word_data(id_, ADDR_VELOCITY_I_GAIN, static_cast<uint16_t>(gain));
 }
 
 bool DynamixelXM::write_velocity_p_gain(
@@ -68,9 +58,19 @@ bool DynamixelXM::write_velocity_p_gain(
   return comm->write_word_data(id_, ADDR_VELOCITY_P_GAIN, static_cast<uint16_t>(gain));
 }
 
-bool DynamixelXM::write_velocity_i_gain(
+bool DynamixelXM::write_position_d_gain(
   const dynamixel_base::comm_t & comm, const unsigned int gain) {
-  return comm->write_word_data(id_, ADDR_VELOCITY_I_GAIN, static_cast<uint16_t>(gain));
+  return comm->write_word_data(id_, ADDR_POSITION_D_GAIN, static_cast<uint16_t>(gain));
+}
+
+bool DynamixelXM::write_position_i_gain(
+  const dynamixel_base::comm_t & comm, const unsigned int gain) {
+  return comm->write_word_data(id_, ADDR_POSITION_I_GAIN, static_cast<uint16_t>(gain));
+}
+
+bool DynamixelXM::write_position_p_gain(
+  const dynamixel_base::comm_t & comm, const unsigned int gain) {
+  return comm->write_word_data(id_, ADDR_POSITION_P_GAIN, static_cast<uint16_t>(gain));
 }
 
 bool DynamixelXM::write_profile_acceleration(
