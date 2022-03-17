@@ -48,9 +48,6 @@ const uint16_t ADDR_MAX_POSITION_LIMIT = 48;
 const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
 const uint16_t ADDR_VELOCITY_I_GAIN = 76;
 const uint16_t ADDR_VELOCITY_P_GAIN = 78;
-const uint16_t ADDR_POSITION_D_GAIN = 80;
-const uint16_t ADDR_POSITION_I_GAIN = 82;
-const uint16_t ADDR_POSITION_P_GAIN = 84;
 const uint16_t ADDR_GOAL_CURRENT = 102;
 const uint16_t ADDR_GOAL_VELOCITY = 104;
 const uint16_t ADDR_GOAL_POSITION = 116;
@@ -604,19 +601,19 @@ bool Hardware::write_position_pid_gain(const uint8_t id, const uint16_t p, const
     return false;
   }
 
-  if (!comm_->write_word_data(id, ADDR_POSITION_P_GAIN, p)) {
+  if (!joints_.joint(id)->dxl->write_position_p_gain(comm_, p)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のPosition P Gainの書き込みに失敗しました." << std::endl;
     return false;
   }
 
-  if (!comm_->write_word_data(id, ADDR_POSITION_I_GAIN, i)) {
+  if (!joints_.joint(id)->dxl->write_position_i_gain(comm_, i)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のPosition I Gainの書き込みに失敗しました." << std::endl;
     return false;
   }
 
-  if (!comm_->write_word_data(id, ADDR_POSITION_D_GAIN, d)) {
+  if (!joints_.joint(id)->dxl->write_position_d_gain(comm_, d)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のPosition D Gainの書き込みに失敗しました." << std::endl;
     return false;
@@ -644,21 +641,11 @@ bool Hardware::write_position_pid_gain_to_group(const std::string& group_name, c
     return false;
   }
 
-  if (!write_word_data_to_group(group_name, ADDR_POSITION_P_GAIN, p)) {
-    std::cerr << group_name << "グループのPosition P Gainの書き込みに失敗しました." << std::endl;
-    return false;
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    if (!write_position_pid_gain(joint_name, p, i, d)) {
+      return false;
+    }
   }
-
-  if (!write_word_data_to_group(group_name, ADDR_POSITION_I_GAIN, i)) {
-    std::cerr << group_name << "グループのPosition I Gainの書き込みに失敗しました." << std::endl;
-    return false;
-  }
-
-  if (!write_word_data_to_group(group_name, ADDR_POSITION_D_GAIN, d)) {
-    std::cerr << group_name << "グループのPosition D Gainの書き込みに失敗しました." << std::endl;
-    return false;
-  }
-
   return true;
 }
 

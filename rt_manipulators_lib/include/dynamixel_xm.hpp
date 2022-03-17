@@ -23,6 +23,9 @@ class DynamixelXM : public dynamixel_base::DynamixelBase  {
  public:
   explicit DynamixelXM(const uint8_t id);
   bool write_torque_enable(const dynamixel_base::comm_t & comm, const bool enable);
+  bool write_position_p_gain(const dynamixel_base::comm_t & comm, const unsigned int gain);
+  bool write_position_i_gain(const dynamixel_base::comm_t & comm, const unsigned int gain);
+  bool write_position_d_gain(const dynamixel_base::comm_t & comm, const unsigned int gain);
 };
 
 }  // namespace dynamixel_xm
