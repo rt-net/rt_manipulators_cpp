@@ -52,8 +52,34 @@ class DynamixelXM : public dynamixel_base::DynamixelBase  {
   unsigned int from_velocity_rps(const double velocity_rps);
   unsigned int from_current_ampere(const double current_ampere);
 
- private:
+  bool auto_set_indirect_address_of_present_position(const dynamixel_base::comm_t & comm);
+  bool auto_set_indirect_address_of_present_velocity(const dynamixel_base::comm_t & comm);
+  bool auto_set_indirect_address_of_present_current(const dynamixel_base::comm_t & comm);
+  bool auto_set_indirect_address_of_present_input_voltage(const dynamixel_base::comm_t & comm);
+  bool auto_set_indirect_address_of_present_temperature(const dynamixel_base::comm_t & comm);
+
+  unsigned int indirect_addr_of_present_position(void);
+  unsigned int indirect_addr_of_present_velocity(void);
+  unsigned int indirect_addr_of_present_current(void);
+  unsigned int indirect_addr_of_present_input_voltage(void);
+  unsigned int indirect_addr_of_present_temperature(void);
+
+  unsigned int start_address_for_indirect_read(void);
+  unsigned int length_of_indirect_data_read(void);
+
+ protected:
   int HOME_POSITION_;
+  unsigned int total_length_of_indirect_addr_read_;
+  uint16_t indirect_addr_of_present_position_;
+  uint16_t indirect_addr_of_present_velocity_;
+  uint16_t indirect_addr_of_present_current_;
+  uint16_t indirect_addr_of_present_input_voltage_;
+  uint16_t indirect_addr_of_present_temperature_;
+
+  bool set_indirect_address_read(
+    const dynamixel_base::comm_t & comm, const uint16_t addr, const uint16_t len,
+    uint16_t & indirect_addr);
+  unsigned int next_indirect_addr_read(void) const;
 };
 
 }  // namespace dynamixel_xm

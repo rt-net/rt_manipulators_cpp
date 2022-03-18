@@ -72,6 +72,26 @@ class DynamixelBase {
   virtual unsigned int from_velocity_rps(const double velocity_rps) { return 0; }
   virtual unsigned int from_current_ampere(const double current_ampere) { return 0; }
 
+  virtual bool auto_set_indirect_address_of_present_position(
+    const dynamixel_base::comm_t & comm) { return false; }
+  virtual bool auto_set_indirect_address_of_present_velocity(
+    const dynamixel_base::comm_t & comm) { return false; }
+  virtual bool auto_set_indirect_address_of_present_current(
+    const dynamixel_base::comm_t & comm) { return false; }
+  virtual bool auto_set_indirect_address_of_present_input_voltage(
+    const dynamixel_base::comm_t & comm) { return false; }
+  virtual bool auto_set_indirect_address_of_present_temperature(
+    const dynamixel_base::comm_t & comm) { return false; }
+
+  virtual unsigned int indirect_addr_of_present_position(void) { return 0; }
+  virtual unsigned int indirect_addr_of_present_velocity(void) { return 0; }
+  virtual unsigned int indirect_addr_of_present_current(void) { return 0; }
+  virtual unsigned int indirect_addr_of_present_input_voltage(void) { return 0; }
+  virtual unsigned int indirect_addr_of_present_temperature(void) { return 0; }
+
+  virtual unsigned int start_address_for_indirect_read(void) { return 0; }
+  virtual unsigned int length_of_indirect_data_read(void) { return 0; }
+
  protected:
   uint8_t id_;
   std::string name_;

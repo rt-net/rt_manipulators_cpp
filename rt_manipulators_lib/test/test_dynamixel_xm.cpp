@@ -162,3 +162,35 @@ TEST_F(XMTestFixture, from_current_ampere) {
   EXPECT_EQ(dxl->from_current_ampere(2.691), 1000);
   EXPECT_EQ(dxl->from_current_ampere(-2.691), 0xFFFFFC18);  // -1000
 }
+
+TEST_F(XMTestFixture, auto_set_indirect_address_of_present_position) {
+  ASSERT_FALSE(dxl->auto_set_indirect_address_of_present_position(comm));
+}
+
+TEST_F(XMTestFixture, set_indirect_addresses) {
+  EXPECT_EQ(dxl->start_address_for_indirect_read(), 224);
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 0);
+  EXPECT_EQ(dxl->indirect_addr_of_present_position(), 0);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_position(comm));
+  // indirect_dataの開始位置は変わらないことを期待
+  EXPECT_EQ(dxl->start_address_for_indirect_read(), 224);
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 4);
+  EXPECT_EQ(dxl->indirect_addr_of_present_position(), 224);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_velocity(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 8);
+  EXPECT_EQ(dxl->indirect_addr_of_present_velocity(), 228);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_current(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 10);
+  EXPECT_EQ(dxl->indirect_addr_of_present_current(), 232);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_input_voltage(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 12);
+  EXPECT_EQ(dxl->indirect_addr_of_present_input_voltage(), 234);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_temperature(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 13);
+  EXPECT_EQ(dxl->indirect_addr_of_present_temperature(), 236);
+}
