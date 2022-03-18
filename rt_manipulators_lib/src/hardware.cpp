@@ -24,38 +24,11 @@ namespace rt_manipulators_cpp {
 // Ref: https://emanual.robotis.com/docs/en/dxl/x/xm430-w350/
 // Ref: https://emanual.robotis.com/docs/en/dxl/x/xm540-w270/
 // Ref: https://emanual.robotis.com/docs/en/dxl/x/xm540-w150/
-const int DXL_HOME_POSITION = 2048;
-const double TO_RADIANS = (180.0 / 2048.0) * M_PI / 180.0;
-const double TO_DXL_POS = 1.0 / TO_RADIANS;
-const double TO_VELOCITY_REV_PER_MIN = 0.229;
-const double TO_VELOCITY_RAD_PER_MIN = TO_VELOCITY_REV_PER_MIN * 2.0 * M_PI;
-const double TO_VELOCITY_RAD_PER_SEC = TO_VELOCITY_RAD_PER_MIN / 60.0;
-const double DXL_VELOCITY_FROM_RAD_PER_SEC = 1.0 / TO_VELOCITY_RAD_PER_SEC;
-const int DXL_MAX_VELOCITY = 32767;
-const double TO_ACCELERATION_REV_PER_MM = 214.577;
-const double TO_ACCELERATION_TO_RAD_PER_MM = TO_ACCELERATION_REV_PER_MM * 2.0 * M_PI;
-const double TO_ACCELERATION_TO_RAD_PER_SS = TO_ACCELERATION_TO_RAD_PER_MM / 3600.0;
-const double DXL_ACCELERATION_FROM_RAD_PER_SS = 1.0 / TO_ACCELERATION_TO_RAD_PER_SS;
-const int DXL_MAX_ACCELERATION = 32767;
-const double TO_CURRENT_AMPERE = 0.00269;
-const double TO_DXL_CURRENT = 1.0 / TO_CURRENT_AMPERE;
-const double TO_VOLTAGE_VOLT = 0.1;
 
 // Dynamixel XM Series address table
-const uint16_t ADDR_OPERATING_MODE = 11;
-const uint16_t ADDR_CURRENT_LIMIT = 38;
-const uint16_t ADDR_MAX_POSITION_LIMIT = 48;
-const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
-const uint16_t ADDR_VELOCITY_I_GAIN = 76;
-const uint16_t ADDR_VELOCITY_P_GAIN = 78;
-const uint16_t ADDR_POSITION_D_GAIN = 80;
-const uint16_t ADDR_POSITION_I_GAIN = 82;
-const uint16_t ADDR_POSITION_P_GAIN = 84;
 const uint16_t ADDR_GOAL_CURRENT = 102;
 const uint16_t ADDR_GOAL_VELOCITY = 104;
 const uint16_t ADDR_GOAL_POSITION = 116;
-const uint16_t ADDR_PROFILE_ACCELERATION = 108;
-const uint16_t ADDR_PROFILE_VELOCITY = 112;
 const uint16_t ADDR_PRESENT_CURRENT = 126;
 const uint16_t ADDR_PRESENT_VELOCITY = 128;
 const uint16_t ADDR_PRESENT_POSITION = 132;
@@ -95,28 +68,24 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
   for (const auto& [group_name, group] : joints_.groups()) {
     // ジョイントリミットの読み込みと設定
     for (const auto& joint_name : group->joint_names()) {
-      auto joint_id = joints_.joint(joint_name)->id();
-      uint32_t dxl_max_pos_limit = 0;
-      uint32_t dxl_min_pos_limit = 0;
-      uint16_t dxl_current_limit = 0;
-      if (!comm_->read_double_word_data(joint_id, ADDR_MAX_POSITION_LIMIT, dxl_max_pos_limit)) {
+      double max_position_limit = 0.0;
+      double min_position_limit = 0.0;
+      double current_limit = 0.0;
+      if (!joints_.joint(joint_name)->dxl->read_max_position_limit(comm_, max_position_limit)) {
         std::cerr << joint_name << "のMax Position Limitの読み取りに失敗しました." << std::endl;
         return false;
       }
-      if (!comm_->read_double_word_data(joint_id, ADDR_MIN_POSITION_LIMIT, dxl_min_pos_limit)) {
+      if (!joints_.joint(joint_name)->dxl->read_min_position_limit(comm_, min_position_limit)) {
         std::cerr << joint_name << "のMin Position Limitの読み取りに失敗しました." << std::endl;
         return false;
       }
-      if (!comm_->read_word_data(joint_id, ADDR_CURRENT_LIMIT, dxl_current_limit)) {
+      if (!joints_.joint(joint_name)->dxl->read_current_limit(comm_, current_limit)) {
         std::cerr << joint_name << "のCurrent Limitの読み取りに失敗しました." << std::endl;
         return false;
       }
 
-      joints_.joint(joint_name)->set_position_limit(
-        dxl_pos_to_radian(static_cast<int32_t>(dxl_min_pos_limit)),
-        dxl_pos_to_radian(static_cast<int32_t>(dxl_max_pos_limit)));
-      joints_.joint(joint_name)->set_current_limit(
-        dxl_current_to_ampere(dxl_current_limit));
+      joints_.joint(joint_name)->set_position_limit(min_position_limit, max_position_limit);
+      joints_.joint(joint_name)->set_current_limit(current_limit);
     }
 
     if (!write_operating_mode(group_name)) {
@@ -246,7 +215,7 @@ bool Hardware::sync_read(const std::string& group_name) {
       if (get_data(group_name, joint_name, addr_sync_read_position_[group_name],
                   LEN_PRESENT_POSITION, data)) {
         joints_.joint(joint_name)->set_present_position(
-          dxl_pos_to_radian(static_cast<int32_t>(data)));
+          joints_.joint(joint_name)->dxl->to_position_radian(static_cast<int32_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_positionを取得できません." << std::endl;
         retval = false;
@@ -260,7 +229,7 @@ bool Hardware::sync_read(const std::string& group_name) {
       if (get_data(group_name, joint_name, addr_sync_read_velocity_[group_name],
                   LEN_PRESENT_VELOCITY, data)) {
         joints_.joint(joint_name)->set_present_velocity(
-          dxl_velocity_to_rps(static_cast<int32_t>(data)));
+          joints_.joint(joint_name)->dxl->to_velocity_rps(static_cast<int32_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_velocityを取得できません." << std::endl;
         retval = false;
@@ -274,7 +243,7 @@ bool Hardware::sync_read(const std::string& group_name) {
       if (get_data(group_name, joint_name, addr_sync_read_current_[group_name],
                   LEN_PRESENT_CURRENT, data)) {
         joints_.joint(joint_name)->set_present_current(
-          dxl_current_to_ampere(static_cast<int16_t>(data)));
+          joints_.joint(joint_name)->dxl->to_current_ampere(static_cast<int16_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_currentを取得できません." << std::endl;
         retval = false;
@@ -288,7 +257,7 @@ bool Hardware::sync_read(const std::string& group_name) {
       if (get_data(group_name, joint_name, addr_sync_read_voltage_[group_name],
                   LEN_PRESENT_VOLTAGE, data)) {
         joints_.joint(joint_name)->set_present_voltage(
-          dxl_voltage_to_volt(static_cast<int16_t>(data)));
+          joints_.joint(joint_name)->dxl->to_voltage_volt(static_cast<int16_t>(data)));
       } else {
         std::cerr << joint_name << "のpresent_voltageを取得できません." << std::endl;
         retval = false;
@@ -323,7 +292,8 @@ bool Hardware::sync_write(const std::string& group_name) {
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     std::vector<uint8_t> write_data;
     if (joints_.group(group_name)->sync_write_position_enabled()) {
-      uint32_t goal_position = radian_to_dxl_pos(joints_.joint(joint_name)->get_goal_position());
+      uint32_t goal_position = joints_.joint(joint_name)->dxl->from_position_radian(
+        joints_.joint(joint_name)->get_goal_position());
       write_data.push_back(DXL_LOBYTE(DXL_LOWORD(goal_position)));
       write_data.push_back(DXL_HIBYTE(DXL_LOWORD(goal_position)));
       write_data.push_back(DXL_LOBYTE(DXL_HIWORD(goal_position)));
@@ -331,7 +301,8 @@ bool Hardware::sync_write(const std::string& group_name) {
     }
 
     if (joints_.group(group_name)->sync_write_velocity_enabled()) {
-      uint32_t goal_velocity = to_dxl_velocity(joints_.joint(joint_name)->get_goal_velocity());
+      uint32_t goal_velocity = joints_.joint(joint_name)->dxl->from_velocity_rps(
+        joints_.joint(joint_name)->get_goal_velocity());
       write_data.push_back(DXL_LOBYTE(DXL_LOWORD(goal_velocity)));
       write_data.push_back(DXL_HIBYTE(DXL_LOWORD(goal_velocity)));
       write_data.push_back(DXL_LOBYTE(DXL_HIWORD(goal_velocity)));
@@ -339,7 +310,8 @@ bool Hardware::sync_write(const std::string& group_name) {
     }
 
     if (joints_.group(group_name)->sync_write_current_enabled()) {
-      uint16_t goal_current = to_dxl_current(joints_.joint(joint_name)->get_goal_current());
+      uint16_t goal_current = joints_.joint(joint_name)->dxl->from_current_ampere(
+        joints_.joint(joint_name)->get_goal_current());
       write_data.push_back(DXL_LOBYTE(goal_current));
       write_data.push_back(DXL_HIBYTE(goal_current));
     }
@@ -569,14 +541,15 @@ bool Hardware::write_max_acceleration_to_group(const std::string& group_name,
     return false;
   }
 
-  auto dxl_acceleration = to_dxl_acceleration(acceleration_rpss);
-  if (!write_double_word_data_to_group(group_name, ADDR_PROFILE_ACCELERATION, dxl_acceleration)) {
-    std::cerr << group_name << "グループのProfile Accelerationの書き込みに失敗しました."
-              << std::endl;
-    return false;
+  bool retval = true;
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    if (!joints_.joint(joint_name)->dxl->write_profile_acceleration(comm_, acceleration_rpss)) {
+      std::cerr << joint_name << std::endl;
+      std::cerr << "ジョイントのProfile Accelerationの書き込みに失敗しました." << std::endl;
+      retval = false;
+    }
   }
-
-  return true;
+  return retval;
 }
 
 bool Hardware::write_max_velocity_to_group(const std::string& group_name,
@@ -587,13 +560,15 @@ bool Hardware::write_max_velocity_to_group(const std::string& group_name,
     return false;
   }
 
-  auto dxl_velocity = to_dxl_profile_velocity(velocity_rps);
-  if (!write_double_word_data_to_group(group_name, ADDR_PROFILE_VELOCITY, dxl_velocity)) {
-    std::cerr << group_name << "グループのProfile Velocityの書き込みに失敗しました." << std::endl;
-    return false;
+  bool retval = true;
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    if (!joints_.joint(joint_name)->dxl->write_profile_velocity(comm_, velocity_rps)) {
+      std::cerr << joint_name << std::endl;
+      std::cerr << "ジョイントのProfile Velocityの書き込みに失敗しました." << std::endl;
+      retval = false;
+    }
   }
-
-  return true;
+  return retval;
 }
 
 bool Hardware::write_position_pid_gain(const uint8_t id, const uint16_t p, const uint16_t i,
@@ -604,19 +579,19 @@ bool Hardware::write_position_pid_gain(const uint8_t id, const uint16_t p, const
     return false;
   }
 
-  if (!comm_->write_word_data(id, ADDR_POSITION_P_GAIN, p)) {
+  if (!joints_.joint(id)->dxl->write_position_p_gain(comm_, p)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のPosition P Gainの書き込みに失敗しました." << std::endl;
     return false;
   }
 
-  if (!comm_->write_word_data(id, ADDR_POSITION_I_GAIN, i)) {
+  if (!joints_.joint(id)->dxl->write_position_i_gain(comm_, i)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のPosition I Gainの書き込みに失敗しました." << std::endl;
     return false;
   }
 
-  if (!comm_->write_word_data(id, ADDR_POSITION_D_GAIN, d)) {
+  if (!joints_.joint(id)->dxl->write_position_d_gain(comm_, d)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のPosition D Gainの書き込みに失敗しました." << std::endl;
     return false;
@@ -644,22 +619,13 @@ bool Hardware::write_position_pid_gain_to_group(const std::string& group_name, c
     return false;
   }
 
-  if (!write_word_data_to_group(group_name, ADDR_POSITION_P_GAIN, p)) {
-    std::cerr << group_name << "グループのPosition P Gainの書き込みに失敗しました." << std::endl;
-    return false;
+  bool retval = true;
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    if (!write_position_pid_gain(joint_name, p, i, d)) {
+      retval = false;
+    }
   }
-
-  if (!write_word_data_to_group(group_name, ADDR_POSITION_I_GAIN, i)) {
-    std::cerr << group_name << "グループのPosition I Gainの書き込みに失敗しました." << std::endl;
-    return false;
-  }
-
-  if (!write_word_data_to_group(group_name, ADDR_POSITION_D_GAIN, d)) {
-    std::cerr << group_name << "グループのPosition D Gainの書き込みに失敗しました." << std::endl;
-    return false;
-  }
-
-  return true;
+  return retval;
 }
 
 bool Hardware::write_velocity_pi_gain(const uint8_t id, const uint16_t p, const uint16_t i) {
@@ -669,13 +635,13 @@ bool Hardware::write_velocity_pi_gain(const uint8_t id, const uint16_t p, const 
     return false;
   }
 
-  if (!comm_->write_word_data(id, ADDR_VELOCITY_P_GAIN, p)) {
+  if (!joints_.joint(id)->dxl->write_velocity_p_gain(comm_, p)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のVelocity P Gainの書き込みに失敗しました." << std::endl;
     return false;
   }
 
-  if (!comm_->write_word_data(id, ADDR_VELOCITY_I_GAIN, i)) {
+  if (!joints_.joint(id)->dxl->write_velocity_i_gain(comm_, i)) {
     std::cerr << "ID:" << std::to_string(id);
     std::cerr << "のVelocity I Gainの書き込みに失敗しました." << std::endl;
     return false;
@@ -703,17 +669,13 @@ bool Hardware::write_velocity_pi_gain_to_group(const std::string& group_name, co
     return false;
   }
 
-  if (!write_word_data_to_group(group_name, ADDR_VELOCITY_P_GAIN, p)) {
-    std::cerr << group_name << "グループのVelocity P Gainの書き込みに失敗しました." << std::endl;
-    return false;
+  bool retval = true;
+  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+    if (!write_velocity_pi_gain(joint_name, p, i)) {
+      retval = false;
+    }
   }
-
-  if (!write_word_data_to_group(group_name, ADDR_VELOCITY_I_GAIN, i)) {
-    std::cerr << group_name << "グループのVelocity I Gainの書き込みに失敗しました." << std::endl;
-    return false;
-  }
-
-  return true;
+  return retval;
 }
 
 bool Hardware::write_word_data_to_group(const std::string& group_name, const uint16_t address,
@@ -727,23 +689,6 @@ bool Hardware::write_word_data_to_group(const std::string& group_name, const uin
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
     if (!comm_->write_word_data(id, address, write_data)) {
-      retval = false;
-    }
-  }
-  return retval;
-}
-
-bool Hardware::write_double_word_data_to_group(const std::string& group_name,
-                                               const uint16_t address, const uint32_t write_data) {
-  if (!joints_.has_group(group_name)) {
-    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
-    return false;
-  }
-
-  bool retval = true;
-  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-    auto id = joints_.joint(joint_name)->id();
-    if (!comm_->write_double_word_data(id, address, write_data)) {
       retval = false;
     }
   }
@@ -765,15 +710,14 @@ bool Hardware::write_operating_mode(const std::string& group_name) {
       return false;
     }
 
-    auto id = joints_.joint(joint_name)->id();
     uint8_t present_ope_mode;
-    if (!comm_->read_byte_data(id, ADDR_OPERATING_MODE, present_ope_mode)) {
+    if (!joints_.joint(joint_name)->dxl->read_operating_mode(comm_, present_ope_mode)) {
       std::cout << joint_name << "ジョイントのOperating Modeを読み取れません." << std::endl;
       return false;
     }
 
     if (target_ope_mode != present_ope_mode) {
-      if (!comm_->write_byte_data(id, ADDR_OPERATING_MODE, target_ope_mode)) {
+      if (!joints_.joint(joint_name)->dxl->write_operating_mode(comm_, target_ope_mode)) {
         std::cout << joint_name << "ジョイントにOperating Modeを書き込めません." << std::endl;
         std::cout << "トルクがONになっている場合はOFFしてください." << std::endl;
         return false;
@@ -991,64 +935,6 @@ void Hardware::read_write_thread(const std::vector<std::string>& group_names,
 
     std::this_thread::sleep_until(next_start_time);
   }
-}
-
-double Hardware::dxl_pos_to_radian(const int32_t position) {
-  return (position - DXL_HOME_POSITION) * TO_RADIANS;
-}
-
-double Hardware::dxl_velocity_to_rps(const int32_t velocity) const {
-  return velocity * TO_VELOCITY_RAD_PER_SEC;
-}
-
-double Hardware::dxl_current_to_ampere(const int16_t current) const {
-  return current * TO_CURRENT_AMPERE;
-}
-
-double Hardware::dxl_voltage_to_volt(const int16_t voltage) const {
-  return voltage * TO_VOLTAGE_VOLT;
-}
-
-uint32_t Hardware::radian_to_dxl_pos(const double position) {
-  return position * TO_DXL_POS + DXL_HOME_POSITION;
-}
-
-uint32_t Hardware::to_dxl_velocity(const double velocity_rps) {
-  return velocity_rps * DXL_VELOCITY_FROM_RAD_PER_SEC;
-}
-
-uint16_t Hardware::to_dxl_current(const double current_ampere) {
-  return current_ampere * TO_DXL_CURRENT;
-}
-
-uint32_t Hardware::to_dxl_acceleration(const double acceleration_rpss) {
-  // 加速度 rad/s^2をDYNAMIXELのデータに変換する
-
-  int dxl_acceleration = DXL_ACCELERATION_FROM_RAD_PER_SS * acceleration_rpss;
-  if (dxl_acceleration > DXL_MAX_ACCELERATION) {
-    dxl_acceleration = DXL_MAX_ACCELERATION;
-  } else if (dxl_acceleration <= 0) {
-    // XMシリーズのDYNAMIXELでは、'0'は最大加速度を意味する
-    // よって、加速度の最小値は'1'である
-    dxl_acceleration = 1;
-  }
-
-  return static_cast<uint32_t>(dxl_acceleration);
-}
-
-uint32_t Hardware::to_dxl_profile_velocity(const double velocity_rps) {
-  // 速度 rad/sをDYNAMIXELのProfile Velocityデータに変換する
-
-  int dxl_velocity = DXL_VELOCITY_FROM_RAD_PER_SEC * velocity_rps;
-  if (dxl_velocity > DXL_MAX_VELOCITY) {
-    dxl_velocity = DXL_MAX_VELOCITY;
-  } else if (dxl_velocity <= 0) {
-    // XMシリーズのDYNAMIXELでは、'0'は最大速度を意味する
-    // よって、速度の最小値は'1'である
-    dxl_velocity = 1;
-  }
-
-  return static_cast<uint32_t>(dxl_velocity);
 }
 
 }  // namespace rt_manipulators_cpp

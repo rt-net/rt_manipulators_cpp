@@ -31,8 +31,46 @@ class DynamixelBase {
 
   uint8_t get_id() const { return id_; }
   std::string get_name() const { return name_; }
+
+  virtual bool read_operating_mode(
+    const dynamixel_base::comm_t & comm, uint8_t & mode) { return false; }
+  virtual bool write_operating_mode(
+    const dynamixel_base::comm_t & comm, const uint8_t mode) { return false; }
+  virtual bool read_current_limit(
+    const dynamixel_base::comm_t & comm, double & limit_ampere) { return false; }
+  virtual bool read_max_position_limit(
+    const dynamixel_base::comm_t & comm, double & limit_radian) { return false; }
+  virtual bool read_min_position_limit(
+    const dynamixel_base::comm_t & comm, double & limit_radian) { return false; }
+
   virtual bool write_torque_enable(
     const dynamixel_base::comm_t & comm, const bool enable) { return false; }
+
+  virtual bool write_velocity_i_gain(
+    const dynamixel_base::comm_t & comm, const unsigned int gain) { return false; }
+  virtual bool write_velocity_p_gain(
+    const dynamixel_base::comm_t & comm, const unsigned int gain) { return false; }
+  virtual bool write_position_d_gain(
+    const dynamixel_base::comm_t & comm, const unsigned int gain) { return false; }
+  virtual bool write_position_i_gain(
+    const dynamixel_base::comm_t & comm, const unsigned int gain) { return false; }
+  virtual bool write_position_p_gain(
+    const dynamixel_base::comm_t & comm, const unsigned int gain) { return false; }
+
+  virtual bool write_profile_acceleration(
+    const dynamixel_base::comm_t & comm, const double acceleration_rpss) { return false; }
+  virtual bool write_profile_velocity(
+    const dynamixel_base::comm_t & comm, const double velocity_rps) { return false; }
+
+  virtual unsigned int to_profile_acceleration(const double acceleration_rpss) { return 1; }
+  virtual unsigned int to_profile_velocity(const double velocity_rps) { return 1; }
+  virtual double to_position_radian(const int position) { return 0.0; }
+  virtual double to_velocity_rps(const int velocity) { return 0.0; }
+  virtual double to_current_ampere(const int current) { return 0.0; }
+  virtual double to_voltage_volt(const int voltage) { return 0.0; }
+  virtual unsigned int from_position_radian(const double position_rad) { return 0; }
+  virtual unsigned int from_velocity_rps(const double velocity_rps) { return 0; }
+  virtual unsigned int from_current_ampere(const double current_ampere) { return 0; }
 
  protected:
   uint8_t id_;
