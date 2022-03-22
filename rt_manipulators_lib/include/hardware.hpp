@@ -86,9 +86,6 @@ class Hardware {
                                        const uint16_t i);
 
  protected:
-  bool write_word_data_to_group(const std::string& group_name, const uint16_t address,
-                                const uint16_t write_data);
-
   std::shared_ptr<hardware_communicator::Communicator> comm_;
 
  private:
@@ -97,8 +94,6 @@ class Hardware {
   bool limit_goal_current_by_present_position(const std::string& group_name);
   bool create_sync_read_group(const std::string& group_name);
   bool create_sync_write_group(const std::string& group_name);
-  bool set_indirect_address(const std::string& group_name, const uint16_t addr_indirect_start,
-                            const uint16_t addr_target, const uint16_t len_target);
   void read_write_thread(const std::vector<std::string>& group_names,
                          const std::chrono::milliseconds& update_cycle_ms);
 

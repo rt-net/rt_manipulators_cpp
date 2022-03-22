@@ -162,3 +162,145 @@ TEST_F(XMTestFixture, from_current_ampere) {
   EXPECT_EQ(dxl->from_current_ampere(2.691), 1000);
   EXPECT_EQ(dxl->from_current_ampere(-2.691), 0xFFFFFC18);  // -1000
 }
+
+TEST_F(XMTestFixture, set_indirect_addresses_read) {
+  EXPECT_EQ(dxl->start_address_for_indirect_read(), 224);
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 0);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 168);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_position(comm));
+  // indirect_dataの開始位置は変わらないことを期待
+  EXPECT_EQ(dxl->start_address_for_indirect_read(), 224);
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 4);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 176);
+  EXPECT_EQ(dxl->indirect_addr_of_present_position(), 224);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_velocity(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 8);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 184);
+  EXPECT_EQ(dxl->indirect_addr_of_present_velocity(), 228);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_current(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 10);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 188);
+  EXPECT_EQ(dxl->indirect_addr_of_present_current(), 232);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_input_voltage(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 12);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 192);
+  EXPECT_EQ(dxl->indirect_addr_of_present_input_voltage(), 234);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_temperature(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 13);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 194);
+  EXPECT_EQ(dxl->indirect_addr_of_present_temperature(), 236);
+}
+
+TEST_F(XMTestFixture, set_indirect_addresses_write) {
+  EXPECT_EQ(dxl->start_address_for_indirect_write(), 634);
+  EXPECT_EQ(dxl->length_of_indirect_data_write(), 0);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 578);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_goal_position(comm));
+  // indirect_dataの開始位置は変わらないことを期待
+  EXPECT_EQ(dxl->start_address_for_indirect_write(), 634);
+  EXPECT_EQ(dxl->length_of_indirect_data_write(), 4);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 586);
+  EXPECT_EQ(dxl->indirect_addr_of_goal_position(), 634);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_goal_velocity(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_write(), 8);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 594);
+  EXPECT_EQ(dxl->indirect_addr_of_goal_velocity(), 638);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_goal_current(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_write(), 10);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 598);
+  EXPECT_EQ(dxl->indirect_addr_of_goal_current(), 642);
+}
+
+TEST_F(XMTestFixture, extract_present_position_from_sync_read) {
+  std::string group_name = "test";
+  double position;
+  ASSERT_FALSE(dxl->extract_present_position_from_sync_read(comm, group_name, position));
+}
+
+TEST_F(XMTestFixture, extract_present_velocity_from_sync_read) {
+  std::string group_name = "test";
+  double velocity;
+  ASSERT_FALSE(dxl->extract_present_velocity_from_sync_read(comm, group_name, velocity));
+}
+
+TEST_F(XMTestFixture, extract_present_current_from_sync_read) {
+  std::string group_name = "test";
+  double current;
+  ASSERT_FALSE(dxl->extract_present_current_from_sync_read(comm, group_name, current));
+}
+
+TEST_F(XMTestFixture, extract_present_input_voltage_from_sync_read) {
+  std::string group_name = "test";
+  double voltage;
+  ASSERT_FALSE(dxl->extract_present_input_voltage_from_sync_read(comm, group_name, voltage));
+}
+
+TEST_F(XMTestFixture, extract_present_temperature_from_sync_read) {
+  std::string group_name = "test";
+  int temp;
+  ASSERT_FALSE(dxl->extract_present_temperature_from_sync_read(comm, group_name, temp));
+}
+
+TEST_F(XMTestFixture, push_back_position_for_sync_write) {
+  std::vector<uint8_t> test_data;
+  dxl->push_back_position_for_sync_write(M_PI_2, test_data);
+  ASSERT_EQ(test_data.size(), 4);
+  // from_position_radian(M_PI_2) = 2048 + 1024 (0x0000 0C00)がセットされる
+  EXPECT_EQ(test_data.at(0), 0x00);
+  EXPECT_EQ(test_data.at(1), 0x0C);
+  EXPECT_EQ(test_data.at(2), 0x00);
+  EXPECT_EQ(test_data.at(3), 0x00);
+
+  test_data.clear();
+  dxl->push_back_position_for_sync_write(-M_PI_2, test_data);
+  ASSERT_EQ(test_data.size(), 4);
+  // from_position_radian(-M_PI_2) = 2048 - 1024 (0x0000 0400)がセットされる
+  EXPECT_EQ(test_data.at(0), 0x00);
+  EXPECT_EQ(test_data.at(1), 0x04);
+  EXPECT_EQ(test_data.at(2), 0x00);
+  EXPECT_EQ(test_data.at(3), 0x00);
+}
+
+TEST_F(XMTestFixture, push_back_velocity_for_sync_write) {
+  std::vector<uint8_t> test_data;
+  dxl->push_back_velocity_for_sync_write(0.239809, test_data);
+  ASSERT_EQ(test_data.size(), 4);
+  // from_velocity_rps(0.239809) = 10 (0x0000 000A)がセットされる
+  EXPECT_EQ(test_data.at(0), 0x0A);
+  EXPECT_EQ(test_data.at(1), 0x00);
+  EXPECT_EQ(test_data.at(2), 0x00);
+  EXPECT_EQ(test_data.at(3), 0x00);
+
+  test_data.clear();
+  dxl->push_back_velocity_for_sync_write(-0.239809, test_data);
+  ASSERT_EQ(test_data.size(), 4);
+  // from_velocity_rps(-0.239809) = -10 (0xFFFF FFF6)がセットされる
+  EXPECT_EQ(test_data.at(0), 0xF6);
+  EXPECT_EQ(test_data.at(1), 0xFF);
+  EXPECT_EQ(test_data.at(2), 0xFF);
+  EXPECT_EQ(test_data.at(3), 0xFF);
+}
+
+TEST_F(XMTestFixture, push_back_current_for_sync_write) {
+  std::vector<uint8_t> test_data;
+  dxl->push_back_current_for_sync_write(2.691, test_data);
+  ASSERT_EQ(test_data.size(), 2);
+  // from_current_ampere(2.691) = 1000 (0x03E8)がセットされる
+  EXPECT_EQ(test_data.at(0), 0xE8);
+  EXPECT_EQ(test_data.at(1), 0x03);
+
+  test_data.clear();
+  dxl->push_back_current_for_sync_write(-2.691, test_data);
+  ASSERT_EQ(test_data.size(), 2);
+  // from_current_ampere(-2.691) = -1000 (0xFC18)がセットされる
+  EXPECT_EQ(test_data.at(0), 0x18);
+  EXPECT_EQ(test_data.at(1), 0xFC);
+}
