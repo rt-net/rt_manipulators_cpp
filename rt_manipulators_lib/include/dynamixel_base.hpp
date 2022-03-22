@@ -82,16 +82,29 @@ class DynamixelBase {
     const dynamixel_base::comm_t & comm) { return false; }
   virtual bool auto_set_indirect_address_of_present_temperature(
     const dynamixel_base::comm_t & comm) { return false; }
+  virtual bool auto_set_indirect_address_of_goal_position(
+    const dynamixel_base::comm_t & comm) { return false; }
+  virtual bool auto_set_indirect_address_of_goal_velocity(
+    const dynamixel_base::comm_t & comm) { return false; }
+  virtual bool auto_set_indirect_address_of_goal_current(
+    const dynamixel_base::comm_t & comm) { return false; }
 
   virtual unsigned int indirect_addr_of_present_position(void) { return 0; }
   virtual unsigned int indirect_addr_of_present_velocity(void) { return 0; }
   virtual unsigned int indirect_addr_of_present_current(void) { return 0; }
   virtual unsigned int indirect_addr_of_present_input_voltage(void) { return 0; }
   virtual unsigned int indirect_addr_of_present_temperature(void) { return 0; }
+  virtual unsigned int indirect_addr_of_goal_position(void) { return 0; }
+  virtual unsigned int indirect_addr_of_goal_velocity(void) { return 0; }
+  virtual unsigned int indirect_addr_of_goal_current(void) { return 0; }
 
   virtual unsigned int start_address_for_indirect_read(void) { return 0; }
   virtual unsigned int length_of_indirect_data_read(void) { return 0; }
   virtual unsigned int next_indirect_addr_read(void) const { return 0; }
+
+  virtual unsigned int start_address_for_indirect_write(void) { return 0; }
+  virtual unsigned int length_of_indirect_data_write(void) { return 0; }
+  virtual unsigned int next_indirect_addr_write(void) const { return 0; }
 
   virtual bool extract_present_position_from_sync_read(
     const dynamixel_base::comm_t & comm, const std::string & group_name,

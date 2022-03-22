@@ -29,8 +29,11 @@ const uint16_t ADDR_VELOCITY_P_GAIN = 78;
 const uint16_t ADDR_POSITION_D_GAIN = 80;
 const uint16_t ADDR_POSITION_I_GAIN = 82;
 const uint16_t ADDR_POSITION_P_GAIN = 84;
+const uint16_t ADDR_GOAL_CURRENT = 102;
+const uint16_t ADDR_GOAL_VELOCITY = 104;
 const uint16_t ADDR_PROFILE_ACCELERATION = 108;
 const uint16_t ADDR_PROFILE_VELOCITY = 112;
+const uint16_t ADDR_GOAL_POSITION = 116;
 const uint16_t ADDR_PRESENT_CURRENT = 126;
 const uint16_t ADDR_PRESENT_VELOCITY = 128;
 const uint16_t ADDR_PRESENT_POSITION = 132;
@@ -51,6 +54,9 @@ const uint16_t LEN_PRESENT_VELOCITY = 4;
 const uint16_t LEN_PRESENT_POSITION = 4;
 const uint16_t LEN_PRESENT_VOLTAGE = 2;
 const uint16_t LEN_PRESENT_TEMPERATURE = 1;
+const uint16_t LEN_GOAL_CURRENT = 2;
+const uint16_t LEN_GOAL_VELOCITY = 4;
+const uint16_t LEN_GOAL_POSITION = 4;
 const uint16_t LEN_INDIRECT_ADDRESS = 2;
 
 const double TO_ACCELERATION_REV_PER_MM = 214.577;
@@ -71,9 +77,11 @@ const double TO_DXL_CURRENT = 1.0 / TO_CURRENT_AMPERE;
 
 DynamixelXM::DynamixelXM(const uint8_t id, const int home_position)
   : dynamixel_base::DynamixelBase(id), HOME_POSITION_(home_position),
-    total_length_of_indirect_addr_read_(0), indirect_addr_of_present_position_(0),
-    indirect_addr_of_present_velocity_(0), indirect_addr_of_present_current_(0),
-    indirect_addr_of_present_input_voltage_(0), indirect_addr_of_present_temperature_(0) {
+    total_length_of_indirect_addr_read_(0), total_length_of_indirect_addr_write_(0),
+    indirect_addr_of_present_position_(0), indirect_addr_of_present_velocity_(0),
+    indirect_addr_of_present_current_(0), indirect_addr_of_present_input_voltage_(0),
+    indirect_addr_of_present_temperature_(0), indirect_addr_of_goal_position_(0),
+    indirect_addr_of_goal_velocity_(0), indirect_addr_of_goal_current_(0) {
   name_ = "XM";
 }
 
@@ -238,6 +246,24 @@ bool DynamixelXM::auto_set_indirect_address_of_present_temperature(
     comm, ADDR_PRESENT_TEMPERATURE, LEN_PRESENT_TEMPERATURE, indirect_addr_of_present_temperature_);
 }
 
+bool DynamixelXM::auto_set_indirect_address_of_goal_position(
+  const dynamixel_base::comm_t & comm) {
+  return set_indirect_address_write(
+    comm, ADDR_GOAL_POSITION, LEN_GOAL_POSITION, indirect_addr_of_goal_position_);
+}
+
+bool DynamixelXM::auto_set_indirect_address_of_goal_velocity(
+  const dynamixel_base::comm_t & comm) {
+  return set_indirect_address_write(
+    comm, ADDR_GOAL_VELOCITY, LEN_GOAL_VELOCITY, indirect_addr_of_goal_velocity_);
+}
+
+bool DynamixelXM::auto_set_indirect_address_of_goal_current(
+  const dynamixel_base::comm_t & comm) {
+  return set_indirect_address_write(
+    comm, ADDR_GOAL_CURRENT, LEN_GOAL_CURRENT, indirect_addr_of_goal_current_);
+}
+
 unsigned int DynamixelXM::indirect_addr_of_present_position(void) {
   return indirect_addr_of_present_position_;
 }
@@ -258,6 +284,18 @@ unsigned int DynamixelXM::indirect_addr_of_present_temperature(void) {
   return indirect_addr_of_present_temperature_;
 }
 
+unsigned int DynamixelXM::indirect_addr_of_goal_position(void) {
+  return indirect_addr_of_goal_position_;
+}
+
+unsigned int DynamixelXM::indirect_addr_of_goal_velocity(void) {
+  return indirect_addr_of_goal_velocity_;
+}
+
+unsigned int DynamixelXM::indirect_addr_of_goal_current(void) {
+  return indirect_addr_of_goal_current_;
+}
+
 unsigned int DynamixelXM::start_address_for_indirect_read(void) {
   return ADDR_START_INDIRECT_DATA_READ;
 }
@@ -269,6 +307,19 @@ unsigned int DynamixelXM::length_of_indirect_data_read(void) {
 unsigned int DynamixelXM::next_indirect_addr_read(void) const {
   return ADDR_START_INDIRECT_ADDR_READ +
     LEN_INDIRECT_ADDRESS * total_length_of_indirect_addr_read_;
+}
+
+unsigned int DynamixelXM::start_address_for_indirect_write(void) {
+  return ADDR_START_INDIRECT_DATA_WRITE;
+}
+
+unsigned int DynamixelXM::length_of_indirect_data_write(void) {
+  return total_length_of_indirect_addr_write_;
+}
+
+unsigned int DynamixelXM::next_indirect_addr_write(void) const {
+  return ADDR_START_INDIRECT_ADDR_WRITE +
+    LEN_INDIRECT_ADDRESS * total_length_of_indirect_addr_write_;
 }
 
 bool DynamixelXM::extract_present_position_from_sync_read(
@@ -347,6 +398,25 @@ bool DynamixelXM::set_indirect_address_read(
   indirect_addr = ADDR_START_INDIRECT_DATA_READ
     + total_length_of_indirect_addr_read_;
   total_length_of_indirect_addr_read_ += len;
+  return retval;
+}
+
+bool DynamixelXM::set_indirect_address_write(
+    const dynamixel_base::comm_t & comm, const uint16_t addr, const uint16_t len,
+    uint16_t & indirect_addr) {
+  bool retval = true;
+  for (int i = 0; i < len; i++) {
+    uint16_t target_indirect_address = next_indirect_addr_write() + LEN_INDIRECT_ADDRESS * i;
+    uint16_t target_data_address = addr + i;
+    if (!comm->write_word_data(
+      id_, target_indirect_address, target_data_address)) {
+      retval = false;
+    }
+  }
+  // テストしやすくするため、write_word_dataに失敗しても変数を更新する
+  indirect_addr = ADDR_START_INDIRECT_DATA_WRITE
+    + total_length_of_indirect_addr_write_;
+  total_length_of_indirect_addr_write_ += len;
   return retval;
 }
 

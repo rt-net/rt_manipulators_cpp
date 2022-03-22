@@ -196,6 +196,29 @@ TEST_F(XMTestFixture, set_indirect_addresses_read) {
   EXPECT_EQ(dxl->indirect_addr_of_present_temperature(), 236);
 }
 
+TEST_F(XMTestFixture, set_indirect_addresses_write) {
+  EXPECT_EQ(dxl->start_address_for_indirect_write(), 634);
+  EXPECT_EQ(dxl->length_of_indirect_data_write(), 0);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 578);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_goal_position(comm));
+  // indirect_dataの開始位置は変わらないことを期待
+  EXPECT_EQ(dxl->start_address_for_indirect_write(), 634);
+  EXPECT_EQ(dxl->length_of_indirect_data_write(), 4);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 586);
+  EXPECT_EQ(dxl->indirect_addr_of_goal_position(), 634);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_goal_velocity(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_write(), 8);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 594);
+  EXPECT_EQ(dxl->indirect_addr_of_goal_velocity(), 638);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_goal_current(comm));
+  EXPECT_EQ(dxl->length_of_indirect_data_write(), 10);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 598);
+  EXPECT_EQ(dxl->indirect_addr_of_goal_current(), 642);
+}
+
 TEST_F(XMTestFixture, extract_present_position_from_sync_read) {
   std::string group_name = "test";
   double position;
