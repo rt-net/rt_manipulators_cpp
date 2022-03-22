@@ -266,23 +266,40 @@ unsigned int DynamixelXM::length_of_indirect_data_read(void) {
   return total_length_of_indirect_addr_read_;
 }
 
+unsigned int DynamixelXM::next_indirect_addr_read(void) const {
+  return ADDR_START_INDIRECT_ADDR_READ +
+    LEN_INDIRECT_ADDRESS * total_length_of_indirect_addr_read_;
+}
+
+bool DynamixelXM::extract_present_position_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    double & position_rad) {
+  uint32_t data = 0;
+  if (!comm->get_sync_read_data(
+    group_name, id_, indirect_addr_of_present_position_, LEN_PRESENT_POSITION, data)) {
+    return false;
+  }
+  position_rad = to_position_radian(static_cast<int32_t>(data));
+  return true;
+}
+
 bool DynamixelXM::set_indirect_address_read(
     const dynamixel_base::comm_t & comm, const uint16_t addr, const uint16_t len,
     uint16_t & indirect_addr) {
   bool retval = true;
-  if (!comm->write_word_data(id_, next_indirect_addr_read(), addr)) {
-    retval = false;
+  for (int i = 0; i < len; i++) {
+    uint16_t target_indirect_address = next_indirect_addr_read() + LEN_INDIRECT_ADDRESS * i;
+    uint16_t target_data_address = addr + i;
+    if (!comm->write_word_data(
+      id_, target_indirect_address, target_data_address)) {
+      retval = false;
+    }
   }
   // テストしやすくするため、write_word_dataに失敗しても変数を更新する
   indirect_addr = ADDR_START_INDIRECT_DATA_READ
     + total_length_of_indirect_addr_read_;
   total_length_of_indirect_addr_read_ += len;
   return retval;
-}
-
-unsigned int DynamixelXM::next_indirect_addr_read(void) const {
-  return ADDR_START_INDIRECT_ADDR_WRITE +
-    LEN_INDIRECT_ADDRESS * total_length_of_indirect_addr_read_;
 }
 
 }  // namespace dynamixel_xm

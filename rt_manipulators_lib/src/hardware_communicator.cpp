@@ -123,6 +123,12 @@ bool Communicator::send_sync_write_packet(const group_name_t & group_name) {
 bool Communicator::get_sync_read_data(
   const group_name_t & group_name, const dxl_id_t id, const dxl_address_t & address,
   const dxl_data_length_t & length, dxl_double_word_t & read_data) {
+
+  if (!has_sync_read_group(group_name)) {
+    std::cerr << group_name << "にはsync_read_groupが設定されていません." << std::endl;
+    return false;
+  }
+
   if (!sync_read_group(group_name)->isAvailable(id, address, length)) {
     std::cerr << "id: " << std::to_string(id);
     std::cerr << ", addr: " << std::to_string(address);

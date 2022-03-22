@@ -15,6 +15,8 @@
 #ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM_HPP_
 #define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM_HPP_
 
+#include <string>
+
 #include "dynamixel_base.hpp"
 
 namespace dynamixel_xm {
@@ -66,6 +68,11 @@ class DynamixelXM : public dynamixel_base::DynamixelBase  {
 
   unsigned int start_address_for_indirect_read(void);
   unsigned int length_of_indirect_data_read(void);
+  unsigned int next_indirect_addr_read(void) const;
+
+  bool extract_present_position_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    double & position_rad);
 
  protected:
   int HOME_POSITION_;
@@ -79,7 +86,6 @@ class DynamixelXM : public dynamixel_base::DynamixelBase  {
   bool set_indirect_address_read(
     const dynamixel_base::comm_t & comm, const uint16_t addr, const uint16_t len,
     uint16_t & indirect_addr);
-  unsigned int next_indirect_addr_read(void) const;
 };
 
 }  // namespace dynamixel_xm

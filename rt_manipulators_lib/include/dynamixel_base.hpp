@@ -91,6 +91,11 @@ class DynamixelBase {
 
   virtual unsigned int start_address_for_indirect_read(void) { return 0; }
   virtual unsigned int length_of_indirect_data_read(void) { return 0; }
+  virtual unsigned int next_indirect_addr_read(void) const { return 0; }
+
+  virtual bool extract_present_position_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    double & position_rad) { return false; }
 
  protected:
   uint8_t id_;
