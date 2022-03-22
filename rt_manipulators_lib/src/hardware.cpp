@@ -283,28 +283,18 @@ bool Hardware::sync_write(const std::string& group_name) {
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     std::vector<uint8_t> write_data;
     if (joints_.group(group_name)->sync_write_position_enabled()) {
-      uint32_t goal_position = joints_.joint(joint_name)->dxl->from_position_radian(
-        joints_.joint(joint_name)->get_goal_position());
-      write_data.push_back(DXL_LOBYTE(DXL_LOWORD(goal_position)));
-      write_data.push_back(DXL_HIBYTE(DXL_LOWORD(goal_position)));
-      write_data.push_back(DXL_LOBYTE(DXL_HIWORD(goal_position)));
-      write_data.push_back(DXL_HIBYTE(DXL_HIWORD(goal_position)));
+      joints_.joint(joint_name)->dxl->push_back_position_for_sync_write(
+        joints_.joint(joint_name)->get_goal_position(), write_data);
     }
 
     if (joints_.group(group_name)->sync_write_velocity_enabled()) {
-      uint32_t goal_velocity = joints_.joint(joint_name)->dxl->from_velocity_rps(
-        joints_.joint(joint_name)->get_goal_velocity());
-      write_data.push_back(DXL_LOBYTE(DXL_LOWORD(goal_velocity)));
-      write_data.push_back(DXL_HIBYTE(DXL_LOWORD(goal_velocity)));
-      write_data.push_back(DXL_LOBYTE(DXL_HIWORD(goal_velocity)));
-      write_data.push_back(DXL_HIBYTE(DXL_HIWORD(goal_velocity)));
+      joints_.joint(joint_name)->dxl->push_back_velocity_for_sync_write(
+        joints_.joint(joint_name)->get_goal_velocity(), write_data);
     }
 
     if (joints_.group(group_name)->sync_write_current_enabled()) {
-      uint16_t goal_current = joints_.joint(joint_name)->dxl->from_current_ampere(
-        joints_.joint(joint_name)->get_goal_current());
-      write_data.push_back(DXL_LOBYTE(goal_current));
-      write_data.push_back(DXL_HIBYTE(goal_current));
+      joints_.joint(joint_name)->dxl->push_back_current_for_sync_write(
+        joints_.joint(joint_name)->get_goal_current(), write_data);
     }
 
     auto id = joints_.joint(joint_name)->id();
@@ -846,41 +836,46 @@ bool Hardware::create_sync_read_group(const std::string& group_name) {
 bool Hardware::create_sync_write_group(const std::string& group_name) {
   // HardwareCommunicatorに、指定されたデータを書き込むSyncWriteGroupを追加する
   // できるだけ多くのデータをSyncWriteで書き込むため、インダイレクトアドレスを活用する
-  uint16_t start_address = ADDR_INDIRECT_ADDRESS_29;
-  uint16_t total_length = 0;
-
-  auto append = [this, group_name, &start_address, &total_length](
-    auto target_addr, auto target_len, auto name){
-    if (!set_indirect_address(group_name, start_address, target_addr, target_len)) {
-      std::cerr << name << "をindirect addressにセットできません." << std::endl;
-      return false;
-    }
-    total_length += target_len;
-    start_address += LEN_INDIRECT_ADDRESS * target_len;
-    return true;
-  };
 
   if (joints_.group(group_name)->sync_write_position_enabled()) {
-    if (!append(ADDR_GOAL_POSITION, LEN_GOAL_POSITION, "goal_position")) {
-      return false;
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+      if (!joints_.joint(joint_name)->dxl->auto_set_indirect_address_of_goal_position(comm_)) {
+        std::cerr << joint_name << "ジョイントの" << std::endl;
+        std::cerr << "goal_positionをindirect addressにセットできません." << std::endl;
+        return false;
+      }
     }
   }
 
   if (joints_.group(group_name)->sync_write_velocity_enabled()) {
-    if (!append(ADDR_GOAL_VELOCITY, LEN_GOAL_VELOCITY, "goal_velocity")) {
-      return false;
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+      if (!joints_.joint(joint_name)->dxl->auto_set_indirect_address_of_goal_velocity(comm_)) {
+        std::cerr << joint_name << "ジョイントの" << std::endl;
+        std::cerr << "goal_velocityをindirect addressにセットできません." << std::endl;
+        return false;
+      }
     }
   }
 
   if (joints_.group(group_name)->sync_write_current_enabled()) {
-    if (!append(ADDR_GOAL_CURRENT, LEN_GOAL_CURRENT, "goal_current")) {
-      return false;
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+      if (!joints_.joint(joint_name)->dxl->auto_set_indirect_address_of_goal_current(comm_)) {
+        std::cerr << joint_name << "ジョイントの" << std::endl;
+        std::cerr << "goal_currentをindirect addressにセットできません." << std::endl;
+        return false;
+      }
     }
   }
 
-  comm_->make_sync_write_group(group_name, ADDR_INDIRECT_DATA_29, total_length);
+  // 代表1ジョイントを抽出し、sync_readの開始アドレスとデータ長を取得する
+  const auto a_name = joints_.group(group_name)->joint_names().front();
+  const auto length = joints_.joint(a_name)->dxl->length_of_indirect_data_write();
+  comm_->make_sync_write_group(
+    group_name,
+    joints_.joint(a_name)->dxl->start_address_for_indirect_write(),
+    length);
 
-  std::vector<uint8_t> init_data(total_length, 0);
+  std::vector<uint8_t> init_data(length, 0);
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
     if (!comm_->append_id_to_sync_write_group(group_name, id, init_data)) {
