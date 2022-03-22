@@ -21,34 +21,6 @@
 
 namespace rt_manipulators_cpp {
 
-// Ref: https://emanual.robotis.com/docs/en/dxl/x/xm430-w350/
-// Ref: https://emanual.robotis.com/docs/en/dxl/x/xm540-w270/
-// Ref: https://emanual.robotis.com/docs/en/dxl/x/xm540-w150/
-
-// Dynamixel XM Series address table
-const uint16_t ADDR_GOAL_CURRENT = 102;
-const uint16_t ADDR_GOAL_VELOCITY = 104;
-const uint16_t ADDR_GOAL_POSITION = 116;
-const uint16_t ADDR_PRESENT_CURRENT = 126;
-const uint16_t ADDR_PRESENT_VELOCITY = 128;
-const uint16_t ADDR_PRESENT_POSITION = 132;
-const uint16_t ADDR_PRESENT_VOLTAGE = 144;
-const uint16_t ADDR_PRESENT_TEMPERATURE = 146;
-const uint16_t ADDR_INDIRECT_ADDRESS_1 = 168;
-const uint16_t ADDR_INDIRECT_DATA_1 = 224;
-const uint16_t ADDR_INDIRECT_ADDRESS_29 = 578;
-const uint16_t ADDR_INDIRECT_DATA_29 = 634;
-
-const uint16_t LEN_GOAL_CURRENT = 2;
-const uint16_t LEN_GOAL_VELOCITY = 4;
-const uint16_t LEN_GOAL_POSITION = 4;
-const uint16_t LEN_PRESENT_CURRENT = 2;
-const uint16_t LEN_PRESENT_VELOCITY = 4;
-const uint16_t LEN_PRESENT_POSITION = 4;
-const uint16_t LEN_PRESENT_VOLTAGE = 2;
-const uint16_t LEN_PRESENT_TEMPERATURE = 1;
-const uint16_t LEN_INDIRECT_ADDRESS = 2;
-
 Hardware::Hardware(const std::string device_name) :
   thread_enable_(false) {
   comm_ = std::make_shared<hardware_communicator::Communicator>(device_name);
@@ -659,23 +631,6 @@ bool Hardware::write_velocity_pi_gain_to_group(const std::string& group_name, co
   return retval;
 }
 
-bool Hardware::write_word_data_to_group(const std::string& group_name, const uint16_t address,
-                                        const uint16_t write_data) {
-  if (!joints_.has_group(group_name)) {
-    std::cerr << group_name << "はjoint_groupsに存在しません." << std::endl;
-    return false;
-  }
-
-  bool retval = true;
-  for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-    auto id = joints_.joint(joint_name)->id();
-    if (!comm_->write_word_data(id, address, write_data)) {
-      retval = false;
-    }
-  }
-  return retval;
-}
-
 bool Hardware::write_operating_mode(const std::string& group_name) {
   // サーボモータから動作モードを読み取り、
   // コンフィグファイルと一致しない場合、動作モードを書き込む
@@ -883,26 +838,6 @@ bool Hardware::create_sync_write_group(const std::string& group_name) {
     }
   }
 
-  return true;
-}
-
-bool Hardware::set_indirect_address(const std::string& group_name,
-                                    const uint16_t addr_indirect_start, const uint16_t addr_target,
-                                    const uint16_t len_target) {
-  // 指定されたグループのサーボモータのインダイレクトアドレスに、指定されたデータのアドレスを設定する
-
-  bool retval = true;
-  for (int i = 0; i < len_target; i++) {
-    uint16_t target_indirect_address = addr_indirect_start + LEN_INDIRECT_ADDRESS * i;
-    uint16_t target_data_address = addr_target + i;
-
-    if (!write_word_data_to_group(group_name, target_indirect_address, target_data_address)) {
-      std::cerr << "インダイレクトアドレス:" << std::to_string(target_indirect_address);
-      std::cerr << "にターゲットデータアドレス:" << std::to_string(target_data_address);
-      std::cerr << "を書き込めませんでした." << std::endl;
-      return false;
-    }
-  }
   return true;
 }
 
