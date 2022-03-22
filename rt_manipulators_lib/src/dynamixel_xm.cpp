@@ -382,6 +382,31 @@ bool DynamixelXM::extract_present_temperature_from_sync_read(
   return true;
 }
 
+void DynamixelXM::push_back_position_for_sync_write(
+    const double position_rad, std::vector<uint8_t> & write_data) {
+  uint32_t dxl_position = from_position_radian(position_rad);
+  write_data.push_back(DXL_LOBYTE(DXL_LOWORD(dxl_position)));
+  write_data.push_back(DXL_HIBYTE(DXL_LOWORD(dxl_position)));
+  write_data.push_back(DXL_LOBYTE(DXL_HIWORD(dxl_position)));
+  write_data.push_back(DXL_HIBYTE(DXL_HIWORD(dxl_position)));
+}
+
+void DynamixelXM::push_back_velocity_for_sync_write(
+    const double velocity_rps, std::vector<uint8_t> & write_data) {
+  uint32_t dxl_velocity = from_velocity_rps(velocity_rps);
+  write_data.push_back(DXL_LOBYTE(DXL_LOWORD(dxl_velocity)));
+  write_data.push_back(DXL_HIBYTE(DXL_LOWORD(dxl_velocity)));
+  write_data.push_back(DXL_LOBYTE(DXL_HIWORD(dxl_velocity)));
+  write_data.push_back(DXL_HIBYTE(DXL_HIWORD(dxl_velocity)));
+}
+
+void DynamixelXM::push_back_current_for_sync_write(
+    const double current_ampere, std::vector<uint8_t> & write_data) {
+  uint16_t dxl_current = from_current_ampere(current_ampere);
+  write_data.push_back(DXL_LOBYTE(dxl_current));
+  write_data.push_back(DXL_HIBYTE(dxl_current));
+}
+
 bool DynamixelXM::set_indirect_address_read(
     const dynamixel_base::comm_t & comm, const uint16_t addr, const uint16_t len,
     uint16_t & indirect_addr) {

@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "hardware_communicator.hpp"
 
@@ -121,6 +122,13 @@ class DynamixelBase {
   virtual bool extract_present_temperature_from_sync_read(
     const dynamixel_base::comm_t & comm, const std::string & group_name,
     int & temperature_deg) { return false; }
+
+  virtual void push_back_position_for_sync_write(
+    const double position_rad, std::vector<uint8_t> & write_data) {}
+  virtual void push_back_velocity_for_sync_write(
+    const double velocity_rps, std::vector<uint8_t> & write_data) {}
+  virtual void push_back_current_for_sync_write(
+    const double current_ampere, std::vector<uint8_t> & write_data) {}
 
  protected:
   uint8_t id_;

@@ -248,3 +248,59 @@ TEST_F(XMTestFixture, extract_present_temperature_from_sync_read) {
   int temp;
   ASSERT_FALSE(dxl->extract_present_temperature_from_sync_read(comm, group_name, temp));
 }
+
+TEST_F(XMTestFixture, push_back_position_for_sync_write) {
+  std::vector<uint8_t> test_data;
+  dxl->push_back_position_for_sync_write(M_PI_2, test_data);
+  ASSERT_EQ(test_data.size(), 4);
+  // from_position_radian(M_PI_2) = 2048 + 1024 (0x0000 0C00)がセットされる
+  EXPECT_EQ(test_data.at(0), 0x00);
+  EXPECT_EQ(test_data.at(1), 0x0C);
+  EXPECT_EQ(test_data.at(2), 0x00);
+  EXPECT_EQ(test_data.at(3), 0x00);
+
+  test_data.clear();
+  dxl->push_back_position_for_sync_write(-M_PI_2, test_data);
+  ASSERT_EQ(test_data.size(), 4);
+  // from_position_radian(-M_PI_2) = 2048 - 1024 (0x0000 0400)がセットされる
+  EXPECT_EQ(test_data.at(0), 0x00);
+  EXPECT_EQ(test_data.at(1), 0x04);
+  EXPECT_EQ(test_data.at(2), 0x00);
+  EXPECT_EQ(test_data.at(3), 0x00);
+}
+
+TEST_F(XMTestFixture, push_back_velocity_for_sync_write) {
+  std::vector<uint8_t> test_data;
+  dxl->push_back_velocity_for_sync_write(0.239809, test_data);
+  ASSERT_EQ(test_data.size(), 4);
+  // from_velocity_rps(0.239809) = 10 (0x0000 000A)がセットされる
+  EXPECT_EQ(test_data.at(0), 0x0A);
+  EXPECT_EQ(test_data.at(1), 0x00);
+  EXPECT_EQ(test_data.at(2), 0x00);
+  EXPECT_EQ(test_data.at(3), 0x00);
+
+  test_data.clear();
+  dxl->push_back_velocity_for_sync_write(-0.239809, test_data);
+  ASSERT_EQ(test_data.size(), 4);
+  // from_velocity_rps(-0.239809) = -10 (0xFFFF FFF6)がセットされる
+  EXPECT_EQ(test_data.at(0), 0xF6);
+  EXPECT_EQ(test_data.at(1), 0xFF);
+  EXPECT_EQ(test_data.at(2), 0xFF);
+  EXPECT_EQ(test_data.at(3), 0xFF);
+}
+
+TEST_F(XMTestFixture, push_back_current_for_sync_write) {
+  std::vector<uint8_t> test_data;
+  dxl->push_back_current_for_sync_write(2.691, test_data);
+  ASSERT_EQ(test_data.size(), 2);
+  // from_current_ampere(2.691) = 1000 (0x03E8)がセットされる
+  EXPECT_EQ(test_data.at(0), 0xE8);
+  EXPECT_EQ(test_data.at(1), 0x03);
+
+  test_data.clear();
+  dxl->push_back_current_for_sync_write(-2.691, test_data);
+  ASSERT_EQ(test_data.size(), 2);
+  // from_current_ampere(-2.691) = -1000 (0xFC18)がセットされる
+  EXPECT_EQ(test_data.at(0), 0x18);
+  EXPECT_EQ(test_data.at(1), 0xFC);
+}

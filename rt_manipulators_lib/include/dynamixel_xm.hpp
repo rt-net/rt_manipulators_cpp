@@ -16,6 +16,7 @@
 #define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM_HPP_
 
 #include <string>
+#include <vector>
 
 #include "dynamixel_base.hpp"
 
@@ -95,6 +96,13 @@ class DynamixelXM : public dynamixel_base::DynamixelBase  {
   bool extract_present_temperature_from_sync_read(
     const dynamixel_base::comm_t & comm, const std::string & group_name,
     int & temperature_deg);
+
+  void push_back_position_for_sync_write(
+    const double position_rad, std::vector<uint8_t> & write_data);
+  void push_back_velocity_for_sync_write(
+    const double velocity_rps, std::vector<uint8_t> & write_data);
+  void push_back_current_for_sync_write(
+    const double current_ampere, std::vector<uint8_t> & write_data);
 
  protected:
   int HOME_POSITION_;
