@@ -96,6 +96,18 @@ class DynamixelBase {
   virtual bool extract_present_position_from_sync_read(
     const dynamixel_base::comm_t & comm, const std::string & group_name,
     double & position_rad) { return false; }
+  virtual bool extract_present_velocity_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    double & velocity_rps) { return false; }
+  virtual bool extract_present_current_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    double & current_ampere) { return false; }
+  virtual bool extract_present_input_voltage_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    double & voltage_volt) { return false; }
+  virtual bool extract_present_temperature_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    int & temperature_deg) { return false; }
 
  protected:
   uint8_t id_;

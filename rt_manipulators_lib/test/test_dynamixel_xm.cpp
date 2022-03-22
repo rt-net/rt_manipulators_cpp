@@ -201,3 +201,27 @@ TEST_F(XMTestFixture, extract_present_position_from_sync_read) {
   double position;
   ASSERT_FALSE(dxl->extract_present_position_from_sync_read(comm, group_name, position));
 }
+
+TEST_F(XMTestFixture, extract_present_velocity_from_sync_read) {
+  std::string group_name = "test";
+  double velocity;
+  ASSERT_FALSE(dxl->extract_present_velocity_from_sync_read(comm, group_name, velocity));
+}
+
+TEST_F(XMTestFixture, extract_present_current_from_sync_read) {
+  std::string group_name = "test";
+  double current;
+  ASSERT_FALSE(dxl->extract_present_current_from_sync_read(comm, group_name, current));
+}
+
+TEST_F(XMTestFixture, extract_present_input_voltage_from_sync_read) {
+  std::string group_name = "test";
+  double voltage;
+  ASSERT_FALSE(dxl->extract_present_input_voltage_from_sync_read(comm, group_name, voltage));
+}
+
+TEST_F(XMTestFixture, extract_present_temperature_from_sync_read) {
+  std::string group_name = "test";
+  int temp;
+  ASSERT_FALSE(dxl->extract_present_temperature_from_sync_read(comm, group_name, temp));
+}

@@ -276,10 +276,58 @@ bool DynamixelXM::extract_present_position_from_sync_read(
     double & position_rad) {
   uint32_t data = 0;
   if (!comm->get_sync_read_data(
-    group_name, id_, indirect_addr_of_present_position_, LEN_PRESENT_POSITION, data)) {
+    group_name, id_, indirect_addr_of_present_position(), LEN_PRESENT_POSITION, data)) {
     return false;
   }
   position_rad = to_position_radian(static_cast<int32_t>(data));
+  return true;
+}
+
+bool DynamixelXM::extract_present_velocity_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    double & velocity_rps) {
+  uint32_t data = 0;
+  if (!comm->get_sync_read_data(
+    group_name, id_, indirect_addr_of_present_velocity(), LEN_PRESENT_VELOCITY, data)) {
+    return false;
+  }
+  velocity_rps = to_velocity_rps(static_cast<int32_t>(data));
+  return true;
+}
+
+bool DynamixelXM::extract_present_current_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    double & current_ampere) {
+  uint32_t data = 0;
+  if (!comm->get_sync_read_data(
+    group_name, id_, indirect_addr_of_present_current(), LEN_PRESENT_CURRENT, data)) {
+    return false;
+  }
+  current_ampere = to_current_ampere(static_cast<int16_t>(data));
+  return true;
+}
+
+bool DynamixelXM::extract_present_input_voltage_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    double & voltage_volt) {
+  uint32_t data = 0;
+  if (!comm->get_sync_read_data(
+    group_name, id_, indirect_addr_of_present_input_voltage(), LEN_PRESENT_VOLTAGE, data)) {
+    return false;
+  }
+  voltage_volt = to_voltage_volt(static_cast<int16_t>(data));
+  return true;
+}
+
+bool DynamixelXM::extract_present_temperature_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    int & temperature_deg) {
+  uint32_t data = 0;
+  if (!comm->get_sync_read_data(
+    group_name, id_, indirect_addr_of_present_temperature(), LEN_PRESENT_TEMPERATURE, data)) {
+    return false;
+  }
+  temperature_deg = static_cast<int8_t>(data);
   return true;
 }
 

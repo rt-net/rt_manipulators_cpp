@@ -203,19 +203,13 @@ bool Hardware::sync_read(const std::string& group_name) {
     return false;
   }
 
-  auto get_data = [this](auto group_name, auto joint_name, auto addr, auto len, auto & data){
-    auto id = joints_.joint(joint_name)->id();
-    return comm_->get_sync_read_data(group_name, id, addr, len, data);
-  };
-
   bool retval = true;
   if (joints_.group(group_name)->sync_read_position_enabled()) {
     for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-      uint32_t data = 0;
-      if (get_data(group_name, joint_name, addr_sync_read_position_[group_name],
-                  LEN_PRESENT_POSITION, data)) {
-        joints_.joint(joint_name)->set_present_position(
-          joints_.joint(joint_name)->dxl->to_position_radian(static_cast<int32_t>(data)));
+      double position = 0.0;
+      if (joints_.joint(joint_name)->dxl->extract_present_position_from_sync_read(
+        comm_, group_name, position)) {
+        joints_.joint(joint_name)->set_present_position(position);
       } else {
         std::cerr << joint_name << "のpresent_positionを取得できません." << std::endl;
         retval = false;
@@ -225,11 +219,10 @@ bool Hardware::sync_read(const std::string& group_name) {
 
   if (joints_.group(group_name)->sync_read_velocity_enabled()) {
     for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-      uint32_t data = 0;
-      if (get_data(group_name, joint_name, addr_sync_read_velocity_[group_name],
-                  LEN_PRESENT_VELOCITY, data)) {
-        joints_.joint(joint_name)->set_present_velocity(
-          joints_.joint(joint_name)->dxl->to_velocity_rps(static_cast<int32_t>(data)));
+      double velocity = 0.0;
+      if (joints_.joint(joint_name)->dxl->extract_present_velocity_from_sync_read(
+        comm_, group_name, velocity)) {
+        joints_.joint(joint_name)->set_present_velocity(velocity);
       } else {
         std::cerr << joint_name << "のpresent_velocityを取得できません." << std::endl;
         retval = false;
@@ -239,11 +232,10 @@ bool Hardware::sync_read(const std::string& group_name) {
 
   if (joints_.group(group_name)->sync_read_current_enabled()) {
     for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-      uint32_t data = 0;
-      if (get_data(group_name, joint_name, addr_sync_read_current_[group_name],
-                  LEN_PRESENT_CURRENT, data)) {
-        joints_.joint(joint_name)->set_present_current(
-          joints_.joint(joint_name)->dxl->to_current_ampere(static_cast<int16_t>(data)));
+      double current = 0.0;
+      if (joints_.joint(joint_name)->dxl->extract_present_current_from_sync_read(
+        comm_, group_name, current)) {
+        joints_.joint(joint_name)->set_present_current(current);
       } else {
         std::cerr << joint_name << "のpresent_currentを取得できません." << std::endl;
         retval = false;
@@ -253,11 +245,10 @@ bool Hardware::sync_read(const std::string& group_name) {
 
   if (joints_.group(group_name)->sync_read_voltage_enabled()) {
     for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-      uint32_t data = 0;
-      if (get_data(group_name, joint_name, addr_sync_read_voltage_[group_name],
-                  LEN_PRESENT_VOLTAGE, data)) {
-        joints_.joint(joint_name)->set_present_voltage(
-          joints_.joint(joint_name)->dxl->to_voltage_volt(static_cast<int16_t>(data)));
+      double voltage = 0.0;
+      if (joints_.joint(joint_name)->dxl->extract_present_input_voltage_from_sync_read(
+        comm_, group_name, voltage)) {
+        joints_.joint(joint_name)->set_present_voltage(voltage);
       } else {
         std::cerr << joint_name << "のpresent_voltageを取得できません." << std::endl;
         retval = false;
@@ -267,10 +258,10 @@ bool Hardware::sync_read(const std::string& group_name) {
 
   if (joints_.group(group_name)->sync_read_temperature_enabled()) {
     for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
-      uint32_t data = 0;
-      if (get_data(group_name, joint_name, addr_sync_read_temperature_[group_name],
-                  LEN_PRESENT_TEMPERATURE, data)) {
-        joints_.joint(joint_name)->set_present_temperature(static_cast<int8_t>(data));
+      int temperature = 0;
+      if (joints_.joint(joint_name)->dxl->extract_present_temperature_from_sync_read(
+        comm_, group_name, temperature)) {
+        joints_.joint(joint_name)->set_present_temperature(temperature);
       } else {
         std::cerr << joint_name << "のpresent_temperatureを取得できません." << std::endl;
         retval = false;
@@ -782,57 +773,65 @@ bool Hardware::limit_goal_current_by_present_position(const std::string& group_n
 bool Hardware::create_sync_read_group(const std::string& group_name) {
   // HardwareCommunicatorに、指定されたデータを読むSyncReadGroupを追加する
   // できるだけ多くのデータをSyncReadで読み取るため、インダイレクトアドレスを活用する
-  uint16_t start_address = ADDR_INDIRECT_ADDRESS_1;
-  uint16_t total_length = 0;
-
-  auto append = [this, group_name, &start_address, &total_length](
-    auto target_addr, auto target_len, auto name, auto & indirect_address){
-    if (!set_indirect_address(group_name, start_address, target_addr, target_len)) {
-      std::cerr << name << "をindirect addressにセットできません." << std::endl;
-      return false;
-    }
-    indirect_address = ADDR_INDIRECT_DATA_1 + total_length;
-    total_length += target_len;
-    start_address += LEN_INDIRECT_ADDRESS * target_len;
-    return true;
-  };
 
   if (joints_.group(group_name)->sync_read_position_enabled()) {
-    if (!append(ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION, "present_position",
-        addr_sync_read_position_[group_name])) {
-      return false;
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+      if (!joints_.joint(joint_name)->dxl->auto_set_indirect_address_of_present_position(comm_)) {
+        std::cerr << joint_name << "ジョイントの" << std::endl;
+        std::cerr << "present_positionをindirect addressにセットできません." << std::endl;
+        return false;
+      }
     }
   }
 
   if (joints_.group(group_name)->sync_read_velocity_enabled()) {
-    if (!append(ADDR_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY, "present_velocity",
-        addr_sync_read_velocity_[group_name])) {
-      return false;
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+      if (!joints_.joint(joint_name)->dxl->auto_set_indirect_address_of_present_velocity(comm_)) {
+        std::cerr << joint_name << "ジョイントの" << std::endl;
+        std::cerr << "present_velocityをindirect addressにセットできません." << std::endl;
+        return false;
+      }
     }
   }
 
   if (joints_.group(group_name)->sync_read_current_enabled()) {
-    if (!append(ADDR_PRESENT_CURRENT, LEN_PRESENT_CURRENT, "present_current",
-        addr_sync_read_current_[group_name])) {
-      return false;
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+      if (!joints_.joint(joint_name)->dxl->auto_set_indirect_address_of_present_current(comm_)) {
+        std::cerr << joint_name << "ジョイントの" << std::endl;
+        std::cerr << "present_currentをindirect addressにセットできません." << std::endl;
+        return false;
+      }
     }
   }
 
   if (joints_.group(group_name)->sync_read_voltage_enabled()) {
-    if (!append(ADDR_PRESENT_VOLTAGE, LEN_PRESENT_VOLTAGE, "present_voltage",
-        addr_sync_read_voltage_[group_name])) {
-      return false;
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+      if (!joints_.joint(joint_name)->dxl->auto_set_indirect_address_of_present_input_voltage(
+        comm_)) {
+        std::cerr << joint_name << "ジョイントの" << std::endl;
+        std::cerr << "present_input_voltageをindirect addressにセットできません." << std::endl;
+        return false;
+      }
     }
   }
 
   if (joints_.group(group_name)->sync_read_temperature_enabled()) {
-    if (!append(ADDR_PRESENT_TEMPERATURE, LEN_PRESENT_TEMPERATURE, "present_temperature",
-        addr_sync_read_temperature_[group_name])) {
-      return false;
+    for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
+      if (!joints_.joint(joint_name)->dxl->auto_set_indirect_address_of_present_temperature(
+        comm_)) {
+        std::cerr << joint_name << "ジョイントの" << std::endl;
+        std::cerr << "present_temperatureをindirect addressにセットできません." << std::endl;
+        return false;
+      }
     }
   }
 
-  comm_->make_sync_read_group(group_name, ADDR_INDIRECT_DATA_1, total_length);
+  // 代表1ジョイントを抽出し、sync_readの開始アドレスとデータ長を取得する
+  const auto a_name = joints_.group(group_name)->joint_names().front();
+  comm_->make_sync_read_group(
+    group_name,
+    joints_.joint(a_name)->dxl->start_address_for_indirect_read(),
+    joints_.joint(a_name)->dxl->length_of_indirect_data_read());
 
   for (const auto & joint_name : joints_.group(group_name)->joint_names()) {
     auto id = joints_.joint(joint_name)->id();
