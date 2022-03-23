@@ -14,10 +14,10 @@
 
 #include <cmath>
 
-#include "dynamixel_xm.hpp"
+#include "dynamixel_x.hpp"
 
 
-namespace dynamixel_xm {
+namespace dynamixel_x {
 
 const uint16_t ADDR_OPERATING_MODE = 11;
 const uint16_t ADDR_CURRENT_LIMIT = 38;
@@ -76,25 +76,25 @@ const double TO_VOLTAGE_VOLT = 0.1;
 const double TO_DXL_POS = 1.0 / TO_RADIANS;
 const double TO_DXL_CURRENT = 1.0 / TO_CURRENT_AMPERE;
 
-DynamixelXM::DynamixelXM(const uint8_t id, const int home_position)
+DynamixelX::DynamixelX(const uint8_t id, const int home_position)
   : dynamixel_base::DynamixelBase(id), HOME_POSITION_(home_position),
     total_length_of_indirect_addr_read_(0), total_length_of_indirect_addr_write_(0),
     indirect_addr_of_present_position_(0), indirect_addr_of_present_velocity_(0),
     indirect_addr_of_present_current_(0), indirect_addr_of_present_input_voltage_(0),
     indirect_addr_of_present_temperature_(0), indirect_addr_of_goal_position_(0),
     indirect_addr_of_goal_velocity_(0), indirect_addr_of_goal_current_(0) {
-  name_ = "XM";
+  name_ = "X";
 }
 
-bool DynamixelXM::read_operating_mode(const dynamixel_base::comm_t & comm, uint8_t & mode) {
+bool DynamixelX::read_operating_mode(const dynamixel_base::comm_t & comm, uint8_t & mode) {
   return comm->read_byte_data(id_, ADDR_OPERATING_MODE, mode);
 }
 
-bool DynamixelXM::write_operating_mode(const dynamixel_base::comm_t & comm, const uint8_t mode) {
+bool DynamixelX::write_operating_mode(const dynamixel_base::comm_t & comm, const uint8_t mode) {
   return comm->write_byte_data(id_, ADDR_OPERATING_MODE, mode);
 }
 
-bool DynamixelXM::read_current_limit(
+bool DynamixelX::read_current_limit(
   const dynamixel_base::comm_t & comm, double & limit_ampere) {
   uint16_t dxl_current_limit = 0;
   bool retval = comm->read_word_data(id_, ADDR_CURRENT_LIMIT, dxl_current_limit);
@@ -102,7 +102,7 @@ bool DynamixelXM::read_current_limit(
   return retval;
 }
 
-bool DynamixelXM::read_max_position_limit(
+bool DynamixelX::read_max_position_limit(
   const dynamixel_base::comm_t & comm, double & limit_radian) {
   uint16_t dxl_position_limit = 0;
   bool retval = comm->read_word_data(id_, ADDR_MAX_POSITION_LIMIT, dxl_position_limit);
@@ -110,7 +110,7 @@ bool DynamixelXM::read_max_position_limit(
   return retval;
 }
 
-bool DynamixelXM::read_min_position_limit(
+bool DynamixelX::read_min_position_limit(
   const dynamixel_base::comm_t & comm, double & limit_radian) {
   uint16_t dxl_position_limit = 0;
   bool retval = comm->read_word_data(id_, ADDR_MIN_POSITION_LIMIT, dxl_position_limit);
@@ -118,36 +118,36 @@ bool DynamixelXM::read_min_position_limit(
   return retval;
 }
 
-bool DynamixelXM::write_torque_enable(const dynamixel_base::comm_t & comm, const bool enable) {
+bool DynamixelX::write_torque_enable(const dynamixel_base::comm_t & comm, const bool enable) {
   return comm->write_byte_data(id_, ADDR_TORQUE_ENABLE, enable);
 }
 
-bool DynamixelXM::write_velocity_i_gain(
+bool DynamixelX::write_velocity_i_gain(
   const dynamixel_base::comm_t & comm, const unsigned int gain) {
   return comm->write_word_data(id_, ADDR_VELOCITY_I_GAIN, static_cast<uint16_t>(gain));
 }
 
-bool DynamixelXM::write_velocity_p_gain(
+bool DynamixelX::write_velocity_p_gain(
   const dynamixel_base::comm_t & comm, const unsigned int gain) {
   return comm->write_word_data(id_, ADDR_VELOCITY_P_GAIN, static_cast<uint16_t>(gain));
 }
 
-bool DynamixelXM::write_position_d_gain(
+bool DynamixelX::write_position_d_gain(
   const dynamixel_base::comm_t & comm, const unsigned int gain) {
   return comm->write_word_data(id_, ADDR_POSITION_D_GAIN, static_cast<uint16_t>(gain));
 }
 
-bool DynamixelXM::write_position_i_gain(
+bool DynamixelX::write_position_i_gain(
   const dynamixel_base::comm_t & comm, const unsigned int gain) {
   return comm->write_word_data(id_, ADDR_POSITION_I_GAIN, static_cast<uint16_t>(gain));
 }
 
-bool DynamixelXM::write_position_p_gain(
+bool DynamixelX::write_position_p_gain(
   const dynamixel_base::comm_t & comm, const unsigned int gain) {
   return comm->write_word_data(id_, ADDR_POSITION_P_GAIN, static_cast<uint16_t>(gain));
 }
 
-bool DynamixelXM::write_profile_acceleration(
+bool DynamixelX::write_profile_acceleration(
   const dynamixel_base::comm_t & comm, const double acceleration_rpss) {
   return comm->write_double_word_data(
     id_,
@@ -155,7 +155,7 @@ bool DynamixelXM::write_profile_acceleration(
     static_cast<uint32_t>(to_profile_acceleration(acceleration_rpss)));
 }
 
-bool DynamixelXM::write_profile_velocity(
+bool DynamixelX::write_profile_velocity(
   const dynamixel_base::comm_t & comm, const double velocity_rps) {
   return comm->write_double_word_data(
     id_,
@@ -163,7 +163,7 @@ bool DynamixelXM::write_profile_velocity(
     static_cast<uint32_t>(to_profile_velocity(velocity_rps)));
 }
 
-unsigned int DynamixelXM::to_profile_acceleration(const double acceleration_rpss) {
+unsigned int DynamixelX::to_profile_acceleration(const double acceleration_rpss) {
   int dxl_acceleration = DXL_ACCELERATION_FROM_RAD_PER_SS * acceleration_rpss;
   if (dxl_acceleration > DXL_MAX_ACCELERATION) {
     dxl_acceleration = DXL_MAX_ACCELERATION;
@@ -176,7 +176,7 @@ unsigned int DynamixelXM::to_profile_acceleration(const double acceleration_rpss
   return static_cast<unsigned int>(dxl_acceleration);
 }
 
-unsigned int DynamixelXM::to_profile_velocity(const double velocity_rps) {
+unsigned int DynamixelX::to_profile_velocity(const double velocity_rps) {
   int dxl_velocity = DXL_VELOCITY_FROM_RAD_PER_SEC * velocity_rps;
   if (dxl_velocity > DXL_MAX_VELOCITY) {
     dxl_velocity = DXL_MAX_VELOCITY;
@@ -189,141 +189,141 @@ unsigned int DynamixelXM::to_profile_velocity(const double velocity_rps) {
   return static_cast<unsigned int>(dxl_velocity);
 }
 
-double DynamixelXM::to_position_radian(const int position) {
+double DynamixelX::to_position_radian(const int position) {
   return (position - HOME_POSITION_) * TO_RADIANS;
 }
 
-double DynamixelXM::to_velocity_rps(const int velocity) {
+double DynamixelX::to_velocity_rps(const int velocity) {
   return velocity * TO_VELOCITY_RAD_PER_SEC;
 }
 
-double DynamixelXM::to_current_ampere(const int current) {
+double DynamixelX::to_current_ampere(const int current) {
   return current * TO_CURRENT_AMPERE;
 }
 
-double DynamixelXM::to_voltage_volt(const int voltage) {
+double DynamixelX::to_voltage_volt(const int voltage) {
   return voltage * TO_VOLTAGE_VOLT;
 }
 
-unsigned int DynamixelXM::from_position_radian(const double position_rad) {
+unsigned int DynamixelX::from_position_radian(const double position_rad) {
   return position_rad * TO_DXL_POS + HOME_POSITION_;
 }
 
-unsigned int DynamixelXM::from_velocity_rps(const double velocity_rps) {
+unsigned int DynamixelX::from_velocity_rps(const double velocity_rps) {
   return velocity_rps * DXL_VELOCITY_FROM_RAD_PER_SEC;
 }
 
-unsigned int DynamixelXM::from_current_ampere(const double current_ampere) {
+unsigned int DynamixelX::from_current_ampere(const double current_ampere) {
   return current_ampere * TO_DXL_CURRENT;
 }
 
-bool DynamixelXM::auto_set_indirect_address_of_present_position(
+bool DynamixelX::auto_set_indirect_address_of_present_position(
   const dynamixel_base::comm_t & comm) {
   return set_indirect_address_read(
     comm, ADDR_PRESENT_POSITION, LEN_PRESENT_POSITION, indirect_addr_of_present_position_);
 }
 
-bool DynamixelXM::auto_set_indirect_address_of_present_velocity(
+bool DynamixelX::auto_set_indirect_address_of_present_velocity(
   const dynamixel_base::comm_t & comm) {
   return set_indirect_address_read(
     comm, ADDR_PRESENT_VELOCITY, LEN_PRESENT_VELOCITY, indirect_addr_of_present_velocity_);
 }
 
-bool DynamixelXM::auto_set_indirect_address_of_present_current(
+bool DynamixelX::auto_set_indirect_address_of_present_current(
   const dynamixel_base::comm_t & comm) {
   return set_indirect_address_read(
     comm, ADDR_PRESENT_CURRENT, LEN_PRESENT_CURRENT, indirect_addr_of_present_current_);
 }
 
-bool DynamixelXM::auto_set_indirect_address_of_present_input_voltage(
+bool DynamixelX::auto_set_indirect_address_of_present_input_voltage(
   const dynamixel_base::comm_t & comm) {
   return set_indirect_address_read(
     comm, ADDR_PRESENT_VOLTAGE, LEN_PRESENT_VOLTAGE, indirect_addr_of_present_input_voltage_);
 }
 
-bool DynamixelXM::auto_set_indirect_address_of_present_temperature(
+bool DynamixelX::auto_set_indirect_address_of_present_temperature(
   const dynamixel_base::comm_t & comm) {
   return set_indirect_address_read(
     comm, ADDR_PRESENT_TEMPERATURE, LEN_PRESENT_TEMPERATURE, indirect_addr_of_present_temperature_);
 }
 
-bool DynamixelXM::auto_set_indirect_address_of_goal_position(
+bool DynamixelX::auto_set_indirect_address_of_goal_position(
   const dynamixel_base::comm_t & comm) {
   return set_indirect_address_write(
     comm, ADDR_GOAL_POSITION, LEN_GOAL_POSITION, indirect_addr_of_goal_position_);
 }
 
-bool DynamixelXM::auto_set_indirect_address_of_goal_velocity(
+bool DynamixelX::auto_set_indirect_address_of_goal_velocity(
   const dynamixel_base::comm_t & comm) {
   return set_indirect_address_write(
     comm, ADDR_GOAL_VELOCITY, LEN_GOAL_VELOCITY, indirect_addr_of_goal_velocity_);
 }
 
-bool DynamixelXM::auto_set_indirect_address_of_goal_current(
+bool DynamixelX::auto_set_indirect_address_of_goal_current(
   const dynamixel_base::comm_t & comm) {
   return set_indirect_address_write(
     comm, ADDR_GOAL_CURRENT, LEN_GOAL_CURRENT, indirect_addr_of_goal_current_);
 }
 
-unsigned int DynamixelXM::indirect_addr_of_present_position(void) {
+unsigned int DynamixelX::indirect_addr_of_present_position(void) {
   return indirect_addr_of_present_position_;
 }
 
-unsigned int DynamixelXM::indirect_addr_of_present_velocity(void) {
+unsigned int DynamixelX::indirect_addr_of_present_velocity(void) {
   return indirect_addr_of_present_velocity_;
 }
 
-unsigned int DynamixelXM::indirect_addr_of_present_current(void) {
+unsigned int DynamixelX::indirect_addr_of_present_current(void) {
   return indirect_addr_of_present_current_;
 }
 
-unsigned int DynamixelXM::indirect_addr_of_present_input_voltage(void) {
+unsigned int DynamixelX::indirect_addr_of_present_input_voltage(void) {
   return indirect_addr_of_present_input_voltage_;
 }
 
-unsigned int DynamixelXM::indirect_addr_of_present_temperature(void) {
+unsigned int DynamixelX::indirect_addr_of_present_temperature(void) {
   return indirect_addr_of_present_temperature_;
 }
 
-unsigned int DynamixelXM::indirect_addr_of_goal_position(void) {
+unsigned int DynamixelX::indirect_addr_of_goal_position(void) {
   return indirect_addr_of_goal_position_;
 }
 
-unsigned int DynamixelXM::indirect_addr_of_goal_velocity(void) {
+unsigned int DynamixelX::indirect_addr_of_goal_velocity(void) {
   return indirect_addr_of_goal_velocity_;
 }
 
-unsigned int DynamixelXM::indirect_addr_of_goal_current(void) {
+unsigned int DynamixelX::indirect_addr_of_goal_current(void) {
   return indirect_addr_of_goal_current_;
 }
 
-unsigned int DynamixelXM::start_address_for_indirect_read(void) {
+unsigned int DynamixelX::start_address_for_indirect_read(void) {
   return ADDR_START_INDIRECT_DATA_READ;
 }
 
-unsigned int DynamixelXM::length_of_indirect_data_read(void) {
+unsigned int DynamixelX::length_of_indirect_data_read(void) {
   return total_length_of_indirect_addr_read_;
 }
 
-unsigned int DynamixelXM::next_indirect_addr_read(void) const {
+unsigned int DynamixelX::next_indirect_addr_read(void) const {
   return ADDR_START_INDIRECT_ADDR_READ +
     LEN_INDIRECT_ADDRESS * total_length_of_indirect_addr_read_;
 }
 
-unsigned int DynamixelXM::start_address_for_indirect_write(void) {
+unsigned int DynamixelX::start_address_for_indirect_write(void) {
   return ADDR_START_INDIRECT_DATA_WRITE;
 }
 
-unsigned int DynamixelXM::length_of_indirect_data_write(void) {
+unsigned int DynamixelX::length_of_indirect_data_write(void) {
   return total_length_of_indirect_addr_write_;
 }
 
-unsigned int DynamixelXM::next_indirect_addr_write(void) const {
+unsigned int DynamixelX::next_indirect_addr_write(void) const {
   return ADDR_START_INDIRECT_ADDR_WRITE +
     LEN_INDIRECT_ADDRESS * total_length_of_indirect_addr_write_;
 }
 
-bool DynamixelXM::extract_present_position_from_sync_read(
+bool DynamixelX::extract_present_position_from_sync_read(
     const dynamixel_base::comm_t & comm, const std::string & group_name,
     double & position_rad) {
   uint32_t data = 0;
@@ -335,7 +335,7 @@ bool DynamixelXM::extract_present_position_from_sync_read(
   return true;
 }
 
-bool DynamixelXM::extract_present_velocity_from_sync_read(
+bool DynamixelX::extract_present_velocity_from_sync_read(
     const dynamixel_base::comm_t & comm, const std::string & group_name,
     double & velocity_rps) {
   uint32_t data = 0;
@@ -347,7 +347,7 @@ bool DynamixelXM::extract_present_velocity_from_sync_read(
   return true;
 }
 
-bool DynamixelXM::extract_present_current_from_sync_read(
+bool DynamixelX::extract_present_current_from_sync_read(
     const dynamixel_base::comm_t & comm, const std::string & group_name,
     double & current_ampere) {
   uint32_t data = 0;
@@ -359,7 +359,7 @@ bool DynamixelXM::extract_present_current_from_sync_read(
   return true;
 }
 
-bool DynamixelXM::extract_present_input_voltage_from_sync_read(
+bool DynamixelX::extract_present_input_voltage_from_sync_read(
     const dynamixel_base::comm_t & comm, const std::string & group_name,
     double & voltage_volt) {
   uint32_t data = 0;
@@ -371,7 +371,7 @@ bool DynamixelXM::extract_present_input_voltage_from_sync_read(
   return true;
 }
 
-bool DynamixelXM::extract_present_temperature_from_sync_read(
+bool DynamixelX::extract_present_temperature_from_sync_read(
     const dynamixel_base::comm_t & comm, const std::string & group_name,
     int & temperature_deg) {
   uint32_t data = 0;
@@ -383,7 +383,7 @@ bool DynamixelXM::extract_present_temperature_from_sync_read(
   return true;
 }
 
-void DynamixelXM::push_back_position_for_sync_write(
+void DynamixelX::push_back_position_for_sync_write(
     const double position_rad, std::vector<uint8_t> & write_data) {
   uint32_t dxl_position = from_position_radian(position_rad);
   write_data.push_back(DXL_LOBYTE(DXL_LOWORD(dxl_position)));
@@ -392,7 +392,7 @@ void DynamixelXM::push_back_position_for_sync_write(
   write_data.push_back(DXL_HIBYTE(DXL_HIWORD(dxl_position)));
 }
 
-void DynamixelXM::push_back_velocity_for_sync_write(
+void DynamixelX::push_back_velocity_for_sync_write(
     const double velocity_rps, std::vector<uint8_t> & write_data) {
   uint32_t dxl_velocity = from_velocity_rps(velocity_rps);
   write_data.push_back(DXL_LOBYTE(DXL_LOWORD(dxl_velocity)));
@@ -401,14 +401,14 @@ void DynamixelXM::push_back_velocity_for_sync_write(
   write_data.push_back(DXL_HIBYTE(DXL_HIWORD(dxl_velocity)));
 }
 
-void DynamixelXM::push_back_current_for_sync_write(
+void DynamixelX::push_back_current_for_sync_write(
     const double current_ampere, std::vector<uint8_t> & write_data) {
   uint16_t dxl_current = from_current_ampere(current_ampere);
   write_data.push_back(DXL_LOBYTE(dxl_current));
   write_data.push_back(DXL_HIBYTE(dxl_current));
 }
 
-bool DynamixelXM::set_indirect_address_read(
+bool DynamixelX::set_indirect_address_read(
     const dynamixel_base::comm_t & comm, const uint16_t addr, const uint16_t len,
     uint16_t & indirect_addr) {
   bool retval = true;
@@ -427,7 +427,7 @@ bool DynamixelXM::set_indirect_address_read(
   return retval;
 }
 
-bool DynamixelXM::set_indirect_address_write(
+bool DynamixelX::set_indirect_address_write(
     const dynamixel_base::comm_t & comm, const uint16_t addr, const uint16_t len,
     uint16_t & indirect_addr) {
   bool retval = true;
@@ -446,4 +446,4 @@ bool DynamixelXM::set_indirect_address_write(
   return retval;
 }
 
-}  // namespace dynamixel_xm
+}  // namespace dynamixel_x

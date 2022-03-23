@@ -15,11 +15,11 @@
 #ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM540_HPP_
 #define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM540_HPP_
 
-#include "dynamixel_xm.hpp"
+#include "dynamixel_x.hpp"
 
 namespace dynamixel_xm540 {
 
-class DynamixelXM540 : public dynamixel_xm::DynamixelXM {
+class DynamixelXM540 : public dynamixel_x::DynamixelX {
  public:
   explicit DynamixelXM540(const uint8_t id);
 };

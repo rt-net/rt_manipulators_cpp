@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM_HPP_
-#define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM_HPP_
+#ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_X_HPP_
+#define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_X_HPP_
 
 #include <string>
 #include <vector>
 
 #include "dynamixel_base.hpp"
 
-namespace dynamixel_xm {
+namespace dynamixel_x {
 
-class DynamixelXM : public dynamixel_base::DynamixelBase  {
+class DynamixelX : public dynamixel_base::DynamixelBase  {
  public:
-  explicit DynamixelXM(const uint8_t id, const int home_position = 2048);
+  explicit DynamixelX(const uint8_t id, const int home_position = 2048);
 
   bool read_operating_mode(const dynamixel_base::comm_t & comm, uint8_t & mode);
   bool write_operating_mode(const dynamixel_base::comm_t & comm, const uint8_t mode);
@@ -125,6 +125,6 @@ class DynamixelXM : public dynamixel_base::DynamixelBase  {
     uint16_t & indirect_addr);
 };
 
-}  // namespace dynamixel_xm
+}  // namespace dynamixel_x
 
-#endif  // RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM_HPP_
+#endif  // RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_X_HPP_

@@ -19,7 +19,7 @@
 namespace dynamixel_xm430 {
 
 DynamixelXM430::DynamixelXM430(const uint8_t id)
-  : dynamixel_xm::DynamixelXM(id) {
+  : dynamixel_x::DynamixelX(id) {
   name_ = "XM430";
 }
 
