@@ -164,59 +164,59 @@ TEST_F(XMTestFixture, from_current_ampere) {
 }
 
 TEST_F(XMTestFixture, set_indirect_addresses_read) {
-  EXPECT_EQ(dxl->start_address_for_indirect_read(), 224);
+  EXPECT_EQ(dxl->start_address_for_indirect_read(), 634);
   EXPECT_EQ(dxl->length_of_indirect_data_read(), 0);
-  EXPECT_EQ(dxl->next_indirect_addr_read(), 168);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 578);
 
   EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_position(comm));
   // indirect_dataの開始位置は変わらないことを期待
-  EXPECT_EQ(dxl->start_address_for_indirect_read(), 224);
+  EXPECT_EQ(dxl->start_address_for_indirect_read(), 634);
   EXPECT_EQ(dxl->length_of_indirect_data_read(), 4);
-  EXPECT_EQ(dxl->next_indirect_addr_read(), 176);
-  EXPECT_EQ(dxl->indirect_addr_of_present_position(), 224);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 586);
+  EXPECT_EQ(dxl->indirect_addr_of_present_position(), 634);
 
   EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_velocity(comm));
   EXPECT_EQ(dxl->length_of_indirect_data_read(), 8);
-  EXPECT_EQ(dxl->next_indirect_addr_read(), 184);
-  EXPECT_EQ(dxl->indirect_addr_of_present_velocity(), 228);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 594);
+  EXPECT_EQ(dxl->indirect_addr_of_present_velocity(), 638);
 
   EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_current(comm));
   EXPECT_EQ(dxl->length_of_indirect_data_read(), 10);
-  EXPECT_EQ(dxl->next_indirect_addr_read(), 188);
-  EXPECT_EQ(dxl->indirect_addr_of_present_current(), 232);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 598);
+  EXPECT_EQ(dxl->indirect_addr_of_present_current(), 642);
 
   EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_input_voltage(comm));
   EXPECT_EQ(dxl->length_of_indirect_data_read(), 12);
-  EXPECT_EQ(dxl->next_indirect_addr_read(), 192);
-  EXPECT_EQ(dxl->indirect_addr_of_present_input_voltage(), 234);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 602);
+  EXPECT_EQ(dxl->indirect_addr_of_present_input_voltage(), 644);
 
   EXPECT_FALSE(dxl->auto_set_indirect_address_of_present_temperature(comm));
   EXPECT_EQ(dxl->length_of_indirect_data_read(), 13);
-  EXPECT_EQ(dxl->next_indirect_addr_read(), 194);
-  EXPECT_EQ(dxl->indirect_addr_of_present_temperature(), 236);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 604);
+  EXPECT_EQ(dxl->indirect_addr_of_present_temperature(), 646);
 }
 
 TEST_F(XMTestFixture, set_indirect_addresses_write) {
-  EXPECT_EQ(dxl->start_address_for_indirect_write(), 634);
+  EXPECT_EQ(dxl->start_address_for_indirect_write(), 649);
   EXPECT_EQ(dxl->length_of_indirect_data_write(), 0);
-  EXPECT_EQ(dxl->next_indirect_addr_write(), 578);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 608);
 
   EXPECT_FALSE(dxl->auto_set_indirect_address_of_goal_position(comm));
   // indirect_dataの開始位置は変わらないことを期待
-  EXPECT_EQ(dxl->start_address_for_indirect_write(), 634);
+  EXPECT_EQ(dxl->start_address_for_indirect_write(), 649);
   EXPECT_EQ(dxl->length_of_indirect_data_write(), 4);
-  EXPECT_EQ(dxl->next_indirect_addr_write(), 586);
-  EXPECT_EQ(dxl->indirect_addr_of_goal_position(), 634);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 616);
+  EXPECT_EQ(dxl->indirect_addr_of_goal_position(), 649);
 
   EXPECT_FALSE(dxl->auto_set_indirect_address_of_goal_velocity(comm));
   EXPECT_EQ(dxl->length_of_indirect_data_write(), 8);
-  EXPECT_EQ(dxl->next_indirect_addr_write(), 594);
-  EXPECT_EQ(dxl->indirect_addr_of_goal_velocity(), 638);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 624);
+  EXPECT_EQ(dxl->indirect_addr_of_goal_velocity(), 653);
 
   EXPECT_FALSE(dxl->auto_set_indirect_address_of_goal_current(comm));
   EXPECT_EQ(dxl->length_of_indirect_data_write(), 10);
-  EXPECT_EQ(dxl->next_indirect_addr_write(), 598);
-  EXPECT_EQ(dxl->indirect_addr_of_goal_current(), 642);
+  EXPECT_EQ(dxl->next_indirect_addr_write(), 628);
+  EXPECT_EQ(dxl->indirect_addr_of_goal_current(), 657);
 }
 
 TEST_F(XMTestFixture, extract_present_position_from_sync_read) {
