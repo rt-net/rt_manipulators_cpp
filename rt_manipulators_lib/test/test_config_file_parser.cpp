@@ -70,6 +70,8 @@ TEST(ConfigFileParserTest, has_dynamixel_name) {
   EXPECT_EQ(parsed_joints.joint("joint1")->dxl->get_id(), 1);
   EXPECT_EQ(parsed_joints.joint("joint1")->dxl->get_name(), "XM430");
   EXPECT_EQ(parsed_joints.joint("joint2")->dxl->get_name(), "XM540");
+  EXPECT_EQ(parsed_joints.joint("joint3")->dxl->get_name(), "XH430");
+  EXPECT_EQ(parsed_joints.joint("joint4")->dxl->get_name(), "XH540");
 }
 
 TEST(ConfigFileParserTest, has_same_groups) {

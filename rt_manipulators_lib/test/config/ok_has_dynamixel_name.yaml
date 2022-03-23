@@ -3,6 +3,10 @@ joint_groups:
     joints:
       - joint1
       - joint2
+      - joint3
+      - joint4
 
 joint1: { id: 1, dynamixel: "XM430", operating_mode: 3}
 joint2: { id: 2, dynamixel: "XM540", operating_mode: 3}
+joint3: { id: 3, dynamixel: "XH430", operating_mode: 3}
+joint4: { id: 4, dynamixel: "XH540", operating_mode: 3}
