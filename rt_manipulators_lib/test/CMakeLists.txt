@@ -19,7 +19,7 @@ set(list_tests
     test_kinematics_utils
     test_kinematics
     test_config_file_parser
-    test_dynamixel_xm
+    test_dynamixel_x
 )
 foreach(test_executable IN LISTS list_tests)
     message("${test_executable}")

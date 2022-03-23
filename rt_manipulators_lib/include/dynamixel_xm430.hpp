@@ -15,11 +15,11 @@
 #ifndef RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM430_HPP_
 #define RT_MANIPULATORS_LIB_INCLUDE_DYNAMIXEL_XM430_HPP_
 
-#include "dynamixel_xm.hpp"
+#include "dynamixel_x.hpp"
 
 namespace dynamixel_xm430 {
 
-class DynamixelXM430 : public dynamixel_xm::DynamixelXM {
+class DynamixelXM430 : public dynamixel_x::DynamixelX {
  public:
   explicit DynamixelXM430(const uint8_t id);
 };

@@ -12,7 +12,7 @@ add_library(${library_name}
     kinematics.cpp
     kinematics_utils.cpp
     config_file_parser.cpp
-    dynamixel_xm.cpp
+    dynamixel_x.cpp
     dynamixel_xm430.cpp
     dynamixel_xm540.cpp
 )
