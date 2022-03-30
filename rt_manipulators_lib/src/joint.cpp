@@ -14,6 +14,9 @@
 
 #include "dynamixel_xm430.hpp"
 #include "dynamixel_xm540.hpp"
+#include "dynamixel_xh430.hpp"
+#include "dynamixel_xh540.hpp"
+#include "dynamixel_ph42.hpp"
 #include "joint.hpp"
 
 namespace joint {
@@ -36,6 +39,12 @@ Joint::Joint(const uint8_t id, const uint8_t operating_mode, const std::string d
     dxl = std::make_shared<dynamixel_xm430::DynamixelXM430>(id);
   } else if (dynamixel_name == "XM540") {
     dxl = std::make_shared<dynamixel_xm540::DynamixelXM540>(id);
+  } else if (dynamixel_name == "XH430") {
+    dxl = std::make_shared<dynamixel_xh430::DynamixelXH430>(id);
+  } else if (dynamixel_name == "XH540") {
+    dxl = std::make_shared<dynamixel_xh540::DynamixelXH540>(id);
+  } else if (dynamixel_name == "PH42") {
+    dxl = std::make_shared<dynamixel_ph42::DynamixelPH42>(id);
   } else {
     dxl = std::make_shared<dynamixel_base::DynamixelBase>(id);
   }
