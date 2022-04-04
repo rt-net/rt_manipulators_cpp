@@ -28,20 +28,14 @@ using moment_map_t = std::map<unsigned int, moment_t>;
 
 bool x7_gravity_compensation(
   const kinematics_utils::links_t & links,
+  const kinematics_utils::link_id_t & target_id,
   const torque_to_current_t & torque_to_current,
   kinematics_utils::q_list_t & q_list) {
   // 運動方程式から重力補償項のみを計算し、出力トルクを求める
   // 参考：細田耕. 「実践ロボット制御 -基礎から動力学まで-」. オーム社, p137, 2019
 
-  // 計算に使用する変数
-  pos_map_t dd_p;  // 位置の2回微分
-  center_of_mass_map_t dd_s;  // 重心の加速度
-  force_map_t f_hat;  // 外力
-  force_map_t f;  // リンクの力
-  moment_map_t n;  // リンクのモーメント
-
   // 根本から手先までのリンク経路を取得
-  auto route = kinematics_utils::find_route(links, 8);
+  auto route = kinematics_utils::find_route(links, target_id);
 
   // トルク電流比がセットされているか検証
   for (const auto & link_i : route) {
@@ -50,6 +44,13 @@ bool x7_gravity_compensation(
       return false;
     }
   }
+
+  // 計算に使用する変数
+  pos_map_t dd_p;  // 位置の2回微分
+  center_of_mass_map_t dd_s;  // 重心の加速度
+  force_map_t f_hat;  // 外力
+  force_map_t f;  // リンクの力
+  moment_map_t n;  // リンクのモーメント
 
   // 変数の初期化
   for (const auto & link_i : route) {
@@ -60,20 +61,25 @@ bool x7_gravity_compensation(
     n[link_i] << 0, 0, 0;
   }
   // 根本リンクを追加する
-  auto root_i = links[route[0]].parent;
-  dd_p[root_i] << 0, 0, 0;
+  auto base_i = links[route[0]].parent;
+  auto base_to_route = route;
+  base_to_route.insert(base_to_route.begin(), base_i);
+  dd_p[base_i] << 0, 0, 0;
   // 子リンクを追加する
   auto end_i = links[route.back()].child;
+  auto route_to_end = route;
+  route_to_end.push_back(end_i);
   f[end_i] << 0, 0, 0;
   n[end_i] << 0, 0, 0;
 
   // 重力加速度を根本リンクの加速度に設定
   Eigen::Vector3d g;
   g << 0, 0, -9.8;
-  dd_p[root_i] = -g;
+  dd_p[base_i] = -g;
 
-  for (const auto & link_i : route) {
-    const auto parent_i = links[link_i].parent;
+  for (auto itr = std::next(base_to_route.begin()); itr != base_to_route.end(); ++itr) {
+    const auto link_i = *itr;
+    const auto parent_i = *std::prev(itr);
     const auto link = links[link_i];
     const Eigen::Matrix3d RfromParent = links[parent_i].R.transpose() * link.R;
 
@@ -86,9 +92,9 @@ bool x7_gravity_compensation(
   }
 
   // 手先から根本に向かってリンクの力とモーメントを求める
-  for (auto itr = route.rbegin(); itr != route.rend(); ++itr) {
+  for (auto itr = std::next(route_to_end.rbegin()); itr != route_to_end.rend(); ++itr) {
     const auto link_i = *itr;
-    const auto child_i = links[link_i].child;
+    const auto child_i = *std::prev(itr);
     const Eigen::Matrix3d RtoChild = links[link_i].R.transpose() * links[child_i].R;
 
     f[link_i] = RtoChild * f[child_i] + f_hat[link_i];

@@ -125,6 +125,7 @@ int main() {
   std::this_thread::sleep_for(std::chrono::seconds(3));
 
   kinematics_utils::q_list_t q_list;
+  kinematics_utils::link_id_t target_id = 8;
   // トルク・電流比 A/Nm
   // Dynamixelのe-manualに記載されたパラメータをもとに微調整しています
   samples03_dynamics::torque_to_current_t torque_to_current = {
@@ -153,7 +154,8 @@ int main() {
     }
 
     // ここで重力補償分の電流値を計算
-    samples03_dynamics::x7_gravity_compensation(links, torque_to_current, q_list);
+    samples03_dynamics::x7_gravity_compensation(
+      links, target_id, torque_to_current, q_list);
     for (const auto & [target_id, q_value] : q_list) {
       hardware.set_current(links[target_id].dxl_id, q_value);
     }

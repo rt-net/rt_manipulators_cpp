@@ -54,6 +54,7 @@ class S17KinematicsFixture: public ::testing::Test {
 
 TEST_F(X7KinematicsFixture, x7_gravity_compensation) {
   kinematics_utils::q_list_t q_list;
+  kinematics_utils::link_id_t target_id = 8;
 
   samples03_dynamics::torque_to_current_t torque_to_current = {
     {2, 1.0},
@@ -67,7 +68,8 @@ TEST_F(X7KinematicsFixture, x7_gravity_compensation) {
 
   // 垂直姿勢ではトルクが0となることを期待
   kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(links, torque_to_current, q_list));
+  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+    links, target_id, torque_to_current, q_list));
   EXPECT_EQ(q_list.size(), 7);
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[3], 0.0, TOLERANCE_Q);
@@ -86,13 +88,15 @@ TEST_F(X7KinematicsFixture, x7_gravity_compensation) {
     {7, 1.0},
     {8, 1.0}
   };
-  EXPECT_FALSE(samples03_dynamics::x7_gravity_compensation(links, invalid_values, q_list));
+  EXPECT_FALSE(samples03_dynamics::x7_gravity_compensation(
+    links, target_id, invalid_values, q_list));
 
   // 適当に関節を曲げ、意図した関節にトルクが発生していることを期待
   links[3].q = -M_PI_4;
   links[5].q = -M_PI_4;
   kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(links, torque_to_current, q_list));
+  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+    links, target_id, torque_to_current, q_list));
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[3], 2.247, TOLERANCE_Q);
   EXPECT_NEAR(q_list[4], 0.0, TOLERANCE_Q);
@@ -107,7 +111,8 @@ TEST_F(X7KinematicsFixture, x7_gravity_compensation) {
   links[5].q = -M_PI_2;
   links[7].q = -M_PI_2;
   kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(links, torque_to_current, q_list));
+  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+    links, target_id, torque_to_current, q_list));
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[3], 1.872, TOLERANCE_Q);
   EXPECT_NEAR(q_list[4], -0.885, TOLERANCE_Q);
