@@ -43,6 +43,14 @@ bool x7_gravity_compensation(
   // 根本から手先までのリンク経路を取得
   auto route = kinematics_utils::find_route(links, 8);
 
+  // トルク電流比がセットされているか検証
+  for (const auto & link_i : route) {
+    if (torque_to_current.count(link_i) == 0) {
+      std::cout << "リンクID:" << link_i << "のトルク電流比がセットされていません" << std::endl;
+      return false;
+    }
+  }
+
   // 変数の初期化
   for (const auto & link_i : route) {
     dd_p[link_i] << 0, 0, 0;
