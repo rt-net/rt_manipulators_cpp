@@ -24,10 +24,10 @@ namespace samples03_dynamics {
 
 using torque_to_current_t = std::map<kinematics_utils::link_id_t, double>;
 
-bool x7_gravity_compensation(const kinematics_utils::links_t & links,
-                             const kinematics_utils::link_id_t & target_id,
-                             const torque_to_current_t & torque_to_current,
-                             kinematics_utils::q_list_t & q_list);
+bool gravity_compensation(const kinematics_utils::links_t & links,
+                          const kinematics_utils::link_id_t & target_id,
+                          const torque_to_current_t & torque_to_current,
+                          kinematics_utils::q_list_t & q_list);
 
 }  // namespace samples03_dynamics
 

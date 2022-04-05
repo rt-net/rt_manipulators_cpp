@@ -154,7 +154,7 @@ int main() {
     }
 
     // ここで重力補償分の電流値を計算
-    samples03_dynamics::x7_gravity_compensation(
+    samples03_dynamics::gravity_compensation(
       links, target_id, torque_to_current, q_list);
     for (const auto & [target_id, q_value] : q_list) {
       hardware.set_current(links[target_id].dxl_id, q_value);

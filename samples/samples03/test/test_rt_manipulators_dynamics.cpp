@@ -56,7 +56,7 @@ class S17KinematicsFixture: public ::testing::Test {
   double TOLERANCE_Q;
 };
 
-TEST_F(X7KinematicsFixture, x7_gravity_compensation) {
+TEST_F(X7KinematicsFixture, gravity_compensation) {
   kinematics_utils::q_list_t q_list;
   kinematics_utils::link_id_t target_id = 8;
 
@@ -69,7 +69,7 @@ TEST_F(X7KinematicsFixture, x7_gravity_compensation) {
     {7, 1.0},
     {8, 1.0}
   };
-  EXPECT_FALSE(samples03_dynamics::x7_gravity_compensation(
+  EXPECT_FALSE(samples03_dynamics::gravity_compensation(
     links, target_id, invalid_values, q_list));
 
   samples03_dynamics::torque_to_current_t torque_to_current = {
@@ -84,7 +84,7 @@ TEST_F(X7KinematicsFixture, x7_gravity_compensation) {
 
   // 原点姿勢（腕を垂直に延ばした姿勢）では、トルクがほぼ0となることを期待
   kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id, torque_to_current, q_list));
   EXPECT_EQ(q_list.size(), 7);
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
@@ -99,7 +99,7 @@ TEST_F(X7KinematicsFixture, x7_gravity_compensation) {
   links[3].q = -M_PI_4;
   links[5].q = -M_PI_4;
   kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id, torque_to_current, q_list));
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[3], 2.247, TOLERANCE_Q);
@@ -115,7 +115,7 @@ TEST_F(X7KinematicsFixture, x7_gravity_compensation) {
   links[5].q = -M_PI_2;
   links[7].q = -M_PI_2;
   kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id, torque_to_current, q_list));
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[3], 1.872, TOLERANCE_Q);
@@ -155,7 +155,7 @@ TEST_F(S17KinematicsFixture, gravity_compensation) {
 
   // 原点姿勢（腕を左右に延ばした姿勢）では、肩以外のトルクがほぼ0となることを期待
   kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id_right, torque_to_current_right, q_list));
   EXPECT_EQ(q_list.size(), 8);
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
@@ -168,7 +168,7 @@ TEST_F(S17KinematicsFixture, gravity_compensation) {
   EXPECT_NEAR(q_list[11], 0.0, TOLERANCE_Q);
   q_list.clear();
 
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id_left, torque_to_current_left, q_list));
   EXPECT_EQ(q_list.size(), 8);
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
@@ -185,7 +185,7 @@ TEST_F(S17KinematicsFixture, gravity_compensation) {
   links[8].q = M_PI_2;
   links[10].q = -M_PI_2;
   kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id_right, torque_to_current_right, q_list));
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[5], 0.905, TOLERANCE_Q);
@@ -199,7 +199,7 @@ TEST_F(S17KinematicsFixture, gravity_compensation) {
   links[17].q = -M_PI_2;
   links[19].q = M_PI_2;
   kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id_left, torque_to_current_left, q_list));
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[14], -0.905, TOLERANCE_Q);
@@ -215,7 +215,7 @@ TEST_F(S17KinematicsFixture, gravity_compensation) {
   links[8].q = 0;
   links[10].q = 0;
   kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id_right, torque_to_current_right, q_list));
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[5], 0.0, TOLERANCE_Q);
@@ -230,7 +230,7 @@ TEST_F(S17KinematicsFixture, gravity_compensation) {
   links[17].q = 0;
   links[19].q = 0;
   kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::x7_gravity_compensation(
+  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id_left, torque_to_current_left, q_list));
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[14], 0.0, TOLERANCE_Q);

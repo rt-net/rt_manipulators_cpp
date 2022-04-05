@@ -26,7 +26,7 @@ using center_of_mass_map_t = std::map<unsigned int, center_of_mass_t>;
 using force_map_t = std::map<unsigned int, force_t>;
 using moment_map_t = std::map<unsigned int, moment_t>;
 
-bool x7_gravity_compensation(
+bool gravity_compensation(
   const kinematics_utils::links_t & links,
   const kinematics_utils::link_id_t & target_id,
   const torque_to_current_t & torque_to_current,
