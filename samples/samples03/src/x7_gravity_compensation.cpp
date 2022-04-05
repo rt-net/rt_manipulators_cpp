@@ -84,7 +84,7 @@ void set_arm_joint_positions(std::vector<manipulators_link::Link> & links,
 
 int main() {
   std::cout << "現在姿勢をもとに重力補償トルクを計算し、"
-            << "CRANE-X7のサーボに入力するサンプルです" << std::endl;
+            << "CRANE-X7のサーボモータに入力するサンプルです" << std::endl;
 
   std::string port_name = "/dev/ttyUSB0";
   int baudrate = 3000000;  // 3Mbps
@@ -123,7 +123,7 @@ int main() {
     return -1;
   }
 
-  std::cout << "5秒後に重力補償トルクをサーボへ入力します" << std::endl;
+  std::cout << "5秒後に重力補償トルクをサーボモータへ入力します" << std::endl;
   std::cout << "終了する場合はEscキーを押してください" << std::endl;
   std::this_thread::sleep_for(std::chrono::seconds(5));
 
