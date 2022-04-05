@@ -77,6 +77,7 @@ bool gravity_compensation(
   g << 0, 0, -9.8;
   dd_p[base_i] = -g;
 
+  // 根本から手先に向かってリンクの加速度と外力を求める
   for (auto itr = std::next(base_to_route.begin()); itr != base_to_route.end(); ++itr) {
     const auto link_i = *itr;
     const auto parent_i = *std::prev(itr);
