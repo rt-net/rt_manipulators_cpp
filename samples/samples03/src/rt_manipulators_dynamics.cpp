@@ -31,7 +31,7 @@ bool gravity_compensation(
   const kinematics_utils::link_id_t & target_id,
   const torque_to_current_t & torque_to_current,
   kinematics_utils::q_list_t & q_list) {
-  // 運動方程式から重力補償項のみを計算し、出力トルクを求める
+  // 運動方程式から重力補償トルク項のみを計算し、電流値に変換する
   // 参考：細田耕. 「実践ロボット制御 -基礎から動力学まで-」. オーム社, p137, 2019
 
   // 根本から手先までのリンク経路を取得
@@ -46,11 +46,11 @@ bool gravity_compensation(
   }
 
   // 計算に使用する変数
-  pos_map_t dd_p;  // 位置の2回微分
-  center_of_mass_map_t dd_s;  // 重心の加速度
-  force_map_t f_hat;  // 外力
-  force_map_t f;  // リンクの力
-  moment_map_t n;  // リンクのモーメント
+  pos_map_t dd_p;  // 加速度ベクトル
+  center_of_mass_map_t dd_s;  // 重心の加速度ベクトル
+  force_map_t f_hat;  // 慣性による外力ベクトル
+  force_map_t f;  // リンク間力ベクトル
+  moment_map_t n;  // リンク間モーメントベクトル
 
   // 変数の初期化
   for (const auto & link_i : route) {
