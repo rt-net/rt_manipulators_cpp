@@ -82,31 +82,17 @@ TEST_F(X7KinematicsFixture, gravity_compensation) {
     {8, 1.0}
   };
 
-  // 原点姿勢（腕を垂直に延ばした姿勢）では、トルクがほぼ0となることを期待
+  // 原点姿勢（腕を垂直に延ばした姿勢）
   kinematics::forward_kinematics(links, 1);
   EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id, torque_to_current, q_list));
   EXPECT_EQ(q_list.size(), 7);
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[3], 0.0, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[3], -0.055, TOLERANCE_Q);
   EXPECT_NEAR(q_list[4], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[5], 0.0, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[5], -0.012, TOLERANCE_Q);
   EXPECT_NEAR(q_list[6], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[7], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[8], 0.0, TOLERANCE_Q);
-
-  // 適当に関節を曲げ、意図した関節にトルクが発生していることを期待
-  links[3].q = -M_PI_4;
-  links[5].q = -M_PI_4;
-  kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
-    links, target_id, torque_to_current, q_list));
-  EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[3], 2.247, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[4], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[5], 0.907, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[6], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[7], 0.023, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[7], 0.008, TOLERANCE_Q);
   EXPECT_NEAR(q_list[8], 0.0, TOLERANCE_Q);
 
   // 適当に関節を曲げ、意図した関節にトルクが発生していることを期待
@@ -118,10 +104,10 @@ TEST_F(X7KinematicsFixture, gravity_compensation) {
   EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id, torque_to_current, q_list));
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[3], 1.872, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[4], -0.885, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[3], 2.218, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[4], -1.137, TOLERANCE_Q);
   EXPECT_NEAR(q_list[5], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[6], -0.023, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[6], -0.042, TOLERANCE_Q);
   EXPECT_NEAR(q_list[7], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[8], 0.0, TOLERANCE_Q);
 }
@@ -153,17 +139,17 @@ TEST_F(S17KinematicsFixture, gravity_compensation) {
     {20, 1.0}
   };
 
-  // 原点姿勢（腕を左右に延ばした姿勢）では、肩以外のトルクがほぼ0となることを期待
+  // 原点姿勢（腕を左右に延ばした姿勢）
   kinematics::forward_kinematics(links, 1);
   EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id_right, torque_to_current_right, q_list));
   EXPECT_EQ(q_list.size(), 8);
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[5], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[6], 3.019, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[7], 0.0, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[5], -0.061, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[6], 3.909, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[7], -0.060, TOLERANCE_Q);
   EXPECT_NEAR(q_list[8], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[9], 0.0, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[9], 0.021, TOLERANCE_Q);
   EXPECT_NEAR(q_list[10], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[11], 0.0, TOLERANCE_Q);
   q_list.clear();
@@ -172,63 +158,30 @@ TEST_F(S17KinematicsFixture, gravity_compensation) {
     links, target_id_left, torque_to_current_left, q_list));
   EXPECT_EQ(q_list.size(), 8);
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[14], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[15], -3.019, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[16], 0.0, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[14], 0.061, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[15], -3.862, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[16], 0.060, TOLERANCE_Q);
   EXPECT_NEAR(q_list[17], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[18], 0.0, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[18], -0.021, TOLERANCE_Q);
   EXPECT_NEAR(q_list[19], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[20], 0.0, TOLERANCE_Q);
   q_list.clear();
-
-  // 適当に関節を曲げ、意図した関節にトルクが発生していることを期待
-  links[8].q = M_PI_2;
-  links[10].q = -M_PI_2;
-  kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
-    links, target_id_right, torque_to_current_right, q_list));
-  EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[5], 0.905, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[6], 2.113, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[7], 0.905, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[8], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[9], -0.051, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[10], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[11], 0.0, TOLERANCE_Q);
-
-  links[17].q = -M_PI_2;
-  links[19].q = M_PI_2;
-  kinematics::forward_kinematics(links, 1);
-  EXPECT_TRUE(samples03_dynamics::gravity_compensation(
-    links, target_id_left, torque_to_current_left, q_list));
-  EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[14], -0.905, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[15], -2.113, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[16], -0.905, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[17], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[18], 0.051, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[19], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[20], 0.0, TOLERANCE_Q);
 
   // 適当に関節を曲げ、意図した関節にトルクが発生していることを期待
   links[5].q = -M_PI_2;
-  links[8].q = 0;
-  links[10].q = 0;
   kinematics::forward_kinematics(links, 1);
   EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id_right, torque_to_current_right, q_list));
   EXPECT_NEAR(q_list[2], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[5], 0.0, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[5], 0.002, TOLERANCE_Q);
   EXPECT_NEAR(q_list[6], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[7], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[8], -0.956, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[9], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[10], -0.051, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[11], 0.0, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[7], 0.003, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[8], -1.309, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[9], 0.002, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[10], -0.071, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[11], 0.001, TOLERANCE_Q);
 
   links[14].q = M_PI_2;
-  links[17].q = 0;
-  links[19].q = 0;
   kinematics::forward_kinematics(links, 1);
   EXPECT_TRUE(samples03_dynamics::gravity_compensation(
     links, target_id_left, torque_to_current_left, q_list));
@@ -236,8 +189,8 @@ TEST_F(S17KinematicsFixture, gravity_compensation) {
   EXPECT_NEAR(q_list[14], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[15], 0.0, TOLERANCE_Q);
   EXPECT_NEAR(q_list[16], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[17], 0.956, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[18], 0.0, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[19], 0.051, TOLERANCE_Q);
-  EXPECT_NEAR(q_list[20], 0.0, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[17], 1.262, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[18], 0.001, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[19], 0.022, TOLERANCE_Q);
+  EXPECT_NEAR(q_list[20], 0.001, TOLERANCE_Q);
 }
