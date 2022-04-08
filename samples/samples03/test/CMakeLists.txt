@@ -15,12 +15,14 @@ include(GoogleTest)
 
 set(list_tests
     test_rt_manipulators_ik
+    test_rt_manipulators_dynamics
 )
 foreach(test_executable IN LISTS list_tests)
     message("${test_executable}")
     add_executable(${test_executable}
         ${test_executable}.cpp
         ../src/rt_manipulators_ik.cpp
+        ../src/rt_manipulators_dynamics.cpp
     )
     target_include_directories(${test_executable} PUBLIC
         ../include

@@ -16,12 +16,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(list_samples
     x7_3dof_inverse_kinematics
     s17_3dof_inverse_kinematics
+    x7_gravity_compensation
+    s17_gravity_compensation
 )
 foreach(sample IN LISTS list_samples)
     message("${sample}")
     add_executable(${sample}
         src/${sample}.cpp
         src/rt_manipulators_ik.cpp
+        src/rt_manipulators_dynamics.cpp
     )
     target_include_directories(${sample} PUBLIC
         include

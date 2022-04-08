@@ -1,0 +1,31 @@
+joint_groups:
+  arm:
+    joints:
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
+      - joint7
+    sync_read:
+      - position
+    sync_write:
+      - current
+  hand:
+    joints:
+      - joint_hand
+    sync_read:
+      - position
+    sync_write:
+      - position
+
+
+joint1: { id: 2, dynamixel: "XM430", operating_mode: 0 }
+joint2: { id: 3, dynamixel: "XM540", operating_mode: 0 }
+joint3: { id: 4, dynamixel: "XM430", operating_mode: 0 }
+joint4: { id: 5, dynamixel: "XM430", operating_mode: 0 }
+joint5: { id: 6, dynamixel: "XM430", operating_mode: 0 }
+joint6: { id: 7, dynamixel: "XM430", operating_mode: 0 }
+joint7: { id: 8, dynamixel: "XM430", operating_mode: 0 }
+joint_hand: { id: 9, dynamixel: "XM430", operating_mode: 3 }

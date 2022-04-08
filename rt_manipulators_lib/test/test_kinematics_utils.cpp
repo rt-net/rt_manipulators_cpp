@@ -103,79 +103,79 @@ TEST_F(KinematicsUtilsFixture, load_link_m) {
   EXPECT_DOUBLE_EQ(links[10].m, 0.8);
 }
 
-// TEST_F(KinematicsUtilsFixture, load_link_c) {
-//   double x = 0.001;  // meters
-//   double y = 0.002;  // meters
-//   double z = 0.003;  // meters
+TEST_F(KinematicsUtilsFixture, load_link_c) {
+  double x = 0.001;  // meters
+  double y = 0.002;  // meters
+  double z = 0.003;  // meters
 
-//   EXPECT_DOUBLE_EQ(links[1].c[0], x) << "回転軸方向:-";
-//   EXPECT_DOUBLE_EQ(links[1].c[1], y) << "回転軸方向:-";
-//   EXPECT_DOUBLE_EQ(links[1].c[2], z) << "回転軸方向:-";
+  EXPECT_DOUBLE_EQ(links[1].c[0], x) << "回転軸方向:-";
+  EXPECT_DOUBLE_EQ(links[1].c[1], y) << "回転軸方向:-";
+  EXPECT_DOUBLE_EQ(links[1].c[2], z) << "回転軸方向:-";
 
-//   EXPECT_DOUBLE_EQ(links[2].c[0], x) << "回転軸方向:Z+";
-//   EXPECT_DOUBLE_EQ(links[2].c[1], y) << "回転軸方向:Z+";
-//   EXPECT_DOUBLE_EQ(links[2].c[2], z) << "回転軸方向:Z+";
+  EXPECT_DOUBLE_EQ(links[2].c[0], x) << "回転軸方向:Z+";
+  EXPECT_DOUBLE_EQ(links[2].c[1], y) << "回転軸方向:Z+";
+  EXPECT_DOUBLE_EQ(links[2].c[2], z) << "回転軸方向:Z+";
 
-//   // Z-は座標系をX軸回りに180 deg回転して表現する
-//   EXPECT_DOUBLE_EQ(links[3].c[0], x) << "回転軸方向:Z-";
-//   EXPECT_DOUBLE_EQ(links[3].c[1], -y) << "回転軸方向:Z-";
-//   EXPECT_DOUBLE_EQ(links[3].c[2], -z) << "回転軸方向:Z-";
+  // Z-は座標系をX軸回りに180 deg回転して表現する
+  EXPECT_DOUBLE_EQ(links[3].c[0], x) << "回転軸方向:Z-";
+  EXPECT_DOUBLE_EQ(links[3].c[1], -y) << "回転軸方向:Z-";
+  EXPECT_DOUBLE_EQ(links[3].c[2], -z) << "回転軸方向:Z-";
 
-//   EXPECT_DOUBLE_EQ(links[4].c[0], x) << "回転軸方向:Y+";
-//   EXPECT_DOUBLE_EQ(links[4].c[1], z) << "回転軸方向:Y+";
-//   EXPECT_DOUBLE_EQ(links[4].c[2], -y) << "回転軸方向:Y+";
+  EXPECT_DOUBLE_EQ(links[4].c[0], x) << "回転軸方向:Y+";
+  EXPECT_DOUBLE_EQ(links[4].c[1], z) << "回転軸方向:Y+";
+  EXPECT_DOUBLE_EQ(links[4].c[2], -y) << "回転軸方向:Y+";
 
-//   EXPECT_DOUBLE_EQ(links[5].c[0], x) << "回転軸方向:Y-";
-//   EXPECT_DOUBLE_EQ(links[5].c[1], -z) << "回転軸方向:Y-";
-//   EXPECT_DOUBLE_EQ(links[5].c[2], y) << "回転軸方向:Y-";
+  EXPECT_DOUBLE_EQ(links[5].c[0], x) << "回転軸方向:Y-";
+  EXPECT_DOUBLE_EQ(links[5].c[1], -z) << "回転軸方向:Y-";
+  EXPECT_DOUBLE_EQ(links[5].c[2], y) << "回転軸方向:Y-";
 
-//   EXPECT_DOUBLE_EQ(links[6].c[0], z) << "回転軸方向:X+";
-//   EXPECT_DOUBLE_EQ(links[6].c[1], y) << "回転軸方向:X+";
-//   EXPECT_DOUBLE_EQ(links[6].c[2], -x) << "回転軸方向:X+";
+  EXPECT_DOUBLE_EQ(links[6].c[0], z) << "回転軸方向:X+";
+  EXPECT_DOUBLE_EQ(links[6].c[1], y) << "回転軸方向:X+";
+  EXPECT_DOUBLE_EQ(links[6].c[2], -x) << "回転軸方向:X+";
 
-//   EXPECT_DOUBLE_EQ(links[7].c[0], -z) << "回転軸方向:X-";
-//   EXPECT_DOUBLE_EQ(links[7].c[1], y) << "回転軸方向:X-";
-//   EXPECT_DOUBLE_EQ(links[7].c[2], x) << "回転軸方向:X-";
-// }
+  EXPECT_DOUBLE_EQ(links[7].c[0], -z) << "回転軸方向:X-";
+  EXPECT_DOUBLE_EQ(links[7].c[1], y) << "回転軸方向:X-";
+  EXPECT_DOUBLE_EQ(links[7].c[2], x) << "回転軸方向:X-";
+}
 
-// TEST_F(KinematicsUtilsFixture, load_link_I) {
-//   Eigen::Matrix3d expected;
-//   expected << 1, 2, 4,
-//               2, 3, 5,
-//               4, 5, 6;
-//   expect_matrix_approximation(links[1].I, expected, "回転軸方向:-");
+TEST_F(KinematicsUtilsFixture, load_link_I) {
+  Eigen::Matrix3d expected;
+  expected << 1, 2, 4,
+              2, 3, 5,
+              4, 5, 6;
+  expect_matrix_approximation(links[1].I, expected, "回転軸方向:-");
 
-//   expected << 1, 2, 4,
-//               2, 3, 5,
-//               4, 5, 6;
-//   expect_matrix_approximation(links[2].I, expected, "回転軸方向:Z+");
+  expected << 1, 2, 4,
+              2, 3, 5,
+              4, 5, 6;
+  expect_matrix_approximation(links[2].I, expected, "回転軸方向:Z+");
 
-//   // Z-は座標系をX軸回りに180 deg回転して表現する
-//   expected << 1, -2, -4,
-//               -2, 3, 5,
-//               -4, 5, 6;
-//   expect_matrix_approximation(links[3].I, expected, "回転軸方向:Z-");
+  // Z-は座標系をX軸回りに180 deg回転して表現する
+  expected << 1, -2, -4,
+              -2, 3, 5,
+              -4, 5, 6;
+  expect_matrix_approximation(links[3].I, expected, "回転軸方向:Z-");
 
-//   expected << 1, 4, -2,
-//               4, 6, -5,
-//               -2, -5, 3;
-//   expect_matrix_approximation(links[4].I, expected, "回転軸方向:Y+");
+  expected << 1, 4, -2,
+              4, 6, -5,
+              -2, -5, 3;
+  expect_matrix_approximation(links[4].I, expected, "回転軸方向:Y+");
 
-//   expected << 1, -4, 2,
-//               -4, 6, -5,
-//               2, -5, 3;
-//   expect_matrix_approximation(links[5].I, expected, "回転軸方向:Y-");
+  expected << 1, -4, 2,
+              -4, 6, -5,
+              2, -5, 3;
+  expect_matrix_approximation(links[5].I, expected, "回転軸方向:Y-");
 
-//   expected << 6, 5, -4,
-//               5, 3, -2,
-//               -4, -2, 1;
-//   expect_matrix_approximation(links[6].I, expected, "回転軸方向:X+");
+  expected << 6, 5, -4,
+              5, 3, -2,
+              -4, -2, 1;
+  expect_matrix_approximation(links[6].I, expected, "回転軸方向:X+");
 
-//   expected << 6, -5, -4,
-//               -5, 3, 2,
-//               -4, 2, 1;
-//   expect_matrix_approximation(links[7].I, expected, "回転軸方向:X-");
-// }
+  expected << 6, -5, -4,
+              -5, 3, 2,
+              -4, 2, 1;
+  expect_matrix_approximation(links[7].I, expected, "回転軸方向:X-");
+}
 
 TEST_F(KinematicsUtilsFixture, load_link_a) {
   Eigen::Vector3d expected;
