@@ -37,6 +37,19 @@ $ ./build_samples.bash
 
 ## 通信設定
 
+USB通信ポートのアクセス権限を変更するため次のコマンドを実行します。
+
+```sh
+$ sudo chmod 666 /dev/ttyUSB0
+```
+
+永続的なアクセス権限を付与する場合は次のコマンドを実行します。
+
+```sh
+$ sudo usermod -aG dialout $USER
+$ reboot
+```
+
 ロボットとの通信遅延を最小にするため次のコマンドを実行します。
 
 ```sh
