@@ -96,7 +96,7 @@ bool Hardware::load_config_file(const std::string& config_yaml) {
 }
 
 bool Hardware::connect(const int baudrate) {
-  if (!comm_->connect()) {
+  if (!comm_->connect(baudrate)) {
     return false;
   }
 
