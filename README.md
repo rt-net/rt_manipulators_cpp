@@ -48,7 +48,7 @@ $ sudo make install
 次のコマンドを実行します。
 
 ```sh
-$ sudo apt install libyaml-cpp-dev libeigen3-dev
+$ sudo apt install libyaml-cpp-dev libeigen3-dev cmake
 ```
 
 ### RTマニピュレータC++ライブラリのビルド&インストール
