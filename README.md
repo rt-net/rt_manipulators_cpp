@@ -58,7 +58,7 @@ $ sudo apt install libyaml-cpp-dev libeigen3-dev
 ```sh
 $ cd ~
 $ git clone https://github.com/rt-net/rt_manipulators_cpp
-$ cd rt_manipuators_cpp/rt_manipulators_lib
+$ cd rt_manipulators_cpp/rt_manipulators_lib
 $ ./build_install_library.bash
 ```
 
