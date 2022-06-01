@@ -10,6 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # add_subdirectory(src)
 find_package(ament_cmake REQUIRED)
 find_package(dynamixel_sdk REQUIRED)
+find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3)
 find_package(yaml_cpp_vendor REQUIRED)
 
 set(library_name ${CMAKE_PROJECT_NAME})
@@ -37,12 +39,15 @@ target_include_directories(${library_name}
     $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(${library_name}
     dynamixel_sdk
+    Eigen3
     yaml_cpp_vendor
 )
 
 ament_export_targets(export_${library_name} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
     dynamixel_sdk
+    eigen3_cmake_module
+    Eigen3
     yaml_cpp_vendor
 )
 install(
