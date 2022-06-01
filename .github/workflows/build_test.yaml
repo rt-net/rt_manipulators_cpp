@@ -9,6 +9,8 @@ on:
       - '**.md'
   schedule:
     - cron: "0 2 * * 0" # Weekly on Sundays at 02:00
+  branches:
+    - main
 
 jobs:
   lint:
