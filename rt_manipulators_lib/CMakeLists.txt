@@ -52,7 +52,7 @@ ament_export_dependencies(
 )
 install(
   DIRECTORY include/
-  DESTINATION include
+  DESTINATION include/${library_name}
 )
 
 install(
