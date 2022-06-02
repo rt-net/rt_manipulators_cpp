@@ -1,0 +1,86 @@
+
+joint_groups:
+  right_arm:
+    joints:
+      - right_arm_joint1
+      - right_arm_joint2
+      - right_arm_joint3
+      - right_arm_joint4
+      - right_arm_joint5
+      - right_arm_joint6
+      - right_arm_joint7
+    sync_read:
+      - position
+      - velocity
+      - current
+      - voltage
+      - temperature
+
+  right_hand:
+    joints:
+      - right_arm_joint_hand
+    sync_read:
+      - position
+      - velocity
+      - current
+      - voltage
+      - temperature
+
+  left_arm:
+    joints:
+      - left_arm_joint1
+      - left_arm_joint2
+      - left_arm_joint3
+      - left_arm_joint4
+      - left_arm_joint5
+      - left_arm_joint6
+      - left_arm_joint7
+    sync_read:
+      - position
+      - velocity
+      - current
+      - voltage
+      - temperature
+
+  left_hand:
+    joints:
+      - left_arm_joint_hand
+    sync_read:
+      - position
+      - velocity
+      - current
+      - voltage
+      - temperature
+
+  torso:
+    joints:
+      - waist_joint
+      - neck_yaw_joint
+      - neck_pitch_joint
+    sync_read:
+      - position
+      - velocity
+      - current
+      - voltage
+      - temperature
+
+right_arm_joint1: { id: 2, dynamixel: "XM540", operating_mode: 3 }
+right_arm_joint2: { id: 3, dynamixel: "XM540", operating_mode: 3 }
+right_arm_joint3: { id: 4, dynamixel: "XM430", operating_mode: 3 }
+right_arm_joint4: { id: 5, dynamixel: "XM540", operating_mode: 3 }
+right_arm_joint5: { id: 6, dynamixel: "XM430", operating_mode: 3 }
+right_arm_joint6: { id: 7, dynamixel: "XM430", operating_mode: 3 }
+right_arm_joint7: { id: 8, dynamixel: "XM430", operating_mode: 3 }
+right_arm_joint_hand: { id: 9, dynamixel: "XM430", operating_mode: 3 }
+left_arm_joint1: { id: 10, dynamixel: "XM540", operating_mode: 3 }
+left_arm_joint2: { id: 11, dynamixel: "XM540", operating_mode: 3 }
+left_arm_joint3: { id: 12, dynamixel: "XM430", operating_mode: 3 }
+left_arm_joint4: { id: 13, dynamixel: "XM540", operating_mode: 3 }
+left_arm_joint5: { id: 14, dynamixel: "XM430", operating_mode: 3 }
+left_arm_joint6: { id: 15, dynamixel: "XM430", operating_mode: 3 }
+left_arm_joint7: { id: 16, dynamixel: "XM430", operating_mode: 3 }
+left_arm_joint_hand: { id: 17, dynamixel: "XM430", operating_mode: 3 }
+waist_joint: { id: 18, dynamixel: "XM430", operating_mode: 3 }
+neck_yaw_joint: { id: 19, dynamixel: "XM430", operating_mode: 3 }
+neck_pitch_joint: { id: 20, dynamixel: "XM430", operating_mode: 3 }
+
