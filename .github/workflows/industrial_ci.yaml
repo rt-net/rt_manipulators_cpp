@@ -18,6 +18,8 @@ jobs:
       matrix:
         env:
           - { ROS_DISTRO: foxy, ROS_REPO: ros }
+          - { ROS_DISTRO: galactic, ROS_REPO: ros }
+          - { ROS_DISTRO: humble, ROS_REPO: ros }
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
