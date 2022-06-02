@@ -14,6 +14,9 @@
 ## 動作環境
 
 - ROS Foxy
+- ROS Galactic
+- ROS Humble
+- ROS Rolling
 
 ## インストール方法
 
