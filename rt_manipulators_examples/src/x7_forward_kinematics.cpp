@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file was converted to ROS 2 from pure c++ file:
+// これはrt_manipualtors_cppのサンプルをROS 2用に変換したものです
 // https://github.com/rt-net/rt_manipulators_cpp/blob/v1.1.2/samples/samples02/src/x7_forward_kinematics.cpp
 
 #include <chrono>
