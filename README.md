@@ -1,6 +1,6 @@
 # RTマニピュレータC++ライブラリとサンプル集（rt_manipulators_cpp）
 
-[![BuildAndTest](https://github.com/rt-net/rt_manipulators_cpp/actions/workflows/build_test.yaml/badge.svg)](https://github.com/rt-net/rt_manipulators_cpp/actions/workflows/build_test.yaml)
+[![industrial_ci](https://github.com/rt-net/rt_manipulators_cpp/actions/workflows/industrial_ci.yaml/badge.svg?branch=ros2)](https://github.com/rt-net/rt_manipulators_cpp/actions/workflows/industrial_ci.yaml)
 
 本リポジトリは、株式会社アールティが販売している
 [アームロボット**CRANE-X7(クラインエックスセブン)**](https://rt-net.jp/products/crane-x7/)
@@ -11,86 +11,21 @@
 [<img src=https://rt-net.github.io/images/crane-x7/CRANE-X7-500x500.png width=400px />](https://rt-net.jp/products/crane-x7/)
 [<img src=https://rt-net.github.io/images/sciurus17/Sciurus17-500x500.png width=400px />](https://rt-net.jp/products/sciurus17)
 
-[![gravity_compensation](https://rt-net.github.io/images/crane-x7/x7_s17_gravity_compensation.gif)](./samples/samples03/README.md)
-
 ## 動作環境
 
-- CMake (>= 3.1.0)
-- g++ (>= 7.5.0)
-- [DYNAMIXEL SDK](https://github.com/ROBOTIS-GIT/DynamixelSDK) (Linux 64bit向けにビルド&インストール)
-- [yaml-cpp (>= 0.5.0)](https://github.com/jbeder/yaml-cpp)
-- Eigen (>= 3.3.4)
-- Linux OS
-    - Ubuntu 18.04
-    - Ubuntu 20.04
-- ロボット
-    - [CRANE-X7](https://rt-net.jp/products/crane-x7/)
-    - [Sciurus17](https://rt-net.jp/products/sciurus17/)
+- ROS Foxy
 
 ## インストール方法
 
-### DYNAMIXEL SDKのインストール
-
-[DYNAMIXEL SDKのe-manual](https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_sdk/library_setup/cpp_linux/#cpp-linux)
-を参考に、Linux 64bit環境用にDYNAMIXEL SDKをビルド＆インストールします。
-
-```sh
-$ sudo apt install build-essential
-$ cd ~
-$ git clone https://github.com/ROBOTIS-GIT/DynamixelSDK.git
-$ cd ~/DynamixelSDK/c++/build/linux64
-$ make
-$ sudo make install
-```
-
-### その他依存関係のインストール
-
-次のコマンドを実行します。
-
-```sh
-$ sudo apt install libyaml-cpp-dev libeigen3-dev cmake
-```
-
 ### RTマニピュレータC++ライブラリのビルド&インストール
 
-詳細は[rt_manipulators_lib/README.md](./rt_manipulators_lib/README.md)を参照してください。
-
 ```sh
-$ cd ~
+$ cd ros2_ws/src
 $ git clone https://github.com/rt-net/rt_manipulators_cpp
-$ cd rt_manipulators_cpp/rt_manipulators_lib
-$ ./build_install_library.bash
+$ rosdep install -r -y --from-paths . --ignore-src
+$ cd ..
+$ colcon build --symlink-install
 ```
-
-## サンプルプログラムの実行
-
-詳細は[samples/README.md](./samples/README.md)を参照してください。
-
-```sh
-$ cd rt_manipulators_cpp/samples/samples01
-$ ./build_samples.bash
-
-$ cd bin/
-$ ./x7_onoff
-CRANE-X7のトルクをON/OFFするサンプルです.
-CRANE-X7(ポート:/dev/ttyUSB0 ボーレート:3000000)に接続します.
-コンフィグファイル:../config/crane-x7.yamlを読み込みます.
-Config file '../config/crane-x7.yaml' loaded.
-arm
-        joint1, id:2, mode:3
-        joint2, id:3, mode:3
-        joint3, id:4, mode:3
-        joint4, id:5, mode:3
-        joint5, id:6, mode:3
-        joint6, id:7, mode:3
-        joint7, id:8, mode:3
-hand
-        joint_hand, id:9, mode:3
-サーボグループ:armのトルクをONにします.
-...
-```
-
-[![](https://img.youtube.com/vi/cA_3HU3HfcM/sddefault.jpg)](https://youtu.be/cA_3HU3HfcM)
 
 ## 免責事項
 
