@@ -24,7 +24,7 @@
 
 ```sh
 $ cd ros2_ws/src
-$ git clone https://github.com/rt-net/rt_manipulators_cpp
+$ git clone -b ros2 https://github.com/rt-net/rt_manipulators_cpp
 $ rosdep install -r -y --from-paths . --ignore-src
 $ cd ..
 $ colcon build --symlink-install
