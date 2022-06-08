@@ -23,7 +23,7 @@
 ### RTマニピュレータC++ライブラリのビルド&インストール
 
 ```sh
-$ cd ros2_ws/src
+$ cd ~/ros2_ws/src  # workspaceを~/ros2_wsに作成している場合
 $ git clone -b ros2 https://github.com/rt-net/rt_manipulators_cpp
 $ rosdep install -r -y --from-paths . --ignore-src
 $ cd ..
