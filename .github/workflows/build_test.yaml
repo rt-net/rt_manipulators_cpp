@@ -2,13 +2,15 @@ name: BuildAndTest
 
 on:
   push:
+    branches:
+      - main
     paths-ignore:
       - '**.md'
   pull_request:
+    branches:
+      - main
     paths-ignore:
-      - '**.md'
-  schedule:
-    - cron: "0 2 * * 0" # Weekly on Sundays at 02:00
+      - '**.md' 
 
 jobs:
   lint:
