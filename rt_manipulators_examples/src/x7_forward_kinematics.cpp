@@ -103,7 +103,7 @@ private:
     std::vector<double> positions)
   {
     int start_id = 2;  // Link1
-    for (auto i = 0; i < positions.size(); i++) {
+    for (std::size_t i = 0; i < positions.size(); i++) {
       links[start_id + i].q = positions[i];
     }
   }
