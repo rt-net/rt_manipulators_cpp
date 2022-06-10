@@ -17,6 +17,7 @@
   <depend>dynamixel_sdk</depend>
   <depend>eigen</depend>
   <depend>eigen3_cmake_module</depend>
+  <depend>yaml-cpp</depend>
   <depend>yaml_cpp_vendor</depend>
 
   <export>
