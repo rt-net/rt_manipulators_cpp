@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
       - run: pip install cpplint
       - uses: actions/checkout@v3
       - run: .tools/cpplint.bash
