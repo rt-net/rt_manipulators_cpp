@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: '3.8'
       - run: pip install cpplint
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: .tools/cpplint.bash
 
   build_and_test:
@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false # 他のjobが失敗してもキャンセルしない
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
     runs-on: ${{ matrix.os}}
     steps:
       - name: Install Dynamixel SDK
@@ -51,7 +51,7 @@ jobs:
           sudo make install
       - name: Install dependencies
         run: sudo apt install libyaml-cpp-dev libeigen3-dev
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build and insall library
         run: ./rt_manipulators_lib/build_install_library.bash
       - name: Build Samples
