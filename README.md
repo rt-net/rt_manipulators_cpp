@@ -21,8 +21,8 @@
 - [yaml-cpp (>= 0.5.0)](https://github.com/jbeder/yaml-cpp)
 - Eigen (>= 3.3.4)
 - Linux OS
-    - Ubuntu 18.04
     - Ubuntu 20.04
+    - Ubuntu 22.04
 - ロボット
     - [CRANE-X7](https://rt-net.jp/products/crane-x7/)
     - [Sciurus17](https://rt-net.jp/products/sciurus17/)
