@@ -23,6 +23,7 @@ add_library(${library_name}
     src/hardware_joints.cpp
     src/hardware_communicator.cpp
     src/kinematics.cpp
+    src/kinematics_ros_utils.cpp
     src/kinematics_utils.cpp
     src/config_file_parser.cpp
     src/dynamixel_x.cpp
@@ -63,5 +64,23 @@ install(
   RUNTIME DESTINATION bin
   INCLUDES DESTINATION include
 )
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest)
+  ament_add_gtest(test_kinematics_ros_utils
+    ros_test/test_kinematics_ros_utils.cpp)
+
+  target_link_libraries(${test_kinematics_ros_utils}
+    ${library_name}
+  )
+  target_include_directories(test_kinematics_ros_utils PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+
+  install(DIRECTORY
+    ros_test/urdf
+    DESTINATION share/${PROJECT_NAME}/
+  )
+endif()
 
 ament_package()
