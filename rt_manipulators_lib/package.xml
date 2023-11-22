@@ -14,9 +14,11 @@
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
+  <depend>ament_index_cpp</depend>
   <depend>dynamixel_sdk</depend>
   <depend>eigen</depend>
   <depend>eigen3_cmake_module</depend>
+  <depend>urdfdom</depend>
   <depend>yaml-cpp</depend>
   <depend>yaml_cpp_vendor</depend>
 

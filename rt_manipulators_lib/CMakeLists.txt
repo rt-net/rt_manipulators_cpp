@@ -12,6 +12,7 @@ find_package(ament_cmake REQUIRED)
 find_package(dynamixel_sdk REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3)
+find_package(urdfdom REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 
 set(library_name ${CMAKE_PROJECT_NAME})
@@ -41,6 +42,7 @@ target_include_directories(${library_name}
 ament_target_dependencies(${library_name}
     dynamixel_sdk
     Eigen3
+    urdfdom
     yaml_cpp_vendor
 )
 
@@ -49,6 +51,7 @@ ament_export_dependencies(
     dynamixel_sdk
     eigen3_cmake_module
     Eigen3
+    urdfdom
     yaml_cpp_vendor
 )
 install(
@@ -67,15 +70,17 @@ install(
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest)
+
+  find_package(ament_index_cpp REQUIRED)
   ament_add_gtest(test_kinematics_ros_utils
     ros_test/test_kinematics_ros_utils.cpp)
 
-  target_link_libraries(${test_kinematics_ros_utils}
+  target_link_libraries(test_kinematics_ros_utils
     ${library_name}
   )
-  target_include_directories(test_kinematics_ros_utils PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
+  ament_target_dependencies(test_kinematics_ros_utils
+    ament_index_cpp
+  )
 
   install(DIRECTORY
     ros_test/urdf

@@ -12,23 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <vector>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include "gtest/gtest.h"
-#include "rt_manipulators_cpp/link.hpp"
+#include "kinematics_ros_utils.hpp"
 
 class KinematicsROSUtilsFixture: public ::testing::Test {
  protected:
   virtual void SetUp() {
+    const auto path = ament_index_cpp::get_package_share_directory("rt_manipulators_cpp") + "/urdf/test_robot.urdf";
+    links = kinematics_ros_utils::parse_urdf_file(path);
   }
 
   virtual void TearDown() {
   }
 
-  std::vector<manipulators_link::Link> links;
+  kinematics_utils::links_t links;
 };
 
 TEST_F(KinematicsROSUtilsFixture, load_link_names) {
-  EXPECT_EQ("test_base", "test_base");
+  EXPECT_EQ(links[1].name, "base_link");
+  EXPECT_EQ(links[2].name, "r_leg_link1");
+  EXPECT_EQ(links[3].name, "r_leg_link2");
 }
