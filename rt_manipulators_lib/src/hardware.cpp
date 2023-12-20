@@ -23,7 +23,12 @@ namespace rt_manipulators_cpp {
 
 Hardware::Hardware(const std::string device_name) :
   thread_enable_(false) {
-  comm_ = std::make_shared<hardware_communicator::Communicator>(device_name);
+  comm_ = std::make_unique<hardware_communicator::Communicator>(device_name);
+}
+
+Hardware::Hardware(std::unique_ptr<hardware_communicator::Communicator> comm) :
+  thread_enable_(false){
+  comm_ = std::move(comm);
 }
 
 Hardware::~Hardware() {
