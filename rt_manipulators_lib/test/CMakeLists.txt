@@ -22,6 +22,7 @@ set(list_tests
     test_dynamixel_x
     test_dynamixel_xh
     test_dynamixel_p
+    test_hardware
 )
 foreach(test_executable IN LISTS list_tests)
     message("${test_executable}")

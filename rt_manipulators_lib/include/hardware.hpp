@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <type_traits>
 #include <vector>
 
 #include "joint.hpp"
@@ -84,6 +85,28 @@ class Hardware {
   bool write_velocity_pi_gain(const std::string& joint_name, const uint16_t p, const uint16_t i);
   bool write_velocity_pi_gain_to_group(const std::string& group_name, const uint16_t p,
                                        const uint16_t i);
+
+  template <typename IdentifyT, typename DataT>
+  bool write_data(const IdentifyT & identify, const uint16_t & addr, const DataT & data)
+  {
+    if (!joints_.has_joint(identify)) {
+      std::cerr << "Joint: " << identify << " is not registered." << std::endl;
+      return false;
+    }
+
+    if (std::is_same<DataT, uint8_t>::value) {
+      return comm_->write_byte_data(joints_.joint(identify)->id(), addr, data);
+    }
+    if (std::is_same<DataT, uint16_t>::value) {
+      return comm_->write_word_data(joints_.joint(identify)->id(), addr, data);
+    }
+    if (std::is_same<DataT, uint32_t>::value) {
+      return comm_->write_double_word_data(joints_.joint(identify)->id(), addr, data);
+    }
+
+    return false;
+  }
+
 
  protected:
   std::shared_ptr<hardware_communicator::Communicator> comm_;
