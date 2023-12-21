@@ -21,24 +21,35 @@
 
 using namespace fakeit;
 
-class HardwareTestFixture: public ::testing::Test {
- protected:
-  virtual void SetUp() {
-    Mock<hardware_communicator::Communicator> mock;
-    When(Method(mock, read_byte_data)).AlwaysReturn(true);
-    When(Method(mock, read_word_data)).AlwaysReturn(true);
-    When(Method(mock, read_double_word_data)).AlwaysReturn(true);
+TEST(HardwareTest, load_config_file) {
+  // Expect the load_config_file method to be called twice and return true and false respectively.
+  Mock<hardware_communicator::Communicator> mock;
+  When(Method(mock, read_byte_data)).AlwaysReturn(true);
+  When(Method(mock, read_word_data)).AlwaysReturn(true);
+  When(Method(mock, read_double_word_data)).AlwaysReturn(true);
+  When(Method(mock, write_byte_data)).AlwaysReturn(true);
+  When(Method(mock, write_word_data)).AlwaysReturn(true);
+  When(Method(mock, write_double_word_data)).AlwaysReturn(true);
+  When(Method(mock, make_sync_write_group)).AlwaysReturn();
+  When(Method(mock, make_sync_read_group)).AlwaysReturn();
+  When(Method(mock, append_id_to_sync_write_group)).AlwaysReturn(true);
+  When(Method(mock, append_id_to_sync_read_group)).AlwaysReturn(true);
 
-    hardware = std::make_shared<rt_manipulators_cpp::Hardware>(
-      std::unique_ptr<hardware_communicator::Communicator>(&mock.get()));
-  }
+  rt_manipulators_cpp::Hardware hardware(
+    std::unique_ptr<hardware_communicator::Communicator>(&mock.get()));
 
-  virtual void TearDown() {
-  }
+  EXPECT_TRUE(hardware.load_config_file("../config/ok_has_dynamixel_name.yaml"));
+  EXPECT_FALSE(hardware.load_config_file("../config/ng_has_same_joints.yaml"));
+}
 
-  std::shared_ptr<rt_manipulators_cpp::Hardware> hardware;
-};
+TEST(HardwareTest, connect) {
+  // Expect the connect method to be called twice and return true and false respectively.
+  Mock<hardware_communicator::Communicator> mock;
+  When(Method(mock, connect)).Return(true, false);  // Return true then false.
 
-TEST_F(HardwareTestFixture, load_config_file) {
-  EXPECT_TRUE(hardware->load_config_file("../config/ok_single_joint.yaml"));
+  rt_manipulators_cpp::Hardware hardware(
+    std::unique_ptr<hardware_communicator::Communicator>(&mock.get()));
+
+  EXPECT_TRUE(hardware.connect());
+  EXPECT_FALSE(hardware.connect());
 }
