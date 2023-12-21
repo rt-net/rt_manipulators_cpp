@@ -40,9 +40,9 @@ class Communicator{
  public:
   explicit Communicator(const std::string device_name);
   virtual ~Communicator();
-  bool is_connected();
+  virtual bool is_connected();
   virtual bool connect(const int baudrate = 3000000);
-  void disconnect();
+  virtual void disconnect();
   virtual void make_sync_read_group(const group_name_t & group_name, const dxl_address_t & start_address,
                               const dxl_data_length_t & data_length);
   virtual void make_sync_write_group(const group_name_t & group_name, const dxl_address_t & start_address,
@@ -50,12 +50,12 @@ class Communicator{
   virtual bool append_id_to_sync_read_group(const group_name_t & group_name, const dxl_id_t & id);
   virtual bool append_id_to_sync_write_group(const group_name_t & group_name, const dxl_id_t & id,
                                      std::vector<dxl_byte_t> & init_data);
-  bool send_sync_read_packet(const group_name_t & group_name);
-  bool send_sync_write_packet(const group_name_t & group_name);
-  bool get_sync_read_data(const group_name_t & group_name, const dxl_id_t id,
+  virtual bool send_sync_read_packet(const group_name_t & group_name);
+  virtual bool send_sync_write_packet(const group_name_t & group_name);
+  virtual bool get_sync_read_data(const group_name_t & group_name, const dxl_id_t id,
                           const dxl_address_t & address, const dxl_data_length_t & length,
                           dxl_double_word_t & read_data);
-  bool set_sync_write_data(const group_name_t & group_name, const dxl_id_t id,
+  virtual bool set_sync_write_data(const group_name_t & group_name, const dxl_id_t id,
                            std::vector<dxl_byte_t> & write_data);
   virtual bool write_byte_data(const dxl_id_t & id, const dxl_address_t & address,
                        const dxl_byte_t & write_data);
