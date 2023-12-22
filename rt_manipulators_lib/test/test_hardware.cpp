@@ -23,7 +23,7 @@ using fakeit::Mock;
 using fakeit::Verify;
 using fakeit::When;
 
-Mock<hardware_communicator::Communicator> create_default_mock(void) {
+Mock<hardware_communicator::Communicator> create_comm_mock(void) {
   Mock<hardware_communicator::Communicator> mock;
   When(Method(mock, is_connected)).AlwaysReturn(true);
   When(Method(mock, connect)).AlwaysReturn(true);
@@ -48,7 +48,7 @@ Mock<hardware_communicator::Communicator> create_default_mock(void) {
 
 TEST(HardwareTest, load_config_file) {
   // Expect the load_config_file method to be called twice and return true and false respectively.
-  auto mock = create_default_mock();
+  auto mock = create_comm_mock();
 
   rt_manipulators_cpp::Hardware hardware(
     std::unique_ptr<hardware_communicator::Communicator>(&mock.get()));
@@ -59,7 +59,7 @@ TEST(HardwareTest, load_config_file) {
 
 TEST(HardwareTest, connect) {
   // Expect the connect method to be called twice and return true and false respectively.
-  auto mock = create_default_mock();
+  auto mock = create_comm_mock();
   When(Method(mock, connect)).Return(true, false);  // Return true then false.
 
   rt_manipulators_cpp::Hardware hardware(
@@ -71,7 +71,7 @@ TEST(HardwareTest, connect) {
 
 TEST(HardwareTest, disconnect) {
   // Expect the disconnect method to be called once and never.
-  auto mock = create_default_mock();
+  auto mock = create_comm_mock();
   When(Method(mock, is_connected)).Return(false).AlwaysReturn(true);  // Return false then true.
   When(Method(mock, disconnect)).AlwaysReturn();
 
