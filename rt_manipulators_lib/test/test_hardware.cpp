@@ -19,10 +19,11 @@
 #include "rt_manipulators_cpp/hardware.hpp"
 #include "rt_manipulators_cpp/hardware_communicator.hpp"
 
-using namespace fakeit;
+using fakeit::Mock;
+using fakeit::Verify;
+using fakeit::When;
 
-Mock<hardware_communicator::Communicator> create_default_mock(void)
-{
+Mock<hardware_communicator::Communicator> create_default_mock(void) {
   Mock<hardware_communicator::Communicator> mock;
   When(Method(mock, is_connected)).AlwaysReturn(true);
   When(Method(mock, connect)).AlwaysReturn(true);
@@ -71,15 +72,15 @@ TEST(HardwareTest, connect) {
 TEST(HardwareTest, disconnect) {
   // Expect the disconnect method to be called once and never.
   auto mock = create_default_mock();
-  When(Method(mock, is_connected)).Return(false).AlwaysReturn(true); // Return false then true.
+  When(Method(mock, is_connected)).Return(false).AlwaysReturn(true);  // Return false then true.
   When(Method(mock, disconnect)).AlwaysReturn();
 
   rt_manipulators_cpp::Hardware hardware(
     std::unique_ptr<hardware_communicator::Communicator>(&mock.get()));
 
   hardware.disconnect();
-  fakeit::Verify(Method(mock, disconnect)).Never();
+  Verify(Method(mock, disconnect)).Never();
 
   hardware.disconnect();
-  fakeit::Verify(Method(mock, disconnect)).Once();
+  Verify(Method(mock, disconnect)).Once();
 }

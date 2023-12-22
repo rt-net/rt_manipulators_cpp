@@ -27,7 +27,7 @@ Hardware::Hardware(const std::string device_name) :
 }
 
 Hardware::Hardware(std::unique_ptr<hardware_communicator::Communicator> comm) :
-  thread_enable_(false){
+  thread_enable_(false) {
   comm_ = std::move(comm);
 }
 
