@@ -84,3 +84,38 @@ TEST(HardwareTest, disconnect) {
   hardware.disconnect();
   Verify(Method(mock, disconnect)).Once();
 }
+
+TEST(HardwareTest, write_data) {
+  auto mock = create_comm_mock();
+  rt_manipulators_cpp::Hardware hardware(
+    std::unique_ptr<hardware_communicator::Communicator>(&mock.get()));
+
+  EXPECT_TRUE(hardware.load_config_file("../config/ok_has_dynamixel_name.yaml"));
+
+  // Return false when joint name or id is not found
+  mock.ClearInvocationHistory();
+  EXPECT_FALSE(hardware.write_data("joint0", 0x00, static_cast<uint8_t>(0x00)));
+  EXPECT_FALSE(hardware.write_data(0, 0x00, static_cast<uint8_t>(0x00)));
+  Verify(Method(mock, write_byte_data)).Never();
+  Verify(Method(mock, write_word_data)).Never();
+  Verify(Method(mock, write_double_word_data)).Never();
+
+  // Identify joint via joint name
+  EXPECT_TRUE(hardware.write_data("joint1", 0x00, static_cast<uint8_t>(0x00)));
+  Verify(Method(mock, write_byte_data)).Once();
+
+  // Identify joint via joint id
+  EXPECT_TRUE(hardware.write_data(2, 0x00, static_cast<uint16_t>(0x00)));
+  Verify(Method(mock, write_word_data)).Once();
+
+  EXPECT_TRUE(hardware.write_data("joint3", 0x00, static_cast<uint32_t>(0x00)));
+  Verify(Method(mock, write_double_word_data)).Once();
+
+  // Return false when data type is not matched
+  mock.ClearInvocationHistory();
+  EXPECT_FALSE(hardware.write_data("joint1", 0x00, 0x00));
+  Verify(Method(mock, write_byte_data)).Never();
+  Verify(Method(mock, write_word_data)).Never();
+  Verify(Method(mock, write_double_word_data)).Never();
+
+}
