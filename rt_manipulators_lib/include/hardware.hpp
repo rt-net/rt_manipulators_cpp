@@ -108,6 +108,35 @@ class Hardware {
     return false;
   }
 
+  template <typename IdentifyT, typename DataT>
+  bool read_data(const IdentifyT & identify, const uint16_t & addr, DataT & data)
+  {
+    if (!joints_.has_joint(identify)) {
+      std::cerr << "Joint: " << identify << " is not registered." << std::endl;
+      return false;
+    }
+
+    bool result = false;
+    if (std::is_same<DataT, uint8_t>::value) {
+      uint8_t tmp_data = 0x00;
+      result = comm_->read_byte_data(joints_.joint(identify)->id(), addr, tmp_data);
+      data = tmp_data;
+    }
+    if (std::is_same<DataT, uint16_t>::value) {
+      uint16_t tmp_data = 0x00;
+      result = comm_->read_word_data(joints_.joint(identify)->id(), addr, tmp_data);
+      data = tmp_data;
+    }
+    if (std::is_same<DataT, uint32_t>::value) {
+      uint32_t tmp_data = 0x00;
+      result = comm_->read_double_word_data(joints_.joint(identify)->id(), addr, tmp_data);
+      data = tmp_data;
+    }
+
+    return result;
+  }
+
+
 
  protected:
   std::shared_ptr<hardware_communicator::Communicator> comm_;

@@ -117,5 +117,42 @@ TEST(HardwareTest, write_data) {
   Verify(Method(mock, write_byte_data)).Never();
   Verify(Method(mock, write_word_data)).Never();
   Verify(Method(mock, write_double_word_data)).Never();
+}
 
+TEST(HardwareTest, read_data) {
+  auto mock = create_comm_mock();
+  rt_manipulators_cpp::Hardware hardware(
+    std::unique_ptr<hardware_communicator::Communicator>(&mock.get()));
+
+  EXPECT_TRUE(hardware.load_config_file("../config/ok_has_dynamixel_name.yaml"));
+
+  uint8_t byte_data = 0x00;
+  uint16_t word_data = 0x00;
+  uint32_t double_word_data = 0x00;
+  // Return false when joint name or id is not found
+  mock.ClearInvocationHistory();
+  EXPECT_FALSE(hardware.read_data("joint0", 0x00, byte_data));
+  EXPECT_FALSE(hardware.read_data(0, 0x00, byte_data));
+  Verify(Method(mock, read_byte_data)).Never();
+  Verify(Method(mock, read_word_data)).Never();
+  Verify(Method(mock, read_double_word_data)).Never();
+
+  // Identify joint via joint name
+  EXPECT_FALSE(hardware.read_data("joint1", 0x00, byte_data));
+  Verify(Method(mock, read_byte_data)).Once();
+
+  // Identify joint via joint id
+  EXPECT_FALSE(hardware.read_data(2, 0x00, word_data));
+  Verify(Method(mock, read_word_data)).Once();
+
+  EXPECT_FALSE(hardware.read_data("joint3", 0x00, double_word_data));
+  Verify(Method(mock, read_double_word_data)).Once();
+
+  // Return false when data type is not matched
+  double invalid_type_data = 0.0;
+  mock.ClearInvocationHistory();
+  EXPECT_FALSE(hardware.read_data("joint1", 0x00, invalid_type_data));
+  Verify(Method(mock, read_byte_data)).Never();
+  Verify(Method(mock, read_word_data)).Never();
+  Verify(Method(mock, read_double_word_data)).Never();
 }
