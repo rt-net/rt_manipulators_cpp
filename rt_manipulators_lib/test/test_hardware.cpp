@@ -120,7 +120,24 @@ TEST(HardwareTest, write_data) {
 }
 
 TEST(HardwareTest, read_data) {
+  const uint8_t TEST_BYTE_DATA = 0x12;
+  const uint16_t TEST_WORD_DATA = 0x1234;
+  const uint32_t TEST_DOUBLE_WORD_DATA = 0x12345678;
   auto mock = create_comm_mock();
+
+  When(Method(mock, read_byte_data)).AlwaysDo([](uint8_t id, uint16_t addr, uint8_t& result) {
+        result = TEST_BYTE_DATA;
+        return true;
+    });
+  When(Method(mock, read_word_data)).AlwaysDo([](uint8_t id, uint16_t addr, uint16_t& result) {
+        result = TEST_WORD_DATA;
+        return true;
+    });
+  When(Method(mock, read_double_word_data)).AlwaysDo([](uint8_t id, uint16_t addr, uint32_t& result) {
+        result = TEST_DOUBLE_WORD_DATA;
+        return true;
+    });
+
   rt_manipulators_cpp::Hardware hardware(
     std::unique_ptr<hardware_communicator::Communicator>(&mock.get()));
 
@@ -138,15 +155,18 @@ TEST(HardwareTest, read_data) {
   Verify(Method(mock, read_double_word_data)).Never();
 
   // Identify joint via joint name
-  EXPECT_FALSE(hardware.read_data("joint1", 0x00, byte_data));
+  EXPECT_TRUE(hardware.read_data("joint1", 0x00, byte_data));
   Verify(Method(mock, read_byte_data)).Once();
+  EXPECT_EQ(byte_data, TEST_BYTE_DATA);
 
   // Identify joint via joint id
-  EXPECT_FALSE(hardware.read_data(2, 0x00, word_data));
+  EXPECT_TRUE(hardware.read_data(2, 0x00, word_data));
   Verify(Method(mock, read_word_data)).Once();
+  EXPECT_EQ(word_data, TEST_WORD_DATA);
 
-  EXPECT_FALSE(hardware.read_data("joint3", 0x00, double_word_data));
+  EXPECT_TRUE(hardware.read_data("joint3", 0x00, double_word_data));
   Verify(Method(mock, read_double_word_data)).Once();
+  EXPECT_EQ(double_word_data, TEST_DOUBLE_WORD_DATA);
 
   // Return false when data type is not matched
   double invalid_type_data = 0.0;
