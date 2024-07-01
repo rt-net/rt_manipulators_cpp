@@ -14,7 +14,7 @@ on:
 
 jobs:
   industrial_ci:
-    continue-on-error: true
+    fail-fast: false
     strategy:
       matrix:
         env:
