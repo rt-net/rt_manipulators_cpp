@@ -16,6 +16,7 @@
 - ROS Foxy
 - ROS Galactic
 - ROS Humble
+- ROS Jazzy
 - ROS Rolling
 
 ## インストール方法
