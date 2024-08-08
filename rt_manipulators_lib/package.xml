@@ -8,6 +8,7 @@
   <license>Apache License 2.0</license>
 
   <author email="s.aoki@rt-net.jp">ShotaAk</author>
+  <author email="yakushigawa@rt-net.jp">chama1176</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
