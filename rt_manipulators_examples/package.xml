@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rt_manipulators_examples</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>Examples for RT Manipulators C++ Library</description>
   <maintainer email="support@rt-net.jp">RT Corporation</maintainer>
   <license>Apache License 2.0</license>
