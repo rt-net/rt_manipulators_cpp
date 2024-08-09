@@ -13,6 +13,7 @@ find_package(dynamixel_sdk REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3)
 find_package(yaml_cpp_vendor REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 set(library_name ${CMAKE_PROJECT_NAME})
 
@@ -37,6 +38,9 @@ target_include_directories(${library_name}
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
+target_link_libraries(${library_name}
+    yaml-cpp
+)
 ament_target_dependencies(${library_name}
     dynamixel_sdk
     Eigen3
