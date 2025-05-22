@@ -25,10 +25,9 @@ set_target_properties(${library_name} PROPERTIES VERSION 1.1.0 SOVERSION 1)
 target_include_directories(${library_name} PUBLIC
     ${PROJECT_SOURCE_DIR}/include
 )
-message("${CMAKE_THREAD_LIBS_INIT}")
 target_link_libraries(${library_name} PUBLIC
-    ${YAML_CPP_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
+    yaml-cpp::yaml-cpp
+    Threads::Threads
     dxl_x64_cpp
 )
 
