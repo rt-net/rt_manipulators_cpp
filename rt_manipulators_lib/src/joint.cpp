@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "dynamixel_xc330.hpp"
 #include "dynamixel_xm430.hpp"
 #include "dynamixel_xm540.hpp"
 #include "dynamixel_xh430.hpp"
 #include "dynamixel_xh540.hpp"
 #include "dynamixel_ph42.hpp"
+#include "dynamixel_ph54.hpp"
 #include "joint.hpp"
 
 namespace joint {
@@ -37,6 +39,8 @@ Joint::Joint(const uint8_t id, const uint8_t operating_mode, const std::string d
   : Joint(id, operating_mode) {
   if (dynamixel_name == "XM430") {
     dxl = std::make_shared<dynamixel_xm430::DynamixelXM430>(id);
+  } else if (dynamixel_name == "XC330") {
+    dxl = std::make_shared<dynamixel_xc330::DynamixelXC330>(id);
   } else if (dynamixel_name == "XM540") {
     dxl = std::make_shared<dynamixel_xm540::DynamixelXM540>(id);
   } else if (dynamixel_name == "XH430") {
@@ -45,6 +49,8 @@ Joint::Joint(const uint8_t id, const uint8_t operating_mode, const std::string d
     dxl = std::make_shared<dynamixel_xh540::DynamixelXH540>(id);
   } else if (dynamixel_name == "PH42") {
     dxl = std::make_shared<dynamixel_ph42::DynamixelPH42>(id);
+  } else if (dynamixel_name == "PH54") {
+    dxl = std::make_shared<dynamixel_ph54::DynamixelPH54>(id);
   } else {
     dxl = std::make_shared<dynamixel_base::DynamixelBase>(id);
   }
@@ -128,6 +134,20 @@ double Joint::get_goal_velocity() const { return goal_velocity_; }
 
 double Joint::get_goal_current() const { return goal_current_; }
 
+void Joint::set_external_port_voltage(const int number, const double analog_voltage) {
+  if (number < 1 || number > 4) {
+    return;
+  }
+  external_port_voltage_[number - 1] = analog_voltage;
+}
+
+double Joint::get_external_port_voltage(const int number) const {
+  if (number < 1 || number > 4) {
+    return 0;
+  }
+  return external_port_voltage_.at(number - 1);
+}
+
 JointGroup::JointGroup(const std::vector<std::string>& joint_names,
                        const std::vector<std::string>& sync_read_targets,
                        const std::vector<std::string>& sync_write_targets)
@@ -146,6 +166,10 @@ JointGroup::JointGroup(const std::vector<std::string>& joint_names,
     if (target == "current") sync_read_current_enabled_ = true;
     if (target == "voltage") sync_read_voltage_enabled_ = true;
     if (target == "temperature") sync_read_temperature_enabled_ = true;
+    if (target == "external_port1") sync_read_external_port1_enabled_ = true;
+    if (target == "external_port2") sync_read_external_port2_enabled_ = true;
+    if (target == "external_port3") sync_read_external_port3_enabled_ = true;
+    if (target == "external_port4") sync_read_external_port4_enabled_ = true;
   }
 
   for (const auto & target : sync_write_targets) {
@@ -172,5 +196,21 @@ bool JointGroup::sync_write_position_enabled() const { return sync_write_positio
 bool JointGroup::sync_write_velocity_enabled() const { return sync_write_velocity_enabled_; }
 
 bool JointGroup::sync_write_current_enabled() const { return sync_write_current_enabled_; }
+
+bool JointGroup::sync_read_external_port1_enabled() const {
+  return sync_read_external_port1_enabled_;
+}
+
+bool JointGroup::sync_read_external_port2_enabled() const {
+  return sync_read_external_port2_enabled_;
+}
+
+bool JointGroup::sync_read_external_port3_enabled() const {
+  return sync_read_external_port3_enabled_;
+}
+
+bool JointGroup::sync_read_external_port4_enabled() const {
+  return sync_read_external_port4_enabled_;
+}
 
 }  // namespace joint

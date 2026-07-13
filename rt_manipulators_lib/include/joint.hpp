@@ -30,6 +30,7 @@ class Joint {
   Joint(const uint8_t id, const uint8_t operating_mode, const std::string dynamixel_name);
   uint8_t id() const;
   uint8_t operating_mode() const;
+  std::string name() const;
   void set_position_limit_margin(const double position_radian);
   void set_position_limit(const double min_position_radian, const double max_position_radian);
   double max_position_limit() const;
@@ -54,11 +55,15 @@ class Joint {
   double get_goal_velocity() const;
   double get_goal_current() const;
 
+  void set_external_port_voltage(const int number, const double analog_voltage);
+  double get_external_port_voltage(const int number) const;
+
   std::shared_ptr<dynamixel_base::DynamixelBase> dxl;
 
  private:
   uint8_t id_;
   uint8_t operating_mode_;
+  std::string name_;
   double position_limit_margin_;
   double max_position_limit_;
   double min_position_limit_;
@@ -73,6 +78,8 @@ class Joint {
   double goal_position_;
   double goal_velocity_;
   double goal_current_;
+
+  std::vector<double> external_port_voltage_ = {0.0, 0.0, 0.0, 0.0};
 };
 
 class JointGroup {
@@ -90,6 +97,11 @@ class JointGroup {
   bool sync_write_velocity_enabled() const;
   bool sync_write_current_enabled() const;
 
+  bool sync_read_external_port1_enabled() const;
+  bool sync_read_external_port2_enabled() const;
+  bool sync_read_external_port3_enabled() const;
+  bool sync_read_external_port4_enabled() const;
+
  private:
   std::vector<std::string> joint_names_;
   bool sync_read_position_enabled_;
@@ -100,6 +112,11 @@ class JointGroup {
   bool sync_write_position_enabled_;
   bool sync_write_velocity_enabled_;
   bool sync_write_current_enabled_;
+
+  bool sync_read_external_port1_enabled_ = false;
+  bool sync_read_external_port2_enabled_ = false;
+  bool sync_read_external_port3_enabled_ = false;
+  bool sync_read_external_port4_enabled_ = false;
 };
 
 }  // namespace joint

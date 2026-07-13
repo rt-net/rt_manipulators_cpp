@@ -66,6 +66,16 @@ std::vector<manipulators_link::Link> parse_link_config_file(const std::string & 
 
   std::cout << "リンク情報ファイル:" << file_path << "を読み込みます" << std::endl;
 
+  bool no_coordinate_transformation = false;
+  if(file_path.find("bonobo") != std::string::npos){
+    std::cout << "bonobo_links" << std::endl;
+    no_coordinate_transformation = true;
+  }
+  if(file_path.find("muriqui") != std::string::npos){
+    std::cout << "muriqui_links" << std::endl;
+    no_coordinate_transformation = true;
+  }
+
   std::vector<manipulators_link::Link> links;
   links.push_back(manipulators_link::Link());  // 0番目には空のリンクをセット
   std::ifstream ifs(file_path);
@@ -157,8 +167,12 @@ std::vector<manipulators_link::Link> parse_link_config_file(const std::string & 
       rot = rotation_from_euler_ZYX(0, 0, M_PI);
       link.a << 0, 0, -1;
     }
-    link.c = rot * link.c;
-    link.I = rot * link.I * rot.transpose();
+
+    // 読み込むモデルによって、座標系の設定が違うので場合分け
+    if (!no_coordinate_transformation){
+      link.c = rot * link.c;
+      link.I = rot * link.I * rot.transpose();
+    }
 
     try {
       link.dxl_id = std::stoi(str_vec[COL_DXL_ID]);

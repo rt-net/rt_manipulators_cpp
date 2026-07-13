@@ -20,12 +20,14 @@ namespace hardware_communicator {
 
 const double PROTOCOL_VERSION = 2.0;
 
+auto packet_handler = []() {
+  return dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
+};
+
 Communicator::Communicator(const std::string device_name) :
   is_connected_(false) {
   port_handler_ = std::shared_ptr<dynamixel::PortHandler>(
       dynamixel::PortHandler::getPortHandler(device_name.c_str()));
-  packet_handler_ = std::shared_ptr<dynamixel::PacketHandler>(
-      dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION));
 }
 
 Communicator::~Communicator() {
@@ -60,7 +62,7 @@ void Communicator::make_sync_read_group(
   const group_name_t & group_name, const dxl_address_t & start_address,
   const dxl_data_length_t & data_length) {
   auto group_ptr = std::make_shared<GroupSyncRead>(
-    port_handler_.get(), packet_handler_.get(), start_address, data_length);
+    port_handler_.get(), packet_handler(), start_address, data_length);
   sync_read_groups_.emplace(group_name, group_ptr);
 }
 
@@ -68,7 +70,7 @@ void Communicator::make_sync_write_group(
   const group_name_t & group_name, const dxl_address_t & start_address,
   const dxl_data_length_t & data_length) {
   auto group_ptr = std::make_shared<GroupSyncWrite>(
-    port_handler_.get(), packet_handler_.get(), start_address, data_length);
+    port_handler_.get(), packet_handler(), start_address, data_length);
   sync_write_groups_.emplace(group_name, group_ptr);
 }
 
@@ -153,7 +155,7 @@ bool Communicator::write_byte_data(
   const dxl_id_t & id, const dxl_address_t & address, const dxl_byte_t & write_data) {
   dxl_error_t dxl_error = 0;
   dxl_result_t dxl_result =
-      packet_handler_->write1ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
+      packet_handler()->write1ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
 
   if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
     return false;
@@ -165,7 +167,7 @@ bool Communicator::write_word_data(
   const dxl_id_t & id, const dxl_address_t & address, const dxl_word_t & write_data) {
   dxl_error_t dxl_error = 0;
   dxl_result_t dxl_result =
-      packet_handler_->write2ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
+      packet_handler()->write2ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
 
   if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
     return false;
@@ -177,7 +179,7 @@ bool Communicator::write_double_word_data(
   const dxl_id_t & id, const dxl_address_t & address, const dxl_double_word_t & write_data) {
   dxl_error_t dxl_error = 0;
   dxl_result_t dxl_result =
-      packet_handler_->write4ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
+      packet_handler()->write4ByteTxRx(port_handler_.get(), id, address, write_data, &dxl_error);
 
   if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
     return false;
@@ -190,7 +192,7 @@ bool Communicator::read_byte_data(
   dxl_error_t dxl_error = 0;
   dxl_byte_t data = 0;
   dxl_result_t dxl_result =
-      packet_handler_->read1ByteTxRx(port_handler_.get(), id, address, &data, &dxl_error);
+      packet_handler()->read1ByteTxRx(port_handler_.get(), id, address, &data, &dxl_error);
 
   if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
     return false;
@@ -204,7 +206,7 @@ bool Communicator::read_word_data(
   dxl_error_t dxl_error = 0;
   dxl_word_t data = 0;
   dxl_result_t dxl_result =
-      packet_handler_->read2ByteTxRx(port_handler_.get(), id, address, &data, &dxl_error);
+      packet_handler()->read2ByteTxRx(port_handler_.get(), id, address, &data, &dxl_error);
 
   if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
     return false;
@@ -218,7 +220,7 @@ bool Communicator::read_double_word_data(
   dxl_error_t dxl_error = 0;
   dxl_double_word_t data = 0;
   dxl_result_t dxl_result =
-      packet_handler_->read4ByteTxRx(port_handler_.get(), id, address, &data, &dxl_error);
+      packet_handler()->read4ByteTxRx(port_handler_.get(), id, address, &data, &dxl_error);
 
   if (!parse_dxl_error(std::string(__func__), id, address, dxl_result, dxl_error)) {
     return false;
@@ -252,7 +254,7 @@ bool Communicator::parse_dxl_error(
     std::cerr << "Function:" << func_name;
     std::cerr << ", ID:" << std::to_string(id);
     std::cerr << ", Address:" << std::to_string(address);
-    std::cerr << ", CommError:" << std::string(packet_handler_->getTxRxResult(dxl_comm_result))
+    std::cerr << ", CommError:" << std::string(packet_handler()->getTxRxResult(dxl_comm_result))
               << std::endl;
     retval = false;
   }
@@ -262,7 +264,7 @@ bool Communicator::parse_dxl_error(
     std::cerr << ", ID:" << std::to_string(id);
     std::cerr << ", Address:" << std::to_string(address);
     std::cerr << ", PacketError:"
-              << std::string(packet_handler_->getRxPacketError(dxl_packet_error)) << std::endl;
+              << std::string(packet_handler()->getRxPacketError(dxl_packet_error)) << std::endl;
     retval = false;
   }
 
@@ -273,7 +275,7 @@ bool Communicator::parse_dxl_error(
   const std::string & func_name, const dxl_result_t & dxl_comm_result) {
   if (dxl_comm_result != COMM_SUCCESS) {
     std::cerr << "Function:" << func_name;
-    std::cerr << ", CommError:" << std::string(packet_handler_->getTxRxResult(dxl_comm_result));
+    std::cerr << ", CommError:" << std::string(packet_handler()->getTxRxResult(dxl_comm_result));
     std::cerr << std::endl;
     return false;
   }

@@ -23,6 +23,10 @@ const uint16_t ADDR_OPERATING_MODE = 11;
 const uint16_t ADDR_CURRENT_LIMIT = 38;
 const uint16_t ADDR_MAX_POSITION_LIMIT = 48;
 const uint16_t ADDR_MIN_POSITION_LIMIT = 52;
+const uint16_t ADDR_EXTERNAL_PORT_MODE1 = 56;
+const uint16_t ADDR_EXTERNAL_PORT_MODE2 = 57;
+const uint16_t ADDR_EXTERNAL_PORT_MODE3 = 58;
+const uint16_t ADDR_EXTERNAL_PORT_MODE4 = 59;
 const uint16_t ADDR_TORQUE_ENABLE = 512;
 const uint16_t ADDR_VELOCITY_I_GAIN = 524;
 const uint16_t ADDR_VELOCITY_P_GAIN = 526;
@@ -39,16 +43,24 @@ const uint16_t ADDR_PRESENT_VELOCITY = 576;
 const uint16_t ADDR_PRESENT_POSITION = 580;
 const uint16_t ADDR_PRESENT_VOLTAGE = 592;
 const uint16_t ADDR_PRESENT_TEMPERATURE = 594;
+const uint16_t ADDR_EXTERNAL_PORT_DATA1 = 600;
+const uint16_t ADDR_EXTERNAL_PORT_DATA2 = 602;
+const uint16_t ADDR_EXTERNAL_PORT_DATA3 = 604;
+const uint16_t ADDR_EXTERNAL_PORT_DATA4 = 606;
 const uint16_t ADDR_INDIRECT_ADDRESS_1 = 168;
 const uint16_t ADDR_INDIRECT_DATA_1 = 634;
-const uint16_t ADDR_INDIRECT_ADDRESS_16 = 198;
-const uint16_t ADDR_INDIRECT_DATA_16 = 649;
+const uint16_t ADDR_INDIRECT_ADDRESS_21 = ADDR_INDIRECT_ADDRESS_1 + 2 * 20;
+const uint16_t ADDR_INDIRECT_DATA_21 = ADDR_INDIRECT_DATA_1 + 1 * 20;
 
+// sync_readやsync_writeを使うとき全サーボの同じアドレスへアクセスする。
 // XMシリーズと同じアドレスで通信するため、インダイレクトアドレスの使用範囲を絞る
+// インダイレクトアドレス有効範囲：1 ~ 28（合計28個）
+// sync_writeは多くてもpositionとcurrentしか同時設定されないので、
+// readの領域を多めに取る
 const uint16_t ADDR_START_INDIRECT_ADDR_READ = ADDR_INDIRECT_ADDRESS_1;
 const uint16_t ADDR_START_INDIRECT_DATA_READ = ADDR_INDIRECT_DATA_1;
-const uint16_t ADDR_START_INDIRECT_ADDR_WRITE = ADDR_INDIRECT_ADDRESS_16;
-const uint16_t ADDR_START_INDIRECT_DATA_WRITE = ADDR_INDIRECT_DATA_16;
+const uint16_t ADDR_START_INDIRECT_ADDR_WRITE = ADDR_INDIRECT_ADDRESS_21;
+const uint16_t ADDR_START_INDIRECT_DATA_WRITE = ADDR_INDIRECT_DATA_21;
 
 const uint16_t LEN_PRESENT_CURRENT = 2;
 const uint16_t LEN_PRESENT_VELOCITY = 4;
@@ -59,6 +71,9 @@ const uint16_t LEN_GOAL_CURRENT = 2;
 const uint16_t LEN_GOAL_VELOCITY = 4;
 const uint16_t LEN_GOAL_POSITION = 4;
 const uint16_t LEN_INDIRECT_ADDRESS = 2;
+const uint16_t LEN_EXTERNAL_PORT_DATA = 2;
+
+const uint8_t EXTERNAL_PORT_MODE_ANALOG_INPUT = 0;
 
 const double TO_ACCELERATION_REV_PER_MM = 1.0;
 const double TO_ACCELERATION_TO_RAD_PER_MM = TO_ACCELERATION_REV_PER_MM * 2.0 * M_PI;
@@ -75,6 +90,7 @@ const double TO_CURRENT_AMPERE = 0.001;
 const double TO_VOLTAGE_VOLT = 0.1;
 const double TO_DXL_POS = 1.0 / TO_RADIANS;
 const double TO_DXL_CURRENT = 1.0 / TO_CURRENT_AMPERE;
+const double TO_ANALOG_VOLTAGE_VOLT = 3.3 / 4095.0;
 
 DynamixelP::DynamixelP(const uint8_t id, const int home_position)
   : dynamixel_base::DynamixelBase(id), HOME_POSITION_(home_position),
@@ -205,6 +221,10 @@ double DynamixelP::to_voltage_volt(const int voltage) {
   return voltage * TO_VOLTAGE_VOLT;
 }
 
+double DynamixelP::to_analog_voltage_volt(const int input) {
+  return input * TO_ANALOG_VOLTAGE_VOLT;
+}
+
 unsigned int DynamixelP::from_position_radian(const double position_rad) {
   return position_rad * TO_DXL_POS + HOME_POSITION_;
 }
@@ -265,6 +285,24 @@ bool DynamixelP::auto_set_indirect_address_of_goal_current(
     comm, ADDR_GOAL_CURRENT, LEN_GOAL_CURRENT, indirect_addr_of_goal_current_);
 }
 
+bool DynamixelP::auto_set_indirect_address_of_external_port(
+  const dynamixel_base::comm_t & comm, const int number) {
+  if (number == 1) {
+    return set_indirect_address_read(
+      comm, ADDR_EXTERNAL_PORT_DATA1, LEN_EXTERNAL_PORT_DATA, indirect_addr_of_external_port1_);
+  } else if (number == 2) {
+    return set_indirect_address_read(
+      comm, ADDR_EXTERNAL_PORT_DATA2, LEN_EXTERNAL_PORT_DATA, indirect_addr_of_external_port2_);
+  } else if (number == 3) {
+    return set_indirect_address_read(
+      comm, ADDR_EXTERNAL_PORT_DATA3, LEN_EXTERNAL_PORT_DATA, indirect_addr_of_external_port3_);
+  } else if (number == 4) {
+    return set_indirect_address_read(
+      comm, ADDR_EXTERNAL_PORT_DATA4, LEN_EXTERNAL_PORT_DATA, indirect_addr_of_external_port4_);
+  }
+  return false;
+}
+
 unsigned int DynamixelP::indirect_addr_of_present_position(void) {
   return indirect_addr_of_present_position_;
 }
@@ -295,6 +333,20 @@ unsigned int DynamixelP::indirect_addr_of_goal_velocity(void) {
 
 unsigned int DynamixelP::indirect_addr_of_goal_current(void) {
   return indirect_addr_of_goal_current_;
+}
+
+unsigned int DynamixelP::indirect_addr_of_external_port(const int number) {
+  if (number == 1) {
+    return indirect_addr_of_external_port1_;
+  } else if (number == 2) {
+    return indirect_addr_of_external_port2_;
+  } else if (number == 3) {
+    return indirect_addr_of_external_port3_;
+  } else if (number == 4) {
+    return indirect_addr_of_external_port4_;
+  }
+
+  return indirect_addr_of_external_port1_;
 }
 
 unsigned int DynamixelP::start_address_for_indirect_read(void) {
@@ -383,6 +435,18 @@ bool DynamixelP::extract_present_temperature_from_sync_read(
   return true;
 }
 
+bool DynamixelP::extract_external_port_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    const int number, double & analog_voltage_volt) {
+  uint32_t data = 0;
+  if (!comm->get_sync_read_data(
+    group_name, id_, indirect_addr_of_external_port(number), LEN_EXTERNAL_PORT_DATA, data)) {
+    return false;
+  }
+  analog_voltage_volt = to_analog_voltage_volt(static_cast<int16_t>(data));
+  return true;
+}
+
 void DynamixelP::push_back_position_for_sync_write(
     const double position_rad, std::vector<uint8_t> & write_data) {
   uint32_t dxl_position = from_position_radian(position_rad);
@@ -408,6 +472,32 @@ void DynamixelP::push_back_current_for_sync_write(
   write_data.push_back(DXL_HIBYTE(dxl_current));
 }
 
+bool DynamixelP::set_external_port_mode_to_analog_input(
+    const dynamixel_base::comm_t & comm, const int number) {
+  uint16_t target_addr = 0;
+  if (number == 1) {
+    target_addr = ADDR_EXTERNAL_PORT_MODE1;
+  } else if (number == 2) {
+    target_addr = ADDR_EXTERNAL_PORT_MODE2;
+  } else if (number == 3) {
+    target_addr = ADDR_EXTERNAL_PORT_MODE3;
+  } else if (number == 4) {
+    target_addr = ADDR_EXTERNAL_PORT_MODE4;
+  }
+
+  // Skip if the mode is already set
+  uint8_t present_mode = 0;
+  if (!comm->read_byte_data(id_, target_addr, present_mode)) {
+    return false;
+  }
+  if (present_mode == EXTERNAL_PORT_MODE_ANALOG_INPUT) {
+    return true;
+  }
+
+  return comm->write_byte_data(
+    id_, target_addr, EXTERNAL_PORT_MODE_ANALOG_INPUT);
+}
+
 bool DynamixelP::set_indirect_address_read(
     const dynamixel_base::comm_t & comm, const uint16_t addr, const uint16_t len,
     uint16_t & indirect_addr) {
@@ -415,6 +505,14 @@ bool DynamixelP::set_indirect_address_read(
   for (int i = 0; i < len; i++) {
     uint16_t target_indirect_address = next_indirect_addr_read() + LEN_INDIRECT_ADDRESS * i;
     uint16_t target_data_address = addr + i;
+
+    // Skip if the address is already set
+    uint16_t present_data_address = 0;
+    retval &= comm->read_word_data(id_, target_indirect_address, present_data_address);
+    if (present_data_address == target_data_address) {
+      continue;
+    }
+
     if (!comm->write_word_data(
       id_, target_indirect_address, target_data_address)) {
       retval = false;
@@ -434,6 +532,14 @@ bool DynamixelP::set_indirect_address_write(
   for (int i = 0; i < len; i++) {
     uint16_t target_indirect_address = next_indirect_addr_write() + LEN_INDIRECT_ADDRESS * i;
     uint16_t target_data_address = addr + i;
+
+    // Skip if the address is already set
+    uint16_t present_data_address = 0;
+    retval &= comm->read_word_data(id_, target_indirect_address, present_data_address);
+    if (present_data_address == target_data_address) {
+      continue;
+    }
+
     if (!comm->write_word_data(
       id_, target_indirect_address, target_data_address)) {
       retval = false;

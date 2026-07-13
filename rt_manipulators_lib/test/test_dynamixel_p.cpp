@@ -195,6 +195,34 @@ TEST_F(PTestFixture, set_indirect_addresses_read) {
   EXPECT_EQ(dxl->indirect_addr_of_present_temperature(), 646);
 }
 
+TEST_F(PTestFixture, set_indirect_addresses_read_for_external_port) {
+  EXPECT_EQ(dxl->start_address_for_indirect_read(), 634);
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 0);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 168);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_external_port(comm, 1));
+  // indirect_dataの開始位置は変わらないことを期待
+  EXPECT_EQ(dxl->start_address_for_indirect_read(), 634);
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 2);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 172);
+  EXPECT_EQ(dxl->indirect_addr_of_external_port(1), 634);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_external_port(comm, 2));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 4);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 176);
+  EXPECT_EQ(dxl->indirect_addr_of_external_port(2), 636);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_external_port(comm, 3));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 6);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 180);
+  EXPECT_EQ(dxl->indirect_addr_of_external_port(3), 638);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_external_port(comm, 4));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 8);
+  EXPECT_EQ(dxl->next_indirect_addr_read(), 184);
+  EXPECT_EQ(dxl->indirect_addr_of_external_port(4), 640);
+}
+
 TEST_F(PTestFixture, set_indirect_addresses_write) {
   EXPECT_EQ(dxl->start_address_for_indirect_write(), 649);
   EXPECT_EQ(dxl->length_of_indirect_data_write(), 0);

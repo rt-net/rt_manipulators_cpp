@@ -18,8 +18,10 @@
 #include <chrono>
 #include <map>
 #include <memory>
+#include <iostream>
 #include <string>
 #include <thread>
+#include <type_traits>
 #include <vector>
 
 #include "joint.hpp"
@@ -34,6 +36,7 @@ using JointName = std::string;
 class Hardware {
  public:
   explicit Hardware(const std::string device_name);
+  explicit Hardware(std::unique_ptr<hardware_communicator::Communicator> comm);
   ~Hardware();
   bool load_config_file(const std::string& config_yaml);
   bool connect(const int baudrate = 3000000);
@@ -62,6 +65,8 @@ class Hardware {
   bool get_temperatures(const std::string& group_name, std::vector<int8_t>& temperatures);
   bool get_max_position_limit(const uint8_t & id, double & max_position_limit);
   bool get_min_position_limit(const uint8_t & id, double & min_position_limit);
+  bool get_external_port_voltage(const uint8_t id, const int number, double& voltage);
+  bool get_external_port_voltage(const std::string& joint_name, const int number, double& voltage);
   bool set_position(const uint8_t id, const double position);
   bool set_position(const std::string& joint_name, const double position);
   bool set_positions(const std::string& group_name, std::vector<double>& positions);
@@ -85,6 +90,57 @@ class Hardware {
   bool write_velocity_pi_gain_to_group(const std::string& group_name, const uint16_t p,
                                        const uint16_t i);
 
+  template <typename IdentifyT, typename DataT>
+  bool write_data(const IdentifyT & identify, const uint16_t & addr, const DataT & data)
+  {
+    if (!joints_.has_joint(identify)) {
+      std::cerr << "Joint: " << identify << " is not registered." << std::endl;
+      return false;
+    }
+
+    if (std::is_same<DataT, uint8_t>::value) {
+      return comm_->write_byte_data(joints_.joint(identify)->id(), addr, data);
+    }
+    if (std::is_same<DataT, uint16_t>::value) {
+      return comm_->write_word_data(joints_.joint(identify)->id(), addr, data);
+    }
+    if (std::is_same<DataT, uint32_t>::value) {
+      return comm_->write_double_word_data(joints_.joint(identify)->id(), addr, data);
+    }
+
+    return false;
+  }
+
+  template <typename IdentifyT, typename DataT>
+  bool read_data(const IdentifyT & identify, const uint16_t & addr, DataT & data)
+  {
+    if (!joints_.has_joint(identify)) {
+      std::cerr << "Joint: " << identify << " is not registered." << std::endl;
+      return false;
+    }
+
+    bool result = false;
+    if (std::is_same<DataT, uint8_t>::value) {
+      uint8_t tmp_data = 0x00;
+      result = comm_->read_byte_data(joints_.joint(identify)->id(), addr, tmp_data);
+      data = tmp_data;
+    }
+    if (std::is_same<DataT, uint16_t>::value) {
+      uint16_t tmp_data = 0x00;
+      result = comm_->read_word_data(joints_.joint(identify)->id(), addr, tmp_data);
+      data = tmp_data;
+    }
+    if (std::is_same<DataT, uint32_t>::value) {
+      uint32_t tmp_data = 0x00;
+      result = comm_->read_double_word_data(joints_.joint(identify)->id(), addr, tmp_data);
+      data = tmp_data;
+    }
+
+    return result;
+  }
+
+
+
  protected:
   std::shared_ptr<hardware_communicator::Communicator> comm_;
 
@@ -92,8 +148,10 @@ class Hardware {
   bool write_operating_mode(const std::string& group_name);
   bool limit_goal_velocity_by_present_position(const std::string& group_name);
   bool limit_goal_current_by_present_position(const std::string& group_name);
+  bool search_unsupport_indirect_addr_hw_type(const std::string& group_name);
   bool create_sync_read_group(const std::string& group_name);
   bool create_sync_write_group(const std::string& group_name);
+  bool create_sync_write_group_direct_addr(const std::string& group_name);
   void read_write_thread(const std::vector<std::string>& group_names,
                          const std::chrono::milliseconds& update_cycle_ms);
 
@@ -105,6 +163,7 @@ class Hardware {
   std::map<JointGroupName, uint16_t> addr_sync_read_temperature_;
   bool thread_enable_;
   std::shared_ptr<std::thread> read_write_thread_;
+  bool use_direct_addr_enabled_;
 };
 
 }  // namespace rt_manipulators_cpp

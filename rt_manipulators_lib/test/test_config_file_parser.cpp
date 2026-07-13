@@ -129,3 +129,14 @@ TEST(ConfigFileParserTest, write_current_without_reading_position) {
     "../config/ng_write_current_without_reading_position.yaml",
     parsed_joints));
 }
+
+TEST(ConfigFileParserTest, read_external_port) {
+  // グループのsync_readにexternal_portがセットされていることを期待
+  hardware_joints::Joints parsed_joints;
+  ASSERT_TRUE(config_file_parser::parse("../config/ok_read_external_port.yaml", parsed_joints));
+  EXPECT_EQ(parsed_joints.groups().size(), 1);
+  EXPECT_TRUE(parsed_joints.group("test_group")->sync_read_external_port1_enabled());
+  EXPECT_TRUE(parsed_joints.group("test_group")->sync_read_external_port2_enabled());
+  EXPECT_TRUE(parsed_joints.group("test_group")->sync_read_external_port3_enabled());
+  EXPECT_TRUE(parsed_joints.group("test_group")->sync_read_external_port4_enabled());
+}

@@ -51,6 +51,7 @@ class DynamixelP : public dynamixel_base::DynamixelBase  {
   double to_velocity_rps(const int velocity);
   double to_current_ampere(const int current);
   double to_voltage_volt(const int voltage);
+  double to_analog_voltage_volt(const int input);
   unsigned int from_position_radian(const double position_rad);
   unsigned int from_velocity_rps(const double velocity_rps);
   unsigned int from_current_ampere(const double current_ampere);
@@ -63,6 +64,8 @@ class DynamixelP : public dynamixel_base::DynamixelBase  {
   bool auto_set_indirect_address_of_goal_position(const dynamixel_base::comm_t & comm);
   bool auto_set_indirect_address_of_goal_velocity(const dynamixel_base::comm_t & comm);
   bool auto_set_indirect_address_of_goal_current(const dynamixel_base::comm_t & comm);
+  bool auto_set_indirect_address_of_external_port(
+    const dynamixel_base::comm_t & comm, const int number);
 
   unsigned int indirect_addr_of_present_position(void);
   unsigned int indirect_addr_of_present_velocity(void);
@@ -72,6 +75,7 @@ class DynamixelP : public dynamixel_base::DynamixelBase  {
   unsigned int indirect_addr_of_goal_position(void);
   unsigned int indirect_addr_of_goal_velocity(void);
   unsigned int indirect_addr_of_goal_current(void);
+  unsigned int indirect_addr_of_external_port(const int number);
 
   unsigned int start_address_for_indirect_read(void);
   unsigned int length_of_indirect_data_read(void);
@@ -96,6 +100,9 @@ class DynamixelP : public dynamixel_base::DynamixelBase  {
   bool extract_present_temperature_from_sync_read(
     const dynamixel_base::comm_t & comm, const std::string & group_name,
     int & temperature_deg);
+  bool extract_external_port_from_sync_read(
+    const dynamixel_base::comm_t & comm, const std::string & group_name,
+    const int number, double & analog_voltage_volt);
 
   void push_back_position_for_sync_write(
     const double position_rad, std::vector<uint8_t> & write_data);
@@ -103,6 +110,9 @@ class DynamixelP : public dynamixel_base::DynamixelBase  {
     const double velocity_rps, std::vector<uint8_t> & write_data);
   void push_back_current_for_sync_write(
     const double current_ampere, std::vector<uint8_t> & write_data);
+
+  bool set_external_port_mode_to_analog_input(
+    const dynamixel_base::comm_t & comm, const int number);
 
  protected:
   int HOME_POSITION_;
@@ -116,6 +126,10 @@ class DynamixelP : public dynamixel_base::DynamixelBase  {
   uint16_t indirect_addr_of_goal_position_;
   uint16_t indirect_addr_of_goal_velocity_;
   uint16_t indirect_addr_of_goal_current_;
+  uint16_t indirect_addr_of_external_port1_ = 0;
+  uint16_t indirect_addr_of_external_port2_ = 0;
+  uint16_t indirect_addr_of_external_port3_ = 0;
+  uint16_t indirect_addr_of_external_port4_ = 0;
 
   bool set_indirect_address_read(
     const dynamixel_base::comm_t & comm, const uint16_t addr, const uint16_t len,

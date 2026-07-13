@@ -19,6 +19,7 @@ add_library(${library_name}
     dynamixel_xh540.cpp
     dynamixel_p.cpp
     dynamixel_ph42.cpp
+    dynamixel_ph54.cpp
 )
 set_target_properties(${library_name} PROPERTIES VERSION 1.1.0 SOVERSION 1)
 
