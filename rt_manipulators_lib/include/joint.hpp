@@ -30,7 +30,6 @@ class Joint {
   Joint(const uint8_t id, const uint8_t operating_mode, const std::string dynamixel_name);
   uint8_t id() const;
   uint8_t operating_mode() const;
-  std::string name() const;
   void set_position_limit_margin(const double position_radian);
   void set_position_limit(const double min_position_radian, const double max_position_radian);
   double max_position_limit() const;
@@ -63,7 +62,6 @@ class Joint {
  private:
   uint8_t id_;
   uint8_t operating_mode_;
-  std::string name_;
   double position_limit_margin_;
   double max_position_limit_;
   double min_position_limit_;
