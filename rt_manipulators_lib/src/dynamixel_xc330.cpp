@@ -23,4 +23,4 @@ DynamixelXC330::DynamixelXC330(const uint8_t id)
   name_ = "XC330";
 }
 
-}  // namespace dynamixel_xm430
+}  // namespace dynamixel_xc330
