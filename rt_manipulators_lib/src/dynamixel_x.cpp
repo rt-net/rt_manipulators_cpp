@@ -590,6 +590,8 @@ bool DynamixelX::set_external_port_mode_to_analog_input(
     target_addr = ADDR_EXTERNAL_PORT_MODE2;
   } else if (number == 3) {
     target_addr = ADDR_EXTERNAL_PORT_MODE3;
+  } else {
+    return false;
   }
 
   // Skip if the mode is already set
