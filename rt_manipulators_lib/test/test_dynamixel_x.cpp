@@ -219,6 +219,12 @@ TEST_F(XTestFixture, set_indirect_addresses_write) {
   EXPECT_EQ(dxl->indirect_addr_of_goal_current(), 657);
 }
 
+TEST_F(XTestFixture, invalid_external_port_number_returns_error) {
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_external_port(comm, 0));
+  EXPECT_EQ(dxl->indirect_addr_of_external_port(0), 0u);
+  EXPECT_FALSE(dxl->set_external_port_mode_to_analog_input(comm, 0));
+}
+
 TEST_F(XTestFixture, extract_present_position_from_sync_read) {
   std::string group_name = "test";
   double position;

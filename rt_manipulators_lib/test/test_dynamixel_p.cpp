@@ -221,6 +221,11 @@ TEST_F(PTestFixture, set_indirect_addresses_read_for_external_port) {
   EXPECT_EQ(dxl->length_of_indirect_data_read(), 8);
   EXPECT_EQ(dxl->next_indirect_addr_read(), 184);
   EXPECT_EQ(dxl->indirect_addr_of_external_port(4), 640);
+
+  EXPECT_FALSE(dxl->auto_set_indirect_address_of_external_port(comm, 0));
+  EXPECT_EQ(dxl->length_of_indirect_data_read(), 8);
+  EXPECT_EQ(dxl->indirect_addr_of_external_port(0), 0u);
+  EXPECT_FALSE(dxl->set_external_port_mode_to_analog_input(comm, 0));
 }
 
 TEST_F(PTestFixture, set_indirect_addresses_write) {

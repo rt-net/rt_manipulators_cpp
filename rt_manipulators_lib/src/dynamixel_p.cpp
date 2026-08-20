@@ -346,7 +346,7 @@ unsigned int DynamixelP::indirect_addr_of_external_port(const int number) {
     return indirect_addr_of_external_port4_;
   }
 
-  return indirect_addr_of_external_port1_;
+  return 0;
 }
 
 unsigned int DynamixelP::start_address_for_indirect_read(void) {
@@ -438,9 +438,14 @@ bool DynamixelP::extract_present_temperature_from_sync_read(
 bool DynamixelP::extract_external_port_from_sync_read(
     const dynamixel_base::comm_t & comm, const std::string & group_name,
     const int number, double & analog_voltage_volt) {
+  const auto indirect_addr = indirect_addr_of_external_port(number);
+  if (indirect_addr == 0) {
+    return false;
+  }
+
   uint32_t data = 0;
   if (!comm->get_sync_read_data(
-    group_name, id_, indirect_addr_of_external_port(number), LEN_EXTERNAL_PORT_DATA, data)) {
+    group_name, id_, indirect_addr, LEN_EXTERNAL_PORT_DATA, data)) {
     return false;
   }
   analog_voltage_volt = to_analog_voltage_volt(static_cast<int16_t>(data));
@@ -483,6 +488,8 @@ bool DynamixelP::set_external_port_mode_to_analog_input(
     target_addr = ADDR_EXTERNAL_PORT_MODE3;
   } else if (number == 4) {
     target_addr = ADDR_EXTERNAL_PORT_MODE4;
+  } else {
+    return false;
   }
 
   // Skip if the mode is already set
