@@ -163,7 +163,7 @@ class Hardware {
   std::map<JointGroupName, uint16_t> addr_sync_read_temperature_;
   bool thread_enable_;
   std::shared_ptr<std::thread> read_write_thread_;
-  bool use_direct_addr_enabled_;
+  bool use_direct_addr_enabled_ = false;
 };
 
 }  // namespace rt_manipulators_cpp
