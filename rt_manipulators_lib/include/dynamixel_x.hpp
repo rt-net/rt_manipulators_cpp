@@ -155,8 +155,8 @@ class DynamixelX : public dynamixel_base::DynamixelBase  {
   int HOME_POSITION_;
   unsigned int total_length_of_indirect_addr_read_;
   unsigned int total_length_of_indirect_addr_write_;
-  unsigned int total_length_of_direct_addr_read_;
-  unsigned int total_length_of_direct_addr_write_;
+  unsigned int total_length_of_direct_addr_read_ = 0;
+  unsigned int total_length_of_direct_addr_write_ = 0;
   uint16_t indirect_addr_of_present_position_;
   uint16_t indirect_addr_of_present_velocity_;
   uint16_t indirect_addr_of_present_current_;
