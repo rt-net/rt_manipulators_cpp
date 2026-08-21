@@ -324,19 +324,27 @@ bool Hardware::sync_read(const std::string& group_name) {
   };
 
   if (joints_.group(group_name)->sync_read_external_port1_enabled()) {
-    retval = read_external_port(1);
+    if (!read_external_port(1)) {
+      retval = false;
+    }
   }
 
   if (joints_.group(group_name)->sync_read_external_port2_enabled()) {
-    retval = read_external_port(2);
+    if (!read_external_port(2)) {
+      retval = false;
+    }
   }
 
   if (joints_.group(group_name)->sync_read_external_port3_enabled()) {
-    retval = read_external_port(3);
+    if (!read_external_port(3)) {
+      retval = false;
+    }
   }
 
   if (joints_.group(group_name)->sync_read_external_port4_enabled()) {
-    retval = read_external_port(4);
+    if (!read_external_port(4)) {
+      retval = false;
+    }
   }
 
   return retval;
