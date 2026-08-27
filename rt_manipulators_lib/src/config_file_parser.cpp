@@ -30,6 +30,9 @@ bool parse(const std::string& config_yaml, hardware_joints::Joints & parsed_join
     return false;
   }
 
+  // Reset parsed_joints
+  parsed_joints = hardware_joints::Joints();
+
   YAML::Node config = YAML::LoadFile(config_yaml);
   for (const auto & config_joint_group : config["joint_groups"]) {
     auto group_name = config_joint_group.first.as<std::string>();

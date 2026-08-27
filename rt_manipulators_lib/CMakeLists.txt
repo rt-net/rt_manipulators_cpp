@@ -27,12 +27,14 @@ add_library(${library_name}
     src/kinematics_utils.cpp
     src/config_file_parser.cpp
     src/dynamixel_x.cpp
+    src/dynamixel_xc330.cpp
     src/dynamixel_xm430.cpp
     src/dynamixel_xm540.cpp
     src/dynamixel_xh430.cpp
     src/dynamixel_xh540.cpp
     src/dynamixel_p.cpp
     src/dynamixel_ph42.cpp
+    src/dynamixel_ph54.cpp
 )
 target_include_directories(${library_name}
     PUBLIC

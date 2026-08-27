@@ -1,0 +1,11 @@
+joint_groups:
+  test_group:
+    joints:
+      - joint1
+    sync_read:
+      - external_port1
+      - external_port2
+      - external_port3
+      - external_port4
+
+joint1: { id: 1, dynamixel: "PH42", operating_mode: 3}

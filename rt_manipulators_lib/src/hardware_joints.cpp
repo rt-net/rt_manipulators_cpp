@@ -229,6 +229,25 @@ bool Joints::get_min_position_limit(const dxl_id_t & id, position_t & min_positi
   return true;
 }
 
+bool Joints::get_external_port_voltage(const dxl_id_t & id, const int number, double& voltage) {
+  if (!has_joint(id)) {
+    std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
+    return false;
+  }
+  voltage = joint(id)->get_external_port_voltage(number);
+  return true;
+}
+
+bool Joints::get_external_port_voltage(
+  const joint_name_t & joint_name, const int number, double& voltage) {
+  if (!has_joint(joint_name)) {
+    std::cerr << joint_name << "ジョイントは存在しません." << std::endl;
+    return false;
+  }
+  voltage = joint(joint_name)->get_external_port_voltage(number);
+  return true;
+}
+
 bool Joints::set_position(const dxl_id_t & id, const position_t & position) {
   if (!has_joint(id)) {
     std::cerr << "ID:" << std::to_string(id) << "のジョイントは存在しません." << std::endl;
