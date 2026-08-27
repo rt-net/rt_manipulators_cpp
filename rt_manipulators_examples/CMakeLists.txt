@@ -16,9 +16,9 @@ find_package(rclcpp REQUIRED)
 find_package(rt_manipulators_cpp REQUIRED)
 
 add_executable(x7_forward_kinematics src/x7_forward_kinematics.cpp)
-target_link_libraries(x7_forward_kinematics
-  rclcpp::rclcpp
-  rt_manipulators_cpp::rt_manipulators_cpp
+ament_target_dependencies(x7_forward_kinematics
+  rclcpp
+  rt_manipulators_cpp
 )
 
 if(BUILD_TESTING)

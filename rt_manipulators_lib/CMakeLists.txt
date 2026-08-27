@@ -40,11 +40,13 @@ target_include_directories(${library_name}
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
-
 target_link_libraries(${library_name}
-    dynamixel_sdk::dynamixel_sdk
-    Eigen3::Eigen
-    yaml-cpp::yaml-cpp
+    yaml-cpp
+)
+ament_target_dependencies(${library_name}
+    dynamixel_sdk
+    Eigen3
+    yaml_cpp_vendor
 )
 
 ament_export_targets(export_${library_name} HAS_LIBRARY_TARGET)
@@ -53,7 +55,6 @@ ament_export_dependencies(
     eigen3_cmake_module
     Eigen3
     yaml_cpp_vendor
-    yaml-cpp
 )
 install(
   DIRECTORY include/
